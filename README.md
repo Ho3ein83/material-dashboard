@@ -1,4 +1,4 @@
-# Material dashboard (1.0.0)
+# Material dashboard (latest)
 
 Let your users manage their accounts and transactions for both WooCommerce and Easy Digital Downloads plugins.
 
