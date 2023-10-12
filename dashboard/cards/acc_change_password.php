@@ -1,19 +1,19 @@
 <?php ob_start(); ?>
 <label class="ht-input">
     <input type="password" data-field="password" value="" placeholder="" required>
-    <span><?php esc_html_e( "New password", "material-dashboard" ); ?></span>
+    <span><?php _e( "New password", "material-dashboard" ); ?></span>
 	<?php _amd_icon( "show_password", null, [], [ "class" => "clickable -pt --hide-password" ] ); ?>
 	<?php _amd_icon( "hide_password", null, [], [ "class" => "clickable -pt --show-password" ] ); ?>
 </label>
 <div class="plr-8">
-    <p class="text-justify color-blue"><?php esc_html_e( "Note: after you change your password you have to log-in again", "material-dashboard" ); ?>.</p>
+    <p class="text-justify color-blue"><?php _e( "Note: after you change your password you have to log-in again", "material-dashboard" ); ?>.</p>
 </div>
 <?php $change_password_content = ob_get_clean(); ?>
 
 <?php ob_start(); ?>
 <div class="plr-8">
-    <button type="button" class="btn" data-submit="change-password"><?php esc_html_e( "Change", "material-dashboard" ); ?></button>
-    <button type="button" class="btn btn-text" data-dismiss="change-password"><?php esc_html_e( "Dismiss", "material-dashboard" ); ?></button>
+    <button type="button" class="btn" data-submit="change-password"><?php _e( "Change", "material-dashboard" ); ?></button>
+    <button type="button" class="btn btn-text" data-dismiss="change-password"><?php _e( "Dismiss", "material-dashboard" ); ?></button>
 </div>
 <?php $change_password_footer = ob_get_clean(); ?>
 

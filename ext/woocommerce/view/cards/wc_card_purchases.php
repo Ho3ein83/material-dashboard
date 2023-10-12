@@ -22,7 +22,7 @@ $orders = $chunk[0] ?? [];
 ?>
 <?php ob_start(); ?>
 <?php if( empty( $orders ) ): ?>
-    <h4 class="text-center"><?php esc_html_e( "You don't have any purchase to see", "material-dashboard" ); ?></h4>
+    <h4 class="text-center"><?php _e( "You don't have any purchase to see", "material-dashboard" ); ?></h4>
 <?php else: ?>
     <div class="amd-card-list no-shadow">
 		<?php
@@ -46,7 +46,7 @@ $orders = $chunk[0] ?? [];
                     </p>
                 </div>
                 <div class="-side">
-                    <button class="btn btn-text --low"
+                    <button class="btn btn-text"
                             data-wc-purchase="<?php echo esc_attr( $id ); ?>"><?php esc_html_e( "View", "material-dashboard" ); ?></button>
                 </div>
             </div>
@@ -54,7 +54,7 @@ $orders = $chunk[0] ?? [];
 		}
 		?>
         <?php if( count( $all_orders ) > $maxInPage ): ?>
-            <a href="?void=wc_purchases" data-turtle="lazy" class="btn btn-text"><?php esc_html_e( "More", "material-dashboard" ); ?></a>
+            <a href="?void=wc_purchases" data-turtle="lazy" class="btn btn-text"><?php _e( "More", "material-dashboard" ); ?></a>
         <?php endif; ?>
     </div>
 <?php endif; ?>

@@ -3,21 +3,21 @@
 class AMD_Todo {
 
 	/**
-	 * To-do ID
+	 * _Todo ID
 	 * @var int
 	 * @since 1.0.0
 	 */
 	public $id;
 
 	/**
-	 * To-do salt key for decryption
+	 * _Todo salt key for decryption
 	 * @var string
 	 * @since 1.0.0
 	 */
 	public $salt;
 
 	/**
-	 * To-do key
+	 * _Todo key
 	 * @var string
 	 * @since 1.0.0
 	 */
@@ -31,35 +31,28 @@ class AMD_Todo {
 	public $_text;
 
 	/**
-	 * Decrypted To-do text
+	 * Decrypted _todo text
 	 * @var string
 	 * @since 1.0.0
 	 */
 	public $text;
 
 	/**
-	 * To-do status
+	 * _Todo status
 	 * @var string
 	 * @since 1.0.0
 	 */
 	public $status;
 
 	/**
-	 * To-do priority
-	 * @var int
-	 * @since 1.0.5
-	 */
-	public $priority;
-
-	/**
-	 * To-do meta-data
+	 * _Todo meta-data
 	 * @var array
 	 * @since 1.0.0
 	 */
 	public $meta;
 
 	/**
-	 * To-do items object
+	 * _Todo items object
 	 */
 	public function __construct(){
 
@@ -71,7 +64,7 @@ class AMD_Todo {
 	}
 
 	/**
-	 * Reset To-do data to default
+	 * Reset _todo data to default
 	 * @return void
 	 * @since 1.0.0
 	 */
@@ -81,12 +74,11 @@ class AMD_Todo {
 		$this->_text = "";
 		$this->text = "";
 		$this->status = "";
-		$this->priority = 0;
 		$this->meta = [];
 	}
 
 	/**
-	 * Change To-do salt key
+	 * Change _todo salt key
 	 * @param string $salt
 	 * New salt value
 	 *
@@ -98,37 +90,33 @@ class AMD_Todo {
 	}
 
 	/**
-	 * Set To-do data
-	 *
+	 * Set _todo data
 	 * @param string $key
-	 * To-do key
+	 * _Todo key
 	 * @param string $_text
 	 * Not decrypted text
 	 * @param string $text
 	 * Decrypted text
 	 * @param string $status
-	 * To-do status
+	 * _Todo status
 	 * @param array $meta
-	 * To-do meta-data
-	 * @param int $priority
-	 * To-do priority
+	 * _Todo meta-data
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function set_data( $key, $_text, $text, $status, $meta, $priority=0 ){
+	public function set_data( $key, $_text, $text, $status, $meta ){
 		$this->key = $key;
 		$this->_text = $_text;
 		$this->text = $text;
 		$this->status = $status;
-		$this->priority = $priority;
 		$this->meta = $meta;
 	}
 
 	/**
-	 * Load To-do from ID and change object properties
+	 * Load _todo from ID and change object properties
 	 * @param int $id
-	 * To-do ID in database
+	 * _Todo ID in database
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -151,9 +139,9 @@ class AMD_Todo {
 	}
 
 	/**
-	 * Get complete To-do list by key
+	 * Get complete _todo list by key
 	 * @param string $key
-	 * To-do list key
+	 * _Todo list key
 	 * @param string $salt
 	 * Salt key for decryption
 	 *
@@ -164,8 +152,6 @@ class AMD_Todo {
 
 		$list = amd_get_todo_list( ["todo_key" => $key] );
 
-		global $amdDB;
-
 		$lists = [];
 		if( count( $list ) ){
 			foreach( $list as $item ){
@@ -173,15 +159,7 @@ class AMD_Todo {
 				$id = $l->id;
 				$todo = new AMD_Todo();
 				if( empty( $salt ) ) $salt = $todo->salt;
-				$priority = intval( $amdDB->getTodoMeta( $id, "priority", "0" ) );
-				$todo->set_data(
-					$l->todo_key,
-					$l->todo_value,
-					amd_decrypt_aes( json_decode( $l->todo_value ), $salt ),
-					$l->status,
-					unserialize( $l->meta ),
-					$priority
-				);
+				$todo->set_data( $l->todo_key, $l->todo_value, amd_decrypt_aes( json_decode( $l->todo_value ), $salt ), $l->status, unserialize( $l->meta ) );
 				$lists[$id] = $todo;
 			}
 		}
@@ -191,13 +169,13 @@ class AMD_Todo {
 	}
 
 	/**
-	 * Insert to-do item into database
+	 * Insert _todo item into databse
 	 * @param string $key
-	 * To-do key
+	 * _Todo ket
 	 * @param string $value
-	 * To-do text
+	 * _Todo text
 	 * @param string $status
-	 * To-do status
+	 * _Todo status
 	 * @param array $meta
 	 * Meta-data
 	 *

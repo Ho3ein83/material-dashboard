@@ -8,7 +8,7 @@ class AMDCalendar{
 	/**
 	 * Date mode. e.g: "g" for Gregorian, "j" for Jalali (solar date)
 	 * @var string
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	protected $dateMode;
 
@@ -32,7 +32,7 @@ class AMDCalendar{
 	 * </ul>
 	 *
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function setDateMode( $mode ){
 
@@ -49,7 +49,7 @@ class AMDCalendar{
 	 * Unix timestamp
 	 *
 	 * @return false|string
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function date( $format, $time = null ){
 
@@ -66,16 +66,15 @@ class AMDCalendar{
 	 * Unix timestamp
 	 *
 	 * @return array|false|string|string[]
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function realDate( $format, $time = null ){
 
 		if( empty( $time ) )
 			$time = time();
 
-		# $locale = get_locale();
-		# $mode = $locale == "fa_IR" ? "j" : "g";
-		$mode = $this->dateMode;
+		$locale = get_locale();
+		$mode = $locale == "fa_IR" ? "j" : "g";
 
 		if( $mode == "g" )
 			return $this->date( $format, $time );
@@ -86,7 +85,7 @@ class AMDCalendar{
 
 		require_once( "calendar.php" );
 
-		return amd_jdate( $format, $time );
+		return jdate( $format, $time );
 
 	}
 
@@ -99,7 +98,7 @@ class AMDCalendar{
 	 * Base date
 	 *
 	 * @return array|false|string|string[]
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function realDateFromDate( $format, $date ){
 

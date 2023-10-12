@@ -131,5 +131,3 @@ $theme_counter = 0;
         });
     }());
 </script>
-
-<style>.amd-card-columns .__card{display:block;width:auto}</style>

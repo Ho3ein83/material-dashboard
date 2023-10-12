@@ -13,11 +13,9 @@ $pending_email = "";
 if( is_countable( $temps ) AND count( $temps ) > 0 )
 	$pending_email = $temps[0]->temp_value;
 
-$ncode = amd_get_user_meta( $thisuser->ID, "ncode" );
-
 ?>
 <?php ob_start(); ?>
-<div>
+<div data-form="personal_info">
 	<?php if( $lastname_field ): ?>
         <div class="ht-input-row">
             <label class="ht-input">
@@ -63,16 +61,9 @@ $ncode = amd_get_user_meta( $thisuser->ID, "ncode" );
     </label>
 	<?php if( $phone_field ): ?>
         <label class="ht-input waiting">
-            <input type="text" value="<?php echo esc_attr( $thisuser->phone ); ?>" placeholder="" style="direction:ltr">
+            <input type="text" value="<?php echo esc_attr( $thisuser->phone ); ?>" placeholder="">
             <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
 			<?php _amd_icon( "phone" ); ?>
-        </label>
-	<?php endif; ?>
-
-    <?php if( $ncode ): ?>
-        <label class="ht-input waiting">
-            <input type="text" value="<?php echo esc_attr( $ncode ); ?>" placeholder="" style="direction:ltr">
-            <span><?php esc_html_e( "National code", "material-dashboard" ); ?></span>
         </label>
 	<?php endif; ?>
 </div>
@@ -94,7 +85,7 @@ $ncode = amd_get_user_meta( $thisuser->ID, "ncode" );
     "_attrs" => 'data-form="personal"'
 ) ); ?>
 
-
+<!--suppress JSUnusedLocalSymbols -->
 <script>
     (function() {
         let engine = dashboard.getApiEngine();
@@ -102,6 +93,7 @@ $ncode = amd_get_user_meta( $thisuser->ID, "ncode" );
         var form = new AMDForm("personal-form");
         var $ep_box = $("#email-pending-box");
         var $cancel_email_change = $("._cancel_email_change_"), $resend_email_change = $("._resend_email_change_");
+        // dashboard.addLazyEvent("start", () => form.dispose());
         form.on("submit", d => {
             let data = form.getFieldsEntries();
             engine.clean();
@@ -113,9 +105,6 @@ $ncode = amd_get_user_meta( $thisuser->ID, "ncode" );
                     $amd.alertQueue(_t("account_info"), resp.data.msg, {
                         icon: resp.success ? "success" : "error"
                     });
-                    if(resp.success){
-                        dashboard.setUserName((data.first_name || "") + " " + (data.last_name || ""));
-                    }
                     if(resp.data.toasts) {
                         for(let [key, conf] of Object.entries(resp.data.toasts)) dashboard.toast("", 3000, conf);
                     }

@@ -9,23 +9,16 @@ class AMDCore{
 	 * Themes data array
 	 * <br><b>More dashboard themes and templates are available in premium version</b>
 	 * @var array[]
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	protected $themes;
 
 	/**
 	 * Sign-in methods
 	 * @var array[]
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	protected $signMethods;
-
-	/**
-     * Cleanup variants
-	 * @var array
-     * @since 1.0.1
-	 */
-	protected $cleanup_variants;
 
 	/**
 	 * HBCore constructor
@@ -35,8 +28,6 @@ class AMDCore{
 		$this->signMethods = [];
 
         $this->themes = [];
-
-        $this->cleanup_variants = [];
 
 		# Initialize shortcodes
 		self::initShortcodes();
@@ -57,7 +48,7 @@ class AMDCore{
 	/**
 	 * Init hooks & filters
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function initHooks(){
 
@@ -254,19 +245,6 @@ class AMDCore{
             $amdCore->registerSignInMethod( $id, $config );
 
 		}, 10, 2 );
-
-		/**
-		 * Remove sign-in method
-         * @since 1.0.3
-		 */
-		add_action( "amd_remove_sign_in_method", function( $id ){
-
-            global /** @var AMDCore $amdCore */
-            $amdCore;
-
-            $amdCore->removeSignInMethod( $id );
-
-		} );
 
 		# Get sign-in methods
 		add_filter( "amd_sign_in_methods", function(){
@@ -473,7 +451,7 @@ class AMDCore{
 		# Initialize
 		add_action( "init", [ $this, "initRegisteredHooks" ] );
 		add_action( "admin_init", [ $this, "initRegisteredHooks" ] );
-		# add_action( "amd_dashboard_init", [ $this, "initRegisteredHooks" ] );
+		add_action( "amd_dashboard_init", [ $this, "initRegisteredHooks" ] );
 
 		# Enqueue color picker scripts
 		add_action( "admin_enqueue_scripts", function(){
@@ -484,7 +462,7 @@ class AMDCore{
 		# Config script
 		add_action( "amd_config_script", function(){
 			?>
-            <script src="<?php echo esc_url( amd_get_api_url( "?scripts=_config&cache=" . time() ) ); ?>"></script>
+            <script src="<?php echo esc_url( amd_get_api_url( "?scripts=_config&release=1" ) ); ?>"></script>
 			<?php
 		} );
 
@@ -582,6 +560,9 @@ class AMDCore{
             </script><?php
 		} );
 
+		# Edit user fields
+		add_action( "edit_user_profile", [ $this, "editUserFields" ] );
+
 		# Add custom class for dashboard elements
 		add_action( "amd_add_element_class", function( $element, $classes ){
 
@@ -626,98 +607,12 @@ class AMDCore{
 
 		} );
 
-		/**
-		 * Register cleanup variants
-         * @since 1.0.1
-		 */
-        add_action( "amd_register_cleanup_variant", [$this, "registerCleanupVariant"], 10, 2 );
-
-        /**
-		 * Handle login for login reports
-         * @since 1.0.5
-		 */
-		add_action( "amd_login", function( $wp_user ){
-
-            $uid = $wp_user->ID ?? 0;
-
-            if( !$uid )
-                return;
-
-            global $amdDB;
-
-            $user = amd_get_user_by( "ID", $uid );
-
-            if( $amdDB AND $user ){
-
-	            if( $amdDB ){
-
-                    global $amdWall, $amdCache;
-
-		            $agent = $amdWall->parseAgent();
-
-                    $report = $amdDB->addReport( "login", "null", $user->ID, ["ip" => $amdWall->getActualIP(), "identity" => $agent->export()] );
-
-                    if( $report )
-                        $amdCache->setCookie( "login_pending", $report, 1 );
-
-	            }
-
-            }
-
-		} );
-
-		/**
-		 * Add cookie for login reports handler
-         * @since 1.0.5
-		 */
-        add_action( "amd_after_cores_init", function(){
-
-	        global $amdCache, $amdDB;
-
-	        $login_report = $amdCache->getCache( "login_pending", "cookie" );
-
-            if( $login_report ){
-
-                $report = $amdDB->getReport( $login_report );
-	            $thisuser = amd_get_current_user();
-                if( $report AND $thisuser ){
-                    $token = wp_get_session_token();
-                    $token = amd_encrypt_aes( $token, $thisuser->secretKey );
-                    $amdDB->editReport( $login_report, ["report_value" => $token] );
-                }
-
-	            $amdCache->removeCookie( "login_pending" );
-
-            }
-
-        } );
-
-		/**
-		 * Add login card
-         * @since 1.0.5
-		 */
-        add_action( "amd_dashboard_init", function(){
-
-	        $display_login_reports = amd_get_site_option( "display_login_reports", "true" );
-
-            if( $display_login_reports == "true" ){
-	            do_action( "amd_add_dashboard_card", array(
-		            "login_reports" => array(
-			            "type" => "content_card",
-			            "page" => AMD_DASHBOARD . "/cards/acc_login_reports.php",
-			            "priority" => 20
-		            )
-	            ) );
-            }
-
-        } );
-
 	}
 
 	/**
 	 * Initialize registered hooks & filters
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function initRegisteredHooks(){
 
@@ -791,12 +686,7 @@ class AMDCore{
 			"change_email_allowed" => "BOOL",
 			"use_lazy_loading" => "BOOL",
 			"extensions" => "STRING",
-			"theme" => "STRING",
-			"db_version" => "NUMBER",
-			"use_login_2fa" => "BOOL",
-			"force_login_2fa" => "BOOL",
-			"display_login_reports" => "BOOL",
-			"tera_wallet_support" => "BOOL"
+			"theme" => "STRING"
 		) );
 
 		# Set default export variants
@@ -817,7 +707,7 @@ class AMDCore{
 		                amd_set_site_option( $option_name, $option_value );
 		                $progress[$option_name] = true;
 	                }
-                    return [true, esc_html_x( "Site settings imported", "Admin", "material-dashboard" ), $progress, 0];
+                    return [true, "", $progress, 0];
 
                 }
 			),
@@ -853,7 +743,7 @@ class AMDCore{
 						$progress[$uid] = true;
 
 					}
-					return [true, esc_html_x( "Users meta-data imported", "Admin", "material-dashboard" ), $progress, $missed];
+					return [true, "", $progress, $missed];
 
 				}
 			),
@@ -886,7 +776,7 @@ class AMDCore{
 						$progress[$temp_key] = true;
 
 					}
-					return [true, esc_html_x( "Temporarily data imported", "Admin", "material-dashboard" ), $progress, $missed];
+					return [true, "", $progress, $missed];
 
 				}
 			),
@@ -967,13 +857,6 @@ class AMDCore{
 				"page" => AMD_PAGES . "/admin-tabs/tab_registration.php",
 				"priority" => 40
 			),
-            "login" => array(
-				"id" => "login",
-				"title" => esc_html__( "Login", "material-dashboard" ),
-				"icon" => "person",
-				"page" => AMD_PAGES . "/admin-tabs/tab_login.php",
-				"priority" => 40
-			),
 			"forms" => array(
 				"id" => "forms",
 				"title" => esc_html_x( "Forms", "Admin", "material-dashboard" ),
@@ -1040,49 +923,6 @@ class AMDCore{
 		# Set allowed default pages
 		do_action( "amd_allowed_pages", [ "dashboard", "login", "api" ] );
 
-        # Register cleanup variants (database)
-        do_action( "amd_register_cleanup_variant", "database", array(
-	        "id" => "database",
-	        "title" => _x( "Database", "Admin", "material-dashboard" ),
-	        "auto_generates" => true,
-            "callback" => function(){
-	            global /** @var AMD_DB $amdDB */
-	            $amdDB;
-
-	            $amdDB->cleanup();
-
-                return [_x( "Database cleaned up", "Admin", "material-dashboard" )];
-            }
-        ) );
-
-        # Register cleanup variants (files)
-        do_action( "amd_register_cleanup_variant", "files", array(
-	        "id" => "files",
-	        "title" => _x( "Files", "Admin", "material-dashboard" ),
-	        "auto_generates" => false,
-            "callback" => function(){
-	            global /** @var AMDExplorer $amdExp */
-	            $amdExp;
-
-	            # Get plugin uploads path
-	            $path = $amdExp->getPath( "" );
-
-	            # Delete the whole plugin uploads directory
-	            amd_delete_directory( $path, true );
-
-	            # Remove plugin uploads directory itself (double-checking)
-	            rmdir( $path );
-
-	            return [_x( "Files cleaned up", "Admin", "material-dashboard" )];
-            }
-        ) );
-
-		/**
-		 * Initialize cleanup variants
-		 * @since 1.0.1
-		 */
-		do_action( "amd_init_cleanup_variants" );
-
 		# Set icon pack
 		$icon_pack = amd_get_site_option( "icon_pack", amd_get_default( "icon_pack" ) );
 		do_action( "amd_set_icon_pack", $icon_pack );
@@ -1125,12 +965,7 @@ class AMDCore{
 			"change_email_allowed" => "false",
 			"use_lazy_loading" => "true",
 			"extensions" => "",
-			"theme" => AMD_DEFAULT_THEME,
-			"db_version" => "1",
-			"use_login_2fa" => "false",
-			"force_login_2fa" => "false",
-			"display_login_reports" => "true",
-			"tera_wallet_support" => "true"
+			"theme" => AMD_DEFAULT_THEME
 		);
 
 		$amdCache->setDefault( "options_data", json_encode( $data ) );
@@ -1140,7 +975,7 @@ class AMDCore{
 	/**
 	 * Init shortcodes
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function initShortcodes(){
 
@@ -1206,21 +1041,6 @@ class AMDCore{
 
 		} );
 
-		/**
-		 * Display icons for shortcodes
-         * @since 1.0.5
-		 */
-        add_shortcode( "amd-icon", function( $attr ){
-
-            $attrs = shortcode_atts( array(
-		        "icon" => ""
-	        ), $attr, 'amd-icon' );
-
-            if( !empty( $attrs["icon"] ) )
-                _amd_icon( $attr["icon"] );
-
-        } );
-
 		# Change dashboard pages template
 		add_action( "template_include", function( $template ){
 			$loginPage = intval( amd_get_site_option( "login_page" ) );
@@ -1240,7 +1060,7 @@ class AMDCore{
 	/**
 	 * Init admin menu
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function initAdmin(){
 
@@ -1299,32 +1119,12 @@ class AMDCore{
 
 		} );
 
-		# Admin stylesheet which loads from API stylesheet request
-		add_action( "amd_api_admin_stylesheet", function(){
-			# @formatter off
-			echo /** @lang CSS */ ".amd-table{max-width:100%;overflow-x:auto;border-radius:8px;-ms-overflow-style:none;scrollbar-width:none;background:var(--amd-wrapper-bg)}
-.amd-table::-webkit-scrollbar{display:none}
-.amd-table>table{width:100%;border-collapse:collapse}
-.amd-table>table tr>th{font-family:var(--amd-title-font),sans-serif;background:rgba(var(--amd-primary-rgb),.7);color:var(--amd-wrapper-fg);text-align:start;font-size:var(--amd-size-lg);height:30px;padding:8px 16px}
-.amd-table>table tr>th{color:#fff}
-body.rtl .amd-table>table tr>th:first-child{border-top-right-radius:8px}
-body.rtl .amd-table>table tr>th:last-child{border-top-left-radius:8px}
-body.ltr .amd-table>table tr>th:first-child{border-top-left-radius:8px}
-body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
-.amd-table>table tr>td{text-align:start;font-size:var(--amd-size-md);color:var(--amd-text-color);height:30px;padding:8px 16px;background-color:transparent;transition:background-color ease .2s}
-.amd-table>table tr:nth-child(even)>td{background-color:rgba(var(--amd-wrapper-fg-rgb),.2)}
-.amd-table>table tr:nth-child(odd)>td{background-color:var(--amd-wrapper-fg)}
-.amd-table>table tr:hover>td{background-color:rgba(var(--amd-primary-rgb),.08);}";
-			# @formatter on
-
-		} );
-
 	}
 
 	/**
 	 * Run main core
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function run(){
 
@@ -1340,7 +1140,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Initialize
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function initialize(){
 
@@ -1366,7 +1166,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Load API page
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function loadAPI(){
 
@@ -1377,7 +1177,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Initialize
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function init(){
 
@@ -1409,7 +1209,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	 * Whether to replace theme (if exist) or not
 	 *
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function registerTheme( $id, $name, $scope, $data, $overwrite = false ){
 
@@ -1440,7 +1240,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	 * Property new value. e.g: "#fff"
 	 *
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function editTheme( $id, $scope, $name, $newValue ){
 
@@ -1462,7 +1262,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	 * Whether to get method data or only check existing
 	 *
 	 * @return array|bool|null
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function signMethodExists( $id, $get = false ){
 
@@ -1476,30 +1276,22 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Get registered sign-in methods
 	 * @return array[]
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function getSignInMethods(){
-
-		/**
-		 * Validate sign-in methods or modify them before displaying
-         * @since 1.0.3
-		 */
-        do_action( "amd_before_modify_sign_in_methods" );
-
 		return $this->signMethods;
-
 	}
 
 	/**
 	 * Register new sign-in method
 	 *
 	 * @param string $id
-	 * Method ID. e.g: "google"
+	 * Method ID. e.g: "Google"
 	 * @param array $data
 	 * Method data
 	 *
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function registerSignInMethod( $id, $data ){
 
@@ -1510,58 +1302,6 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 
 	}
 
-    /**
-	 * Remove registered sign-in method
-	 *
-	 * @param string $id
-	 * Method ID. e.g: "google"
-	 *
-	 * @return void
-	 * @since 1.0.3
-	 */
-	public function removeSignInMethod( $id ){
-
-		if( !self::signMethodExists( $id ) )
-			return;
-
-		$this->signMethods[$id] = null;
-		unset( $this->signMethods[$id] );
-
-	}
-
-	/**
-     * Register cleanup variant
-	 * @param int $id
-     * Variant ID
-	 * @param array $data
-     * Variant data array
-	 *
-	 * @return void
-     * @since 1.0.1
-	 */
-	public function registerCleanupVariant( $id, $data ){
-
-        $this->cleanup_variants[$id] = $data;
-
-    }
-
-	/**
-     * Get cleanup variants
-	 * @return array
-     * @since 1.0.1
-	 */
-	public function getCleanupVariants(){
-
-		/**
-         * Initialize cleanup variants
-		 * @since 1.0.1
-		 */
-        do_action( "amd_init_cleanup_variants" );
-
-        return $this->cleanup_variants;
-
-    }
-
 	/**
 	 * Get all of registered themes
 	 *
@@ -1570,7 +1310,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	 *
 	 * @return array[]
 	 * Theme data
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function getThemes( $override = true ){
 
@@ -1604,7 +1344,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Get theme variables for CSS
 	 * @return array
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function getThemeColors(){
 
@@ -1620,7 +1360,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Load admin dashboard
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function page_admin_dashboard(){
 
@@ -1631,7 +1371,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Load dashboard settings page
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function submenu_admin_settings(){
 
@@ -1642,7 +1382,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Load appearance page
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function submenu_admin_appearance(){
 
@@ -1653,7 +1393,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Load manage data page
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function submenu_admin_manage_data(){
 
@@ -1664,7 +1404,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Security page
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function submenu_admin_security(){
 
@@ -1686,7 +1426,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	/**
 	 * Themes page
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function submenu_admin_themes(){
 
@@ -1697,7 +1437,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
     /**
 	 * Support page
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function submenu_admin_more(){
 
@@ -1709,7 +1449,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	 * It's only for error prevention, the wizard page is already loaded in '_app' extension
 	 * @return void
 	 * @see amd_ext__app_dump_wizard_page()
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function admin_wizard_page(){ }
 
@@ -1720,23 +1460,42 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	 * Variants data
 	 *
 	 * @return array
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function cleanup( $variants ){
 
 		$out = [];
 		foreach( $variants as $variant ){
 
-            if( !empty( $this->cleanup_variants[$variant] ) ){
+            # Cleanup database
+			if( $variant == "database" ){
 
-                $v = $this->cleanup_variants[$variant];
+				global /** @var AMD_DB $amdDB */
+				$amdDB;
 
-                $callback = $v["callback"] ?? null;
+				$amdDB->cleanup();
 
-                if( is_callable( $callback ) )
-	                $out = array_merge( $out, call_user_func( $callback ) );
+				$out[] = esc_html_x( "Database cleaned up", "Admin", "material-dashboard" );
 
-            }
+			}
+            # Cleanup files (uploaded files, avatars, etc.)
+			else if( $variant == "files" ){
+
+				global /** @var AMDExplorer $amdExp */
+				$amdExp;
+
+                # Get plugin uploads path
+				$path = $amdExp->getPath( "" );
+
+                # Delete the whole plugin uploads directory
+				amd_delete_directory( $path, true );
+
+                # Remove plugin uploads directory itself (double-checking)
+				rmdir( $path );
+
+				$out[] = esc_html_x( "Files cleaned up", "Admin", "material-dashboard" );
+
+			}
 
 		}
 
@@ -1751,7 +1510,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	 * User ID, pass null to get current user
 	 *
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function editUserFields( $u = null ){
 
@@ -1763,19 +1522,15 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
         else
             $uid = $u->ID;
 
-		if( !$uid OR !is_numeric( $uid ) )
+		if( !$uid OR ! is_numeric( $u ) )
 			return;
 
 		$user = amd_get_user_by( "ID", $uid );
 		if( !$user )
 			return;
 
-		if( !current_user_can( "edit_user", $user->ID ) )
-			return;
-
-        $is_me = $user->ID == get_current_user_id();
 		$phone_field = amd_get_site_option( "phone_field" ) == "true";
-		$isOnline = $is_me ? true : $user->isOnline();
+		$isOnline = $user->isOnline();
 		$lastSeen = $user->getLastSeen();
 		?>
         <br>
@@ -1785,10 +1540,10 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 			<?php if( $phone_field ): ?>
                 <tr class="amd-user-wrap">
                     <th>
-                        <label for="amd_phone"><?php esc_html_e( "Phone", "material-dashboard" ); ?></label>
+                        <label for="amd_phone"><?php _e( "Phone", "material-dashboard" ); ?></label>
                     </th>
                     <td>
-                        <span dir="auto"><?php echo esc_html( $user->phone ); ?></span>
+                        <input type="text" name="user_login" id="amd_phone" value="" disabled="" class="regular-text">
                     </td>
                 </tr>
 			<?php endif; ?>
@@ -1796,7 +1551,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
             <tr class="user-first-name-wrap">
                 <th><?php esc_html_e( "Status", "material-dashboard" ); ?></th>
                 <td>
-                    <p style="width:max-content;color:#fff;padding:6px 12px;border-radius:6px;<?php echo esc_attr( "background:" . ( $isOnline ? "#3dda84" : "#f55753" ) ); ?>"><?php echo $isOnline ? esc_html__( "Online", "material-dashboard" ) : esc_html__( "Offline", "material-dashboard" ); ?></p>
+                    <p style="<?php echo esc_attr( "color:" . ( $isOnline ? "green" : "red" ) ); ?>"><?php echo $isOnline ? esc_html__( "Online", "material-dashboard" ) : esc_html__( "Offline", "material-dashboard" ); ?></p>
                 </td>
             </tr>
 
@@ -1822,7 +1577,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
                 <tr class="user-first-name-wrap">
                     <th><?php esc_html_e( "Purchases", "material-dashboard" ); ?></th>
                     <td>
-                        <p><?php echo esc_html( sprintf( _n( "%d purchase", "%d purchases", $purchases_count, "material-dashboard" ), $purchases_count ) ) . " ($amount)"; ?></p>
+                        <p><?php echo esc_html( sprintf( _n( "%d purchase", "%d purchases", $purchases_count, "material-dashboard" ) ), $purchases_count ) . " ($amount)"; ?></p>
                     </td>
                 </tr>
 			<?php endif; ?>
@@ -1841,23 +1596,8 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
                 </td>
             </tr>
 
-            <?php
-                /**
-                 * After edit profile table items
-                 * @since 1.0.1
-                 */
-                do_action( "amd_after_user_edit_profile_items", $u );
-            ?>
-
             </tbody>
         </table>
-		<?php
-		/**
-		 * After edit profile table
-		 * @since 1.0.1
-		 */
-		do_action( "amd_after_user_edit_profile_table" );
-		?>
         <br>
 		<?php
 

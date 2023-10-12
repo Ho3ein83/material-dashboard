@@ -1,6 +1,6 @@
 <?php
 
-# Stop it here if plugin is not loaded from WordPress
+# Stop it here if extension is not loaded from WordPress
 defined( 'ABSPATH' ) OR die();
 
 /*
@@ -99,12 +99,6 @@ define( 'AMD_PAGES', AMD_PATH . DIRECTORY_SEPARATOR . 'pages' );
 define( 'AMD_DASHBOARD', AMD_PATH . DIRECTORY_SEPARATOR . 'dashboard' );
 
 /**
- * Includes path
- * @since 1.0.5
- */
-define( 'AMD_INCLUDES', AMD_PATH . DIRECTORY_SEPARATOR . 'includes' );
-
-/**
  * API handler
  * @since 1.0.0
  */
@@ -142,20 +136,13 @@ $_upload_base_dir = wp_get_upload_dir()['basedir'] ?? ( ABSPATH . 'wp-content' .
 define( 'AMD_UPLOAD_PATH', $_upload_base_dir . DIRECTORY_SEPARATOR . AMD_DIRECTORY );
 
 /**
- * Plugin current version
- * @since 1.0.4
- */
-define( 'AMD_VER', '1.0.9' );
-
-/**
  * Version codes
  * @since 1.0.0
  */
 const AMD_VERSION_CODES = array(
-	'bundle' => AMD_VER,
-	'structure' => AMD_VER,
-	'admin' => AMD_VER,
-	'vars' => AMD_VER,
-	'hello-pop' => "2.2.4",
-	'mi' => '4.0.0',
+	'bundle' => '1.2.0',
+	'structure' => '1.0.0',
+	'admin' => '1.0.0',
+	'vars' => '1.0.0',
+	'mi' => '1.2.1',
 );

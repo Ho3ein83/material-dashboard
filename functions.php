@@ -9,25 +9,6 @@ add_action( "init", function(){
 } );
 
 /**
- * Extra components stylesheet
- * @since 1.0.4
- * @return void
- */
-function amd_extra_components(){
-	echo <<<CSS
-        .btn.btn-icon-square{width:max-content !important;min-width:max-content !important;display:inline-flex !important;aspect-ratio:1;align-items:center;justify-content:center;padding:8px !important}
-        .btn-icon-square.bis-sm{padding:2px !important}
-        .btn-sm.btn-icon-square>._icon_{width:18px;height:auto}
-        .btn.btn-icon-square.--block{display:flex !important}
-        .btn.btn-full{width:100%}
-        .hb-select-group>select{left:0}
-        body.rtl .hb-select-group>select{text-align:right}
-        body.ltr .hb-select-group>select{text-align:left}
-    CSS;
-}
-add_action( "amd_api_components_stylesheet", "amd_extra_components" );
-
-/**
  * Alternate for wp_head
  * @return void
  * @since 1.0.0
@@ -199,11 +180,7 @@ function amd_replace_constants( $str ){
 	$str = preg_replace( "/\{AMD_AUTH_SITE}/", AMD_AUTH_SITE, $str );
 	$str = preg_replace( "/\{DOC_URL}/", amd_doc_url( "" ), $str );
 
-	/**
-     * For custom properties
-	 * @since 1.0.0
-	 */
-	return apply_filters( "amd_replace_constants", $str );
+	return $str;
 
 }
 
@@ -686,56 +663,6 @@ function amd_user_has_meta( $uid, $mn ){
 }
 
 /**
- * Push value into user meta
- * @param int $uid
- * User ID
- * @param string $mn
- * Meta name
- * @param string $item
- * Item to pull from meta
- * @param bool $unique
- * Whether to remove duplicated values, default is true
- *
- * @return bool
- * True on success, false on failure
- * @since 1.0.7
- */
-function amd_push_user_meta( $uid, $mn, $item, $unique=true ){
-
-    $value = amd_get_user_meta( $uid, $mn );
-
-    $value = amd_push_value( $value, $item, ",", $unique );
-
-    return amd_set_user_meta( $uid, $mn, $value );
-
-}
-
-/**
- * Pull item from user meta
- * @param int $uid
- * User ID
- * @param string $mn
- * Meta name
- * @param string $item
- * Item to pull from meta
- * @param bool $unique
- * Whether to remove duplicated values, default is true
- *
- * @return bool
- * True on success, false on failure
- * @since 1.0.7
- */
-function amd_pull_user_meta( $uid, $mn, $item, $unique=true ){
-
-    $value = amd_get_user_meta( $uid, $mn );
-
-    $value = amd_pull_value( $value, $item, ",", $unique );
-
-    return amd_set_user_meta( $uid, $mn, $value );
-
-}
-
-/**
  * Set temporarily data in database
  *
  * @param string $name
@@ -971,9 +898,6 @@ function amd_generate_string( $len = 10, $key = -1 ){
 
 	$key = str_shuffle( str_shuffle( $key ) );
 
-    # Set random seed
-	srand( microtime( true ) * 1000000 );
-
 	for( $i = 0; $i < $len; $i++ )
 		$string .= $key[rand( 0, strlen( $key ) - 1 )];
 
@@ -1123,8 +1047,8 @@ function amd_change_password( $uid, $new_password, $notice = false ){
 /**
  * Get user automatically
  *
- * @param int|string|WP_User $part
- * Any information about user like email, user ID, phone number or username or even WP user object
+ * @param int|string $user
+ * The part of user information, like username, email, user ID and phone number
  *
  * @return AMDUser|null
  * AMDUser on user found, otherwise null
@@ -1199,17 +1123,17 @@ function amd_get_user_by( $by, $user, $simpleUser = true ){
  * @return false|AMDUser|array
  * @since 1.0.0
  */
-function amd_get_user_by_meta( $by, $value, $single = true ){
+function amd_get_user_by_meta( $by, $user, $single = true ){
 
 	global /** @var AMDSilu $amdSilu */
 	$amdSilu;
 
-	return $amdSilu->getUserByMeta( $by, $value, $single );
+	return $amdSilu->getUserByMeta( $by, $user, $single );
 
 }
 
 /**
- * Get current user with simple user object {@see AMDUser}
+ * Get current user with simple user object (AMDUser)
  * @return false|AMDUser
  * AMDUser object on success, false on fail
  * @since 1.0.0
@@ -1254,6 +1178,7 @@ function amd_get_default_options(){
 }
 
 /**
+ * /**
  * Add/Update site option
  *
  * @param string $name
@@ -1301,26 +1226,21 @@ function amd_delete_site_option( $name ){
  * Option name
  * @param string $default
  * Default value
- * @param bool $ignoreCaches
- * <code>[Since 1.0.5] </code>
- * Whether to ignore caches and get site option directly from database or get it from system caches,<br>
- * using caches can improve site performance but site options may be old
  *
  * @return string
  * @since 1.0.0
  */
-function amd_get_site_option( $name, $default = "", $ignoreCaches=false ){
+function amd_get_site_option( $name, $default = "" ){
 
 	global /** @var AMD_DB $amdDB */
 	$amdDB;
 
-	return $amdDB->getSiteOption( $name, $default, $ignoreCaches );
+	return $amdDB->getSiteOption( $name, $default );
 
 }
 
 /**
  * Get result of regex search inside site_options table
- *
  * @param string $regex
  * Search regex
  *
@@ -1370,59 +1290,26 @@ function amd_using_https(){
  *
  * @param string $option
  * Option name
- * @param mixed|null $value
- * Value to be checked, pass null to skip value check
  *
  * @return bool
  * @since 1.0.0
  */
-function amd_is_option_allowed( $option, $value=null ){
+function amd_is_option_allowed( $option ){
 
     if( apply_filters( "amd_is_option_allowed_$option", false ) )
         return true;
 
 	$allowedOptions = apply_filters( "amd_get_allowed_options", [] );
 
-    foreach( $allowedOptions as $key => $data ){
-
-        if( strpos( $key, "[*]" ) !== false ){
-            $pattern = str_replace( "[*]", "(.*)", $key );
-            if( preg_match( "/^$pattern$/", $option ) ){
-                if( $value === null )
-                    return true;
-
-	            if( is_string( $data ) ){
-		            if( amd_compile_data_type( $data, $value ) )
-			            return true;
-	            }
-	            else if( is_array( $data ) ){
-		            $type = $data["type"] ?? null;
-		            $filter = $data["filter"] ?? null;
-		            if( !empty( $filter ) and is_callable( $filter ) )
-			            $value = call_user_func( $filter, $value );
-		            if( amd_compile_data_type( $type, $value ) )
-			            return true;
-	            }
-
+	foreach( $allowedOptions as $key => $data ){
+		if( $key == $option ){
+            if( amd_starts_with( $key, "REGEX:" ) ){
+                $regex = str_replace( "REGEX:", "", $key );
+	            file_put_contents( ABSPATH . 'log.txt', var_export( $regex, true ) . "\n", FILE_APPEND );
+	            return amd_validate( $option, $regex );
             }
-        }
-        else if( $key == $option ){
-
-	        if( is_string( $data ) ){
-		        if( amd_compile_data_type( $data, $value ) )
-			        return true;
-	        }
-	        else if( is_array( $data ) ){
-		        $type = $data["type"] ?? null;
-		        $filter = $data["filter"] ?? null;
-		        if( !empty( $filter ) and is_callable( $filter ) )
-			        $value = call_user_func( $filter, $value );
-		        if( amd_compile_data_type( $type, $value ) )
-			        return true;
-	        }
-
-        }
-
+			return true;
+		}
 	}
 
 	return false;
@@ -1546,16 +1433,32 @@ function amd_validate( $string, $regex, $required = true ){
  * @param string $text
  * Input text
  * @param string $sp
- * Separator character, for URLs it would be "/"
- * <br><code><b>DEPRECATED: this parameter is no longer available since 1.0.4 version, and it will be ignored.</b></code>
+ * Separator character
  *
  * @return string
  * @since 1.0.0
  */
 function amd_slugify( $text, $sp = '/' ){
 
-    return sanitize_title( $text );
+    // replace non letter or digits by divider
+	$text = preg_replace( '~[^\pL\d]+~u', $sp, $text );
 
+	// transliterate
+	$text = iconv( 'utf-8', 'us-ascii//TRANSLIT', $text );
+
+	// remove unwanted characters
+	$text = preg_replace( '~[^-\w]+~', '', $text );
+
+	// trim
+	$text = trim( $text, $sp );
+
+	// remove duplicate divider
+	$text = preg_replace( '~-+~', $sp, $text );
+
+	// lowercase
+	$text = strtolower( $text );
+
+	return $text;
 }
 
 /**
@@ -1642,10 +1545,6 @@ function amd_generate_string_pattern( $code ){
 
 /**
  * Get avatars base URL
- *
- * @param string $id
- * Image ID
- *
  * @return string
  * @since 1.0.0
  */
@@ -1783,7 +1682,7 @@ function amd_admin_head(){
 
 	$API_URL = amd_get_api_url();
 	$locale = get_locale();
-	$amdCache->addStyle( 'admin:fonts', amd_merge_url_query( $API_URL, "stylesheets=_fonts&locale=$locale&screen=admin&ver=1.0.0" ), null );
+	$amdCache->addStyle( 'admin:fonts', amd_merge_url_query( $API_URL, "stylesheets=_fonts&locale=$locale&ver=1.0.0" ), null );
 
 	$amdCache->dumpStyles( "admin" );
 	$amdCache->dumpScript( "admin" );
@@ -1792,9 +1691,7 @@ function amd_admin_head(){
 	$amdCache->dumpStyles( "global" );
 	$amdCache->dumpScript( "icon" );
 	$amdCache->dumpScript( "global" );
-
-    amd_main_header();
-
+	amd_main_header();
 	$wizard_dismissed = amd_get_site_option( "wizard_dismissed" ) == "true";
 	$auto_generated_pages = amd_get_site_option( "auto_generated_pages" ) == "true";
 
@@ -1855,6 +1752,8 @@ function amd_admin_head(){
  * @since 1.0.0
  */
 function amd_compile_data_type( $action, $value ){
+	if( $action == null )
+		return false;
 	if( is_callable( $action ) ){
 		return call_user_func( $action, $value );
 	}
@@ -1911,10 +1810,9 @@ function amd_compile_data_type( $action, $value ){
 			}
 
 		}
-		else if( preg_match( "/^(['\"])?(INT|NUMBER|STRING|BOOL|ARRAY|CALLABLE|FUNCTION|NULL)(['\"])?$/", $action ) ){
+		else if( preg_match( "/(?!['\"])((INT)|(NUMBER)|(STRING)|(BOOL)|(ARRAY)|(CALLABLE)|(FUNCTION)|(NULL))(?!['\"])/", $action ) ){
 			foreach( explode( ",", $action ) as $item ){
 				$item = trim( $item );
-
 				if( amd_compile_data_type( "[$item]", $value ) )
 					return true;
 			}
@@ -1979,9 +1877,7 @@ function amd_is_dashboard_page(){
 
 /**
  * Get login page URL
- * @param bool $safe
- * [Deprecated] this parameter is no longer available since 1.0.4 version
- * @return string
+ * @return string|WP_Error
  * @since 1.0.0
  */
 function amd_get_login_page( $safe = true ){
@@ -1990,7 +1886,10 @@ function amd_get_login_page( $safe = true ){
 
 	$url = get_permalink( $loginPage );
 
-	return !$url ? "" : $url;
+	if( $safe and is_wp_error( $url ) )
+		return "";
+
+	return $url;
 
 }
 
@@ -1998,9 +1897,9 @@ function amd_get_login_page( $safe = true ){
  * Get dashboard page URL
  *
  * @param bool $safe
- * [Deprecated] this parameter is no longer available since 1.0.4 version
+ * Whether to get WP_Error object if dashboard page does not exist
  *
- * @return string
+ * @return string|WP_Error
  * @see AMDWarner::getErrors()
  * @since 1.0.0
  */
@@ -2010,22 +1909,10 @@ function amd_get_dashboard_page( $safe = true ){
 
 	$url = get_permalink( $dashboardPage );
 
-	return !$url ? "" : $url;
+	if( $safe AND is_wp_error( $url ) )
+		return "";
 
-}
-
-/**
- * Get custom page URL
- * @return string
- * @since 1.0.4
- */
-function amd_get_page_url( $page ){
-
-	$page_id = amd_get_site_option( "{$page}_page" );
-
-	$url = get_permalink( $page_id );
-
-	return !$url ? "" : $url;
+	return $url;
 
 }
 
@@ -2043,7 +1930,7 @@ function amd_get_page_url( $page ){
  *
  * @return void
  * @see AMDDashboard::registerPage()
- * @since 1.0.0
+ * @sicne 1.0.0
  */
 function amd_register_lazy_page( $id, $title, $path, $icon ){
 
@@ -2232,15 +2119,7 @@ function amd_simple_user( $uid = null ){
  */
 function amd_make_pages( $page, $confirm = false, $confirmReplace = false ){
 
-    $allowed_pages = apply_filters( "amd_get_allowed_pages", [ "login", "dashboard", "api" ] );
-
-	/**
-	 * Change allowed pages with custom filter
-     * @since 1.0.4
-	 */
-    $allowed_pages = apply_filters( "amd_custom_allowed_pages", $allowed_pages );
-
-	if( !in_array( $page, $allowed_pages ) )
+	if( !in_array( $page, apply_filters( "amd_get_allowed_pages", [ "login", "dashboard", "api" ] ) ) )
 		return array(
 			"success" => false,
 			"data" => [ "msg" => esc_html__( "Failed", "material-dashboard" ) ]
@@ -2291,11 +2170,7 @@ function amd_make_pages( $page, $confirm = false, $confirmReplace = false ){
 
 	$result = wp_insert_post( array(
 		"post_title" => ucfirst( $page ),
-		/**
-		 * Get custom shortcode for page
-         * @since 1.0.4
-		 */
-		"post_content" => apply_filters( "amd_custom_page_shortcode", "[amd-$page]", $page ),
+		"post_content" => "[amd-$page]",
 		"post_status" => "publish",
 		"post_type" => "page",
 	) );
@@ -2330,8 +2205,7 @@ function amd_make_pages( $page, $confirm = false, $confirmReplace = false ){
  * @since 1.0.0
  */
 function amd_api_page_required( $autoGenerate = true ){
-
-    global /** @var AMD_DB $amdDB */
+	global /** @var AMD_DB $amdDB */
 	$amdDB;
 
 	$APIPage = intval( amd_get_site_option( "api_page" ) );
@@ -2624,7 +2498,7 @@ function amd_set_default( $key, $value ){
  * Return this value if item doesn't exist
  *
  * @return mixed|string
- * @since 1.0.0
+ * @sicne 1.0.0
  */
 function amd_get_default( $key, $default = "" ){
 
@@ -2662,11 +2536,11 @@ function amd_get_dash_logo(){
 		$dashLogoVal = $dashLogoURL;
 	}
 
-	return apply_filters( "amd_dashboard_logo", array(
+	return array(
 		"url" => $dashLogoURL,
 		"id" => $dashLogoVal,
 		"logo" => $dashLogo
-	) );
+	);
 }
 
 /**
@@ -2690,12 +2564,10 @@ function amd_get_regions(){
 			$phoneRegions[$key] = (array) $value;
 	}
 
-
 	$first_cc = "";
 	$countries_cc_html = "";
 	$cc_count = 0;
 	$format = "";
-    $out_regions = [];
 	foreach( $phoneRegions as $cc => $data ){
 		if( empty( $selectedRegions[$cc] ) )
 			continue;
@@ -2720,13 +2592,11 @@ function amd_get_regions(){
         <?php
         # @formatter on
 		$countries_cc_html = ob_get_clean();
-        $out_regions[$cc] = $data;
 		$cc_count++;
 	}
 
 	return array(
-		"all_regions" => $phoneRegions,
-		"regions" => $out_regions,
+		"regions" => $phoneRegions,
 		"count" => $cc_count,
 		"first" => $first_cc,
 		"format" => $format,
@@ -2774,7 +2644,7 @@ function amd_validate_phone_format( $phone, $cc, $format ){
  */
 function amd_validate_phone_number( $phone ){
 
-	$phoneRegions = amd_get_regions()["regions"];
+	$phoneRegions = apply_filters( "amd_country_codes", [] );
 
 	foreach( $phoneRegions as $cc => $data ){
 
@@ -2790,22 +2660,6 @@ function amd_validate_phone_number( $phone ){
 	}
 
 	return false;
-
-}
-
-/**
- * Format phone number for saving
- * @param string $phone
- * Phone number
- *
- * @return string
- * @since 1.0.1
- */
-function amd_apply_phone_format( $phone ){
-
-    $phone = str_replace( " ", "", $phone );
-
-    return apply_filters( "amd_phone_format", $phone );
 
 }
 
@@ -3007,20 +2861,8 @@ function amd_get_wp_allowed_extensions(){
  * Needle tags. Separate with comma for multiple tags, e.g: "span,a"
  * <br>Available tags:
  * <ul>
- * <li>br</li>
- * <li>p</li>
  * <li>span</li>
- * <li>p</li>
- * <li>div</li>
- * <li>img</li>
- * <li>i</li>
- * <li>b</li>
- * <li>strong</li>
  * <li>a</li>
- * <li>u</li>
- * <li>small</li>
- * <li>em</li>
- * <li>button</li>
  * </ul>
  *
  * @return array
@@ -3029,16 +2871,6 @@ function amd_get_wp_allowed_extensions(){
  */
 function amd_allowed_tags_with_attr( $tags ){
 
-    $attr_style_data = ["color", "background-color"];
-
-    $default_attributes = array(
-	    "data-*" => true,
-	    "class" => true,
-	    "id" => true,
-	    "style" => $attr_style_data,
-	    "title" => true
-    );
-
     $tags_data = array(
 	    "br" => array(),
         "span" => array(
@@ -3046,15 +2878,7 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "class" => true,
 		    "id" => true,
 		    "dir" => true,
-		    "style" => $attr_style_data,
-		    "title" => true
-	    ),
-        "p" => array(
-		    "data-*" => true,
-		    "class" => true,
-		    "id" => true,
-		    "dir" => true,
-		    "style" => $attr_style_data,
+		    "style" => true,
 		    "title" => true
 	    ),
         "div" => array(
@@ -3062,7 +2886,7 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "class" => true,
 		    "id" => true,
 		    "dir" => true,
-		    "style" => $attr_style_data,
+		    "style" => true,
 		    "title" => true
 	    ),
         "img" => array(
@@ -3072,19 +2896,16 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "src" => true,
 		    "alt" => true,
 		    "loading" => true,
-		    "style" => $attr_style_data,
+		    "style" => true,
 		    "title" => true
 	    ),
-        "i" => $default_attributes,
-        "b" => $default_attributes,
-        "u" => $default_attributes,
-        "strong" => $default_attributes,
-        "small" => $default_attributes,
-        "ul" => $default_attributes,
-        "ol" => $default_attributes,
-        "li" => $default_attributes,
-        "em" => $default_attributes,
-        "var" => $default_attributes,
+        "i" => array(
+		    "data-*" => true,
+		    "class" => true,
+		    "id" => true,
+		    "style" => true,
+		    "title" => true
+	    ),
 	    "a" => array(
 		    "href" => true,
 		    "rel" => true,
@@ -3095,7 +2916,7 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "class" => true,
 		    "id" => true,
 		    "dir" => true,
-		    "style" => $attr_style_data,
+		    "style" => true,
 		    "title" => true
 	    ),
         "button" => array(
@@ -3103,7 +2924,7 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "type" => true,
 		    "class" => true,
 		    "id" => true,
-		    "style" => $attr_style_data,
+		    "style" => true,
 		    "title" => true
 	    )
     );
@@ -3184,21 +3005,21 @@ function amd_delete_directory( $dir, $recursive = false ){
 }
 
 /**
- * Add To-do item
+ * Add _todo item
  *
  * @param string $key
- * To-do key. e.g: "user_1"
+ * _Todo key. e.g: "user_1"
  * @param string $value
- * To-do text. e.g: "Contact customer #12"
+ * _Todo text. e.g: "Contact customer #12"
  * @param string $status
- * To-do status. e.g: "pending", "done", "undone"
+ * _Todo status. e.g: "pending", "done", "undone"
  * @param string $salt
- * To-do salt for encoding
+ * _Todo salt for encoding
  * @param array $meta
- * To-do meta-data. e.g: ["date" => "2023-01-02"]
+ * _Todo meta-data. e.g: ["date" => "2023-01-02"]
  * @param bool $encode
  * Whether to encode $value or not.
- * <br><b>Note: You always have to use encoded value for to-do lists, but if your to-do text is already encoded you can pass false to skip encoding</b>
+ * <br><b>Note: You always have to use encoded value for _todo lists, but if your _todo text is already encoded you can pass false to skip encoding</b>
  *
  * @return false|int
  * Inserted row ID on success, false on failed
@@ -3217,7 +3038,7 @@ function amd_add_todo( $key, $value, $status, $salt, $meta = [], $encode = true 
 }
 
 /**
- * Update to-do item/list
+ * Update _todo item/list
  *
  * @param array $data
  * Item or list data to update. e.g: ["todo_key" => "user_1", "todo_value" => "Hello world", ...]
@@ -3240,7 +3061,7 @@ function amd_update_todo( $data, $where, $salt = "" ){
 }
 
 /**
- * Get to-do list
+ * Get _todo list
  *
  * @param array $filters
  * Filters array
@@ -3260,7 +3081,7 @@ function amd_get_todo_list( $filters, $single = false ){
 }
 
 /**
- * Delete to-do items or list
+ * Delete _todo items or list
  *
  * @param array $where
  *
@@ -3277,32 +3098,30 @@ function amd_delete_todo_list( $where ){
 }
 
 /**
- * Edit to-do item
+ * Edit _todo item
  *
  * @param int $todo_id
- * To-do ID
+ * _Todo ID
  * @param array $data
- * To-do data to update
- * @param string $salt
- * Salt for encryption
+ * _Todo data to update
  *
  * @return bool
  * @since 1.0.0
  */
-function amd_edit_todo( $todo_id, $data, $salt="" ){
+function amd_edit_todo( $todo_id, $data ){
 
 	if( !amd_is_todo_for_user( $todo_id, get_current_user_id() ) )
 		return false;
 
-	return amd_update_todo( $data, [ "id" => $todo_id ], $salt );
+	return amd_update_todo( $data, [ "id" => $todo_id ] );
 
 }
 
 /**
- * Check if to-do item is owned by user
+ * Check if _todo item is owned by user
  *
  * @param int $todo_id
- * To-do ID
+ * _Todo ID
  * @param int $user_id
  * User ID
  *
@@ -3320,13 +3139,6 @@ function amd_is_todo_for_user( $todo_id, $user_id ){
 
 	if( !count( $todo ) )
 		return false;
-
-	/**
-	 * Check if user is allowed to change to-do item
-     * @since 1.0.4
-	 */
-	if( apply_filters( "amd_ext_todo_task_belongs_to", $todo_id, $user_id ) === true )
-        return true;
 
 	return $todo[0]->todo_key == $user->serial;
 
@@ -3365,42 +3177,6 @@ function amd_decrypt_aes( $hash, $salt ){
 	$amdWall;
 
 	return $amdWall->decryptAES( $hash, $salt );
-
-}
-
-/**
- * Serialize string
- *
- * @param string $string
- * Input string
- *
- * @return string
- * @since 1.0.1
- */
-function amd_serialize( $string ){
-
-	global /** @var AMDFirewall $amdWall */
-	$amdWall;
-
-	return $amdWall->serialize( $string );
-
-}
-
-/**
- * Deserialize string
- *
- * @param string $string
- * Serialized string
- *
- * @return string
- * @since 1.0.1
- */
-function amd_deserialize( $string ){
-
-	global /** @var AMDFirewall $amdWall */
-	$amdWall;
-
-	return $amdWall->deserialize( $string );
 
 }
 
@@ -3747,24 +3523,6 @@ function amd_load_part( $part, $extra = null ){
 }
 
 /**
- * Check if theme part is available
- *
- * @param string $part
- * Part file name (without .php extension)
- *
- * @return bool
- * @since 1.0.4
- */
-function amd_part_exist( $part ){
-
-	global /** @var AMDLoader $amdLoader */
-	$amdLoader;
-
-	return $amdLoader->partExist( $part );
-
-}
-
-/**
  * Print card with theme template
  *
  * @param array $card
@@ -3820,8 +3578,8 @@ function amd_check_user_filters( $filters ){
 				return true;
 		}
 		else{
-			if( $u = amd_guess_user( $item )["user"] ?? null )
-				return $u->ID == get_current_user_id();
+			if( amd_guess_user( $item )["user"] ?? null )
+				return true;
 		}
 
 	}
@@ -3925,7 +3683,6 @@ function amd_get_plugin_repo_url(){
 
 /**
  * Convert standard locale code (e.g: "en") to WordPress locale code (e.g: "en_US")
- *
  * @param string $locale
  * @param string $default
  *
@@ -4069,48 +3826,6 @@ function amd_sanitize_get_fields( $get ){
     }
 
     return $data;
-
-}
-
-/**
- * Sanitize array
- * @param array $arr
- * Input array
- *
- * @return array
- * Sanitized array
- * @since 1.0.5
- */
-function amd_sanitize_array_fields( $arr ){
-
-	$data = [];
-
-    foreach( $arr as $key => $value ){
-        $safe_key = sanitize_text_field( $key );
-	    $data[$safe_key] = is_scalar( $value ) ? sanitize_text_field( $value ) : ( is_iterable( $value ) ? amd_sanitize_array_fields( $value ) : null );
-    }
-
-    return $data;
-
-}
-
-/**
- * Validate every $_POST parameters
- *
- * @param array $post
- * $_POST data array
- *
- * @return array
- * @since 1.0.1
- */
-function amd_sanitize_post_fields( $post ){
-
-    foreach( $post as $key => $value ){
-        $safe_key = sanitize_key( $key );
-	    $post[$safe_key] = is_array( $value ) ? amd_sanitize_post_fields( $value ) : sanitize_text_field( $value );
-    }
-
-    return $post;
 
 }
 
@@ -4342,9 +4057,6 @@ function amd_head_jquery(){
     # Print jQuery core scripts
     wp_print_scripts( ["jquery"] );
 
-	# Print jQuery-ui core scripts
-	wp_print_scripts( ["jquery-ui", "jquery-ui-core", "jquery-ui-draggable", "jquery-ui-droppable", "jquery-ui-resizable", "jquery-ui-sortable"] );
-
     # Ignore noConflict mode
 	echo '<script>var $ = jQuery;</script>';
 
@@ -4359,14 +4071,6 @@ add_action( "amd_wp_head_alternate", "amd_head_jquery" );
 function amd_enqueue_scripts(){
 
     wp_enqueue_script( "jquery" );
-
-	# jQuery UI components
-	wp_enqueue_stored_styles( "jquery-ui" );
-	wp_enqueue_script( "jquery-ui-core" );
-	wp_enqueue_script( "jquery-ui-draggable" );
-	wp_enqueue_script( "jquery-ui-droppable" );
-	wp_enqueue_script( "jquery-ui-resizable" );
-	wp_enqueue_script( "jquery-ui-sortable" );
 
 }
 add_action( "wp_enqueue_scripts", "amd_enqueue_scripts" );
@@ -4410,23 +4114,6 @@ add_filter( "amd_reset_password_page_title", "amd_dashboard_pages_title" );
 add_filter( "amd_registration_page_title", "amd_dashboard_pages_title" );
 
 /**
- * Edit user profile
- * @param $u
- *
- * @return void
- * @since 1.0.0
- */
-function amd_edit_user_profile( $u ){
-
-	global $amdCore;
-
-	$amdCore->editUserFields( $u );
-
-}
-add_action( "edit_user_profile", "amd_edit_user_profile" );
-add_action( "show_user_profile", "amd_edit_user_profile" );
-
-/**
  * Check if SSL is forced or not
  * @return bool
  * @since 1.0.0
@@ -4444,12 +4131,12 @@ function amd_is_ssl_forced(){
  */
 function amd_dump_number_format_guide(){
 	?>
-    <p><?php esc_html_e( "You can format how to validate and display numbers in registration form. You can enter number formats with letter <code>X</code> and <code>-</code> character for spaces, here some examples:", "material-dashboard" ); ?></p>
-    <p><?php esc_html_e( "<code>XXX-XXX-XXXX</code>: 012-345-6789", "material-dashboard" ); ?></p>
-    <p><?php esc_html_e( "<code>XXX-XXXX-XXX</code>: 012-3456-789", "material-dashboard" ); ?></p>
-    <p><?php esc_html_e( "<code>XXXXXXXXXX</code>: 0123456789", "material-dashboard" ); ?></p>
-    <p><?php esc_html_e( "Please note that country digit number will be added to the first of phone number automatically, for example by using <code>XXX-XXX-XXXX</code> format, your phone number will be something like this: <code>+1 012 345 6789</code>", "material-dashboard" ); ?></p>
-    <p><?php esc_html_e( "Phone numbers will be saved normally without any space and '-', for example if user phone number format is <code>XXX-XXX-XXXX</code> user saved phone number will be <code>+10123456789</code>.", "material-dashboard" ); ?></p>
+    <p><?php _e( "You can format how to validate and display numbers in registration form. You can enter number formats with letter <code>X</code> and <code>-</code> character for spaces, here some examples:", "material-dashboard" ); ?></p>
+    <p><?php _e( "<code>XXX-XXX-XXXX</code>: 012-345-6789", "material-dashboard" ); ?></p>
+    <p><?php _e( "<code>XXX-XXXX-XXX</code>: 012-3456-789", "material-dashboard" ); ?></p>
+    <p><?php _e( "<code>XXXXXXXXXX</code>: 0123456789", "material-dashboard" ); ?></p>
+    <p><?php _e( "Please note that country digit number will be added to the first of phone number automatically, for example by using <code>XXX-XXX-XXXX</code> format, your phone number will be something like this: <code>+1 012 345 6789</code>", "material-dashboard" ); ?></p>
+    <p><?php _e( "Phone numbers will be saved normally without any space and '-', for example if user phone number format is <code>XXX-XXX-XXXX</code> user saved phone number will be <code>+10123456789</code>.", "material-dashboard" ); ?></p>
     <p><a href="<?php echo esc_url( amd_doc_url( 'custom_country_code' ) ); ?>"
           target="_blank"><?php echo esc_html_x( "Learn how to use number formats", "Admin", "material-dashboard" ); ?></a></p>
 	<?php
@@ -4476,7 +4163,7 @@ function amd_doc_url( $id, $html = false, $text = null, $blank = true ){
 
 	if( $html ){
 		if( empty( $text ) )
-			$text = " (" . esc_html__( "More info", "material-dashboard" ) . ")";
+			$text = " (" . esc_html__( "more info", "material-dashboard" ) . ")";
 		ob_start();
 		?>
         <a href="<?php echo esc_url( $base_url ); ?>"<?php echo $blank ? ' target="_blank"' : ''; ?>><?php echo $text; ?></a>
@@ -4521,902 +4208,3 @@ function amd_error_code_track_url( $error_code ){
 	return amd_doc_url( "error_$error_code" );
 
 }
-
-/**
- * Add CSS stylesheet
- *
- * @param string $id
- * Stylesheet ID. You can specify stylesheet scope by adding ':' character to the beginning of ID. e.g: "dashboard:style_id"
- * @param string $url
- * Stylesheet URL
- * @param string $ver
- * Stylesheet version
- *
- * @return void
- * @since 1.0.1
- */
-function amd_register_style( $id, $url, $ver="unknown" ){
-
-    global $amdCache;
-
-    $amdCache->addStyle( $id, $url, $ver );
-
-}
-
-/**
- * Remove stylesheet by ID
- * @param string $id
- * Stylesheet ID
- *
- * @return void
- * @since 1.0.1
- */
-function amd_deregister_style( $id ){
-
-    global $amdCache;
-
-    $amdCache->removeStyleById( $id );
-
-}
-
-/**
- * Remove stylesheet by scope
- * @param string $scope
- * Scope name
- *
- * @return void
- * @since 1.0.1
- */
-function amd_deregister_style_scope( $scope ){
-
-    global $amdCache;
-
-    $amdCache->removeStyleByScope( $scope );
-
-}
-
-/**
- * Add JS script
- *
- * @param string $id
- * Script ID. You can specify script scope by adding ':' character to the beginning of ID. e.g: "dashboard:script_id"
- * @param string $url
- * Script URL
- * @param string $ver
- * Script version
- *
- * @return void
- * @since 1.0.1
- */
-function amd_register_script( $id, $url, $ver="unknown" ){
-
-    global $amdCache;
-
-    $amdCache->addScript( $id, $url, $ver );
-
-}
-
-/**
- * Remove script by ID
- * @param string $id
- * Script ID
- *
- * @return void
- * @since 1.0.1
- */
-function amd_deregister_script( $id ){
-
-	global $amdCache;
-
-	$amdCache->removeScriptById( $id );
-
-}
-
-/**
- * Remove script by scope
- * @param string $scope
- * Scope name
- *
- * @return void
- * @since 1.0.1
- */
-function amd_deregister_script_scope( $scope ){
-
-	global $amdCache;
-
-	$amdCache->removeScriptByScope( $scope );
-
-}
-
-/**
- * Switch to another locale
- * @param string $locale
- * Locale code, e.g: "fa_IR", "en_US", "ar"
- * @param bool $updateUserOrCookie
- * Whether to update user meta (if logged in) or cookie (if user is not logged in)
- *
- * @return void
- * @since 1.0.3
- */
-function amd_switch_locale( $locale, $updateUserOrCookie=true ){
-
-    # Change WordPress global locale
-    switch_to_locale( $locale );
-
-    # Update locale for current user with meta or cookie
-    if( $updateUserOrCookie ){
-
-        global $amdCache;
-
-	    if( is_user_logged_in() )
-		    update_user_meta( get_current_user_id(), "locale", $locale );
-	    else
-		    $amdCache->setCookie( "locale", $locale, $amdCache::STAMPS["month"] );
-
-    }
-
-    global $amdCal;
-
-    # Change calendar date mode base on locale
-    if( $amdCal )
-	    $amdCal->setDateMode( $locale == "fa_IR" ? "j" : "g" );
-
-}
-
-/**
- * Print log content to default logs file
- * <br><b>Note: This is only for debug and localhost back-trace, if you are using this logger on real host,
- * REMEMBER TO DELETE LOG FILE after your work is done, also DO NOT DUMP ANY SENSITIVE DATA in it because it is not hidden to public!</b>
- *
- * @param mixed $data
- * Any data type
- * @param bool $append
- * Whether to append content to existing file
- * @param array|bool $trace
- * Whether to show date and trace at the beginning of line, or `debug_backtrace` returned value
- * @param string $breakLine
- * Line break character
- *
- * @return false|int
- * Returns the returned value of {@see file_put_contents()}
- * @since 1.0.4
- */
-function amd_log( $data, $append = false, $trace = false, $breakLine="\n" ){
-
-	$pre = '';
-	try {
-		$bt = is_array( $trace ) ? $trace : debug_backtrace();
-		$caller = array_shift( $bt );
-		$fileExp = explode( DIRECTORY_SEPARATOR, $caller['file'] );
-		$filename = end( $fileExp );
-		if( $filename )
-			$pre = "['$filename': " . ( $caller["line"] ?? "_" ) . "]";
-	} catch( Exception $e ){}
-
-	$path = apply_filters( "amd_logs_path", ABSPATH . "amd_logs.txt" );
-
-	if( $data === true )
-		$data = "[True]";
-    else if( $data === false )
-		$data = "[False]";
-    else if( $data === null )
-		$data = "[Null]";
-    else if( is_string( $data ) )
-		$data = empty( $data ) ? "[EmptyString]" : "$data";
-    else if( is_callable( $data ) )
-	    $data = "[Callable] " . var_export( $data, true );
-    else
-	    $data = var_export( $data, true );
-
-    $content = apply_filters( "amd_logs_control", $data, $data );
-
-	if( !is_string( $content ) )
-		$content = "[NotPrintable]" . "[" . gettype( $content ) . "][Exported] " . var_export( $content, true );
-
-	$content = $trace ? "[" . date( apply_filters( "amd_logs_time_format", "Y-m-d H:i:s" ) ) . "]" . ( $pre ? " $pre" : "" ) . " $content" : $content;
-
-	if( $data == "\n" ){
-		$content = "";
-		$breakLine = "\n";
-	}
-
-	return file_put_contents( $path, $content . ( $append ? $breakLine : "" ), $append ? FILE_APPEND : 0 );
-
-}
-
-/**
- * Add data content to default logs file
- *
- * @param mixed $data
- * Any data type
- *
- * @return false|int
- * Returns the returned value from {@see amd_log()}
- * @since 1.0.4
- */
-function amd_put_log( $data ){
-
-	return amd_log( $data, true, debug_backtrace() );
-
-}
-
-/**
- * Push element to custom input
- * @param string|array $input
- * Input array or string, e.g: "10,11,25", ["a", "b", "c"]
- * @param scalar $element
- * Scalar value for element (int, string, bool, float), e.g: "d", 22, 12.5, false
- * @param string $separator
- * Separator of input list, default is ","
- * @param bool $unique
- * Whether to remove duplicated values
- *
- * @return string
- * Seperated items list, e.g: "a,b,c,12,45,3.14,0"
- * @since 1.0.4
- */
-function amd_push_value( $input, $element, $separator=",", $unique=true ){
-
-    # Covert string input to array
-    if( is_string( $input ) )
-        $input = explode( $separator, $input );
-
-    # Ignore unexpected input values
-    if( !is_array( $input ) )
-        return $input;
-
-    # Push element to input
-    $input[] = $element;
-
-    # Remove duplicated elements from input
-    if( $unique )
-        $input = array_unique( $input );
-
-    # Convert input array to string
-    $out = implode( $separator, $input );
-
-    # Remove trailing separator from output string
-    $out = trim( $out, $separator );
-    $out = str_replace( $separator . $separator, "", $out );
-
-    return $out;
-
-}
-
-/**
- * Pull out an element from custom input
- * @param string|array $input
- * Input array or string, e.g: "10,11,25", ["a", "b", "c"]
- * @param scalar $element
- * Scalar value to remove (int, string, bool, float), e.g: "d", 22, 12.5
- * @param string $separator
- * Separator of input list, default is ","
- * @param bool $unique
- * Whether to remove duplicated values
- *
- * @return string
- * Seperated items list after removing an element from it, e.g: "a,b,c,12,45,3.14"
- * @since 1.0.4
- */
-function amd_pull_value( $input, $element, $separator=",", $unique=true ){
-
-    # Covert string input to array
-    if( is_string( $input ) )
-        $input = explode( $separator, $input );
-
-    # Ignore unexpected input values
-    if( !is_array( $input ) )
-        return $input;
-
-    # Exchanges all keys with their associated values in input list
-    $input = array_flip( $input );
-
-    # Remove element from your input list
-    $input[$element] = null;
-    unset( $input[$element] );
-
-	# Re-exchange associated values with their keys in input list
-	$input = array_flip( $input );
-
-    # Remove duplicated elements from input
-    if( $unique )
-        $input = array_unique( $input );
-
-    # Convert input array to string
-    $out = implode( $separator, $input );
-
-    # Remove trailing separator from output string
-    $out = trim( $out, $separator );
-    $out = str_replace( $separator . $separator, "", $out );
-
-    return $out;
-
-}
-
-/**
- * Print phone number in login and registration and other forms
- * @param bool $isForLogin
- * Whether phone field is for login page or not
- *
- * @return void
- * @since 1.0.4
- */
-function amd_phone_fields( $isForLogin=false ){
-
-    if( $isForLogin ){
-        $phone_field = true;
-        $phone_field_required = true;
-    }
-    else{
-	    $phone_field = amd_get_site_option( "phone_field" ) == "true";
-	    $phone_field_required = amd_get_site_option( "phone_field_required" ) == "true";
-    }
-
-	$regions = amd_get_regions();
-	$cc_count = $regions["count"];
-	$first_cc = $regions["first"];
-	$format = $regions["format"];
-
-    ?>
-    <?php if( $phone_field ): ?>
-        <div id="phone-fields">
-			<?php if( $cc_count > 1 ): ?>
-                <div class="_phone_field_holder_ ht-magic-select">
-                    <label>
-                        <input type="text" class="--input" data-field="country_code" data-next="phone_number"
-                               placeholder=""<?php echo $phone_field_required ? "required" : ""; ?>>
-                        <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
-                        <span class="--value" dir="auto"><?php _amd_icon( "phone" ) ?></span>
-                    </label>
-                    <div class="--options">
-						<?php foreach( $regions["regions"] as $region ): ?>
-                            <span data-value="<?php echo esc_attr( $region['digit'] ?? '' ); ?>"
-                                  data-format="<?php echo esc_attr( $region['format'] ?? '' ); ?>"
-                                  data-keyword="<?php echo esc_attr( $region['name'] ?? '' ); ?>">
-                                <?php echo apply_filters( "amd_phone_format_name", $region["name"] ?? "", $region["digit"] ?? "", $region["format"] ?? "" ); ?></span>
-						<?php endforeach; ?>
-                    </div>
-                    <div class="--search"></div>
-                </div>
-                <label class="_phone_field_holder_ ht-input --ltr">
-                    <input type="text" class="not-focus" data-field="phone_number" data-pattern="" data-keys="[+0-9]"
-                           data-next="<?php echo $isForLogin ? 'password' : ''; ?>"
-                           placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
-                    <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
-					<?php _amd_icon( "phone" ); ?>
-                </label>
-			<?php else: ?>
-				<?php if( $first_cc == "98" AND apply_filters( "amd_use_phone_simple_digit", false ) ): ?>
-                    <label class="_phone_field_holder_ ht-input --ltr">
-                        <input type="text" class="not-focus" data-field="phone_number" data-keys="[0-9]"
-                               data-pattern="[0-9]" placeholder=""
-							<?php echo $phone_field_required ? "required" : ""; ?>>
-                        <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
-						<?php _amd_icon( "phone" ); ?>
-                    </label>
-				<?php else: ?>
-                    <div class="_phone_field_holder_ ht-magic-select" style="display:none">
-                        <label>
-                            <input type="text" class="--input" data-field="country_code" data-next="phone_number"
-                                   data-value="<?php echo esc_attr( $first_cc ); ?>" value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
-								<?php echo $phone_field_required ? "required" : ""; ?>>
-                            <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
-                            <span class="--value" dir="auto"><?php echo esc_html( $first_cc ); ?></span>
-                        </label>
-                        <div class="--options">
-                            <span data-value="<?php echo esc_attr( $first_cc ); ?>" data-format="<?php echo esc_attr( $format ); ?>" data-keyword=""></span>
-                        </div>
-                        <div class="--search"></div>
-                    </div>
-                    <label class="_phone_field_holder_ ht-input --ltr">
-                        <input type="text" class="not-focus" data-field="phone_number" data-pattern="[0-9]{11}"
-                               data-keys="[0-9]"
-                               placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
-                        <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
-						<?php _amd_icon( "phone" ); ?>
-                    </label>
-				<?php endif; ?>
-			<?php endif; ?>
-        </div>
-	<?php endif; ?>
-    <?php
-}
-
-/**
- * Get Amatris material dashboard plugin survey URL
- * @return string
- * @since 1.0.4
- */
-function amd_get_survey_url(){
-
-    $domain = amd_replace_url( "%domain%" );
-    $url = "https://amatris.ir/amd/survey/?utm_site=" . urlencode( $domain );
-
-    if( is_user_logged_in() ){
-        if( $email = amd_get_current_user()->email )
-            $url .= "&utm_email=" . urlencode( $email );
-    }
-
-    return $url;
-
-}
-
-/**
- * Check if user account requires 2FA login or not
- * @param int|null $uid
- * User ID to check, pass null to use current user
- *
- * @return bool
- * @since 1.0.5
- */
-function amd_user_required_2f( $uid=null ){
-
-	$use_login_2fa = amd_get_site_option( "use_login_2fa", "false" ) == "true";
-	if( !$use_login_2fa )
-		return false;
-
-	$force_login_2fa = amd_get_site_option( "force_login_2fa", "false" ) == "true";
-	if( $force_login_2fa )
-		return true;
-
-	return amd_get_user_meta( $uid, "use_2fa", "false" ) == "true";
-}
-
-/**
- * Get templates from template groups
- * @param string|null $get_id
- * Template ID to get, or pass null to get all templates
- *
- * @return array|mixed
- * Templates array
- * @since 1.0.8
- */
-function amd_get_user_message_templates( $get_id=null ){
-
-	$templates = [];
-
-	/**
-	 * Get all groups
-	 * @since 1.2.1
-	 */
-	$groups = apply_filters( "amd_messages_templates_groups", [] );
-
-	foreach( $groups as $group ){
-		$list = $group["list"] ?? [];
-		foreach( $list as $id => $item ){
-            if( $get_id ){
-	            if( $get_id == $id )
-		            return $item;
-            }
-            else{
-	            $templates[$id] = $item;
-            }
-		}
-    }
-
-    return $templates;
-
-}
-
-/**
- * Get message template for specific user
- * @param string $message_id
- * Message ID
- * @param AMDUser $user
- * User object
- * @param mixed ...$args
- * Arguments
- *
- * @return string
- * Template text
- * @since 1.0.8
- */
-function amd_get_user_message_template( $message_id, $user, ...$args ){
-
-	/**
-	 * Get user message template text
-	 * @since 1.0.8
-	 */
-    $msg = apply_filters( "amd_user_message_template_text", "", $message_id );
-
-    return amd_apply_user_template( $msg, $user, $args );
-
-}
-
-/**
- * Prepare content for saving message template into database
- * @param string $id
- * Template ID
- * @param string $content
- * Custom text to prepare
- * @param array $scopes
- * Template scopes
- *
- * @return string
- * @since 1.0.8
- */
-function amd_user_template_prepare_content( $id, $content, $scopes=[] ){
-
-	$variables = amd_get_template_allowed_variables( $id );
-
-    if( $variables ){
-	    # Keep allowed variables
-	    foreach( $variables as $variable ){
-		    $vid = $variable["id"] ?? "";
-		    if( !$vid )
-			    continue;
-		    $bbcode = $variable["bbcode"] ?? "Auto";
-		    if( $bbcode == "Auto" )
-			    $bbcode = "%" . strtoupper( $vid ) . "%";
-
-            # Reshape variables to prevent removing
-		    $content = preg_replace( "/$bbcode/", str_replace( "%", "~", $bbcode ), $content );
-        }
-    }
-
-    # Remove not allowed variables
-    $content = preg_replace( "/%([0-9a-zA-Z_\-]*?)%/", "", $content );
-
-	# Reshape variables
-	$content = preg_replace_callback( "/~([0-9a-zA-Z_\-]*?)~/", function( $a ){
-        return "%" . ( $a[1] ?? "" ) . "%";
-    }, $content );
-
-    # @since 1.0.8
-    # Remove HTML tags if this template has a non-HTML scope
-    foreach( apply_filters( "amd_user_message_templates_non_html_scopes", ["sms"] ) as $s ){
-        if( in_array( $s, $scopes ) ){
-            global $amdDB;
-            $content = adp_extract_text_from_html( $content, "br", true, null, 55, "", "</\$1><br>" );
-            $content = str_replace( "<br>", "\n", $content );
-            $content = $amdDB->formatHtml( $content, [] );
-            break;
-        }
-    }
-
-    # @since 1.0.8
-    return apply_filters( "amd_user_template_message_prepare_content", $content, $id, $scopes );
-
-}
-
-/**
- * Replace variables with actual values inside template
- * @param string $template
- * Template text
- * @param AMDUser $user
- * User object
- * @param array $args
- * Arguments
- *
- * @return string
- * Template content string
- * @since 1.0.8
- */
-function amd_apply_user_template( $template, $user, $args ){
-
-	/**
-	 * User message template variables
-	 * @since 1.0.8
-	 */
-    $variables = apply_filters( "amd_user_message_template_variables", [] );
-
-    $text = $template;
-    foreach( $variables as $variable ){
-	    $id = $variable["id"] ?? null;
-        if( !$id )
-            continue;
-
-        $bbcode = $variable["bbcode"] ?? "Auto";
-        if( $bbcode == "Auto" )
-	        $bbcode = "%" . strtoupper( $id ) . "%";
-
-        $callback = $variable["callback"] ?? null;
-        if( is_callable( $callback ) ){
-            $v = call_user_func( $callback, $user, $args );
-	        $text = str_replace( $bbcode, sanitize_text_field( $v ), $text );
-        }
-
-    }
-
-    return $text;
-}
-
-/**
- * Get allowed variables for specific template
- * @param string $template_id
- * Template ID
- *
- * @return array
- * Variables data
- * @since 1.0.8
- */
-function amd_get_template_allowed_variables( $template_id ){
-
-	$template = amd_get_user_message_templates( $template_id );
-
-	/**
-	 * User message template variables
-	 * @since 1.0.8
-	 */
-    $variables = apply_filters( "amd_user_message_template_variables", [] );
-
-    if( !$template )
-        return [];
-
-    $out = [];
-
-    $dependencies = $template["dependencies"] ?? [];
-
-    foreach( $variables as $variable ){
-	    $id = $variable["id"] ?? "";
-        if( $id ){
-	        $independent = $variable["independent"] ?? "";
-            $exp = explode( ",", $independent );
-            $mode = $exp[1] ?? "";
-            if( $mode == "*" || $mode == "~" ){
-	            $out[] = $variable;
-            }
-            else if( $mode == "?" AND in_array( $id, $dependencies ) ){
-	            $out[] = $variable;
-            }
-            else{
-	            foreach( $dependencies as $dependency ){
-                    if( is_string( $dependency ) AND preg_match( "/$dependency/", $id ) ){
-                        $out[] = $variable;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    return $out;
-
-}
-
-/**
- * Get template variables used in a text
- * @param string $template
- * Template content
- * @param bool $onlyNames
- * Whether to only list variables name or list variables data
- *
- * @return array
- * Variables list
- * @since 1.0.8
- */
-function amd_get_template_variables( $template, $onlyNames=false ){
-
-    if( !is_string( $template ) )
-        return [];
-
-    $variables = [];
-
-	/**
-	 * User message template variables
-	 * @since 1.0.8
-	 */
-	$_variables = apply_filters( "amd_user_message_template_variables", [] );
-
-    preg_match_all( "/%([0-9a-zA-Z_\-]*?)%/", $template, $matches );
-
-	foreach( $matches as $match ){
-        foreach( $match as $single_match ){
-	        if( !preg_match( "/%(.*)%/", $single_match ) ){
-		        $var_id = strtolower( $single_match );
-		        $v = $_variables[$var_id] ?? [];
-		        if( $v )
-			        $variables[] = $onlyNames ? ( $v["title"] ?? "" ) : $v;
-	        }
-        }
-    }
-
-    return $variables;
-
-}
-
-/**
- * Insert new task into database
- *
- * @param int|null $user_id
- * User ID or pass null to ignore
- * @param string|null $key
- * Task key or pass null to generate automatically
- * @param string $title
- * Task title for visual task manager
- * @param mixed $data
- * Task data, this data will be encoded with {@see json_encode} and it is up to you to handle it correctly
- * @param int $repeat
- * Times to repeat the task
- * @param int $period
- * Task execution period at each repeat, for running a task every hour for 3 times, you need to set `$repeat` to 3 and `$period` to 3600 (seconds)
- * <br><b>Note: by setting period to 0, `$repeat` will change to 1 automatically to prevent executing task multiple times at once</b>
- * @param array $meta
- * Meta-data array
- *
- * @return false|int
- * Inserted row ID on success, false on failure
- * @see AMDTasks::addTask()
- * @since 1.0.8
- */
-function amd_add_task( $user_id, $key, $title, $data, $repeat=1, $period=0, $meta = [] ){
-
-    global $amdTasks;
-
-    return $amdTasks->addTask( $user_id, $key, $title, $data, $repeat, $period, $meta );
-
-}
-
-/**
- * Get tasks from database
- * @param array $filter
- * Filters array, see {@see AMD_DB::makeFilters()}
- * @param bool $make
- * Whether to make object or return database results
- * @param bool $single
- * Whether to return single object or complete results
- * @param array $order
- * Order array, see {@see AMD_DB::makeOrder()}
- *
- * @return AMDTasks_Object|array|mixed|object|stdClass
- * Empty array if there is no result, otherwise:
- * <ul>
- * <li>`$make=true` and `$single=true`: single {@see AMDTasks_Object} object</li>
- * <li>`$make=true` and `$single=false`: listed {@see AMDTasks_Object} objects array</li>
- * <li>`$make=false` and `$single=true`: Single database result from {@see wpdb::query()}</li>
- * <li>`$make=false` and `$single=false`: Listed database results from {@see wpdb::query()}</li>
- * </ul>
- * @see AMDTasks::getTasks()
- * @since 1.0.8
- */
-function amd_get_tasks( $filter=[], $make=true, $single=false, $order=[] ){
-
-    global $amdTasks;
-
-    return $amdTasks->getTasks( $filter, $make, $single, $order );
-
-}
-
-/**
- * Delete specific task(s) from database
- * @param array $where
- * Where clauses, see {@see wpdb::delete()}
- *
- * @return bool
- * True on success, false on failure
- * @see AMDTasks::deleteTasks()
- * @since 1.0.8
- */
-function amd_delete_tasks( $where ){
-
-    global $amdTasks;
-
-    return $amdTasks->deleteTasks( $where );
-
-}
-
-/**
- * Update task item(s) from database
- * @param array $data
- * @param array $where
- *
- * @return bool
- * True on success, false on failure
- * @see AMDTasks::deleteTasks()
- * @since 1.0.8
- */
-function amd_update_tasks( $data, $where ){
-
-    global $amdTasks;
-
-    return $amdTasks->updateTasks( $data, $where );
-
-}
-
-/**
- * Run all queued tasks
- * @return void
- * @see AMDTasks::runQueuedTasks()
- * @since 1.0.8
- */
-function amd_run_queued_tasks(){
-
-    global $amdTasks;
-
-    $amdTasks->runQueuedTasks();
-
-}
-
-/**
- * Print spacer with specific height
- * @param int $height
- * Spacer height in px
- *
- * @return void
- * @since 1.0.9
- */
-function amd_front_spacer( $height=10 ){
-    ?>
-    <div class="amd-front-spacer" style="height:<?php echo esc_attr( "{$height}px" ); ?>"></div>
-    <?php
-}
-
-/**
- * Enable or disable no distraction mode
- *
- * @param bool $enable
- *
- * @return void
- */
-function amd_no_distraction_mode( $enable=true ){
-
-    if( $enable ){
-
-	    amd_set_default( "dnd_mode_navbar_path", apply_filters( "amd_part_navbar_path", "" ) );
-
-	    amd_set_default( "dnd_mode_sidebar_path", apply_filters( "amd_part_sidebar_path", "" ) );
-
-	    add_filter( "amd_part_navbar_path", "__return_false" );
-
-	    add_filter( "amd_part_sidebar_path", "__return_false" );
-
-	    amd_add_element_class( "body", ["dnd-mode"] );
-
-        return;
-
-    }
-
-	add_filter( "amd_part_navbar_path", function(){
-		return amd_get_default( "dnd_mode_navbar_path", false );
-    } );
-
-	add_filter( "amd_part_sidebar_path", function(){
-		return amd_get_default( "dnd_mode_sidebar_path", false );
-    } );
-
-	amd_remove_element_class( "body", ["dnd-mode"] );
-
-}
-
-/**
- * Initialize locale from user meta or cookie
- * @return void
- * @since 1.0.3
- */
-function amd_initialize_locale(){
-	global $amdCache;
-
-    # Get preferred locale from user meta (for logged-in users) and cookie (for logged-out users)
-    if( is_user_logged_in() )
-		$locale = get_user_meta( get_current_user_id(), "locale", true );
-	else
-        $locale = $amdCache->getCache( "locale", "cookie" );
-
-    # If locale is initialized with a value
-	if( $locale ){
-
-        # Change current language without setting cookie and updating meta
-		amd_switch_locale( $locale, false );
-
-        # Change locale for using ajax handler with user locale
-        add_filter( "locale", function() use ( $locale ){
-            return $locale;
-        }, 1 );
-
-	}
-}
-add_action( "init", "amd_initialize_locale" );
-add_action( "amd_dashboard_init", "amd_initialize_locale", 1 );
-
-/**
- * Initialize ajax requests
- * @return void
- * @since 1.0.3
- */
-function amd_ajax_initialize(){
-
-    # This is for changing user locale in ajax handler which already changed with `locale` filter
-    # amd_initialize_locale();
-
-}
-add_action( "amd_ajax_init", "amd_ajax_initialize" );

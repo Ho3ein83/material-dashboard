@@ -35,7 +35,7 @@ foreach( $country_codes as $key => $value ){
                 </div>
                 <div class="-sub-item">
                     <label class="hb-switch">
-                        <input type="checkbox" role="switch" name="enable_registration" value="true"
+                        <input type="checkbox" role="switch" name="phone_field" value="true"
                                id="enable-register" <?php echo $register_enabled ? 'checked' : ''; ?>>
                         <span></span>
                     </label>
@@ -81,15 +81,10 @@ foreach( $country_codes as $key => $value ){
                     network.clean();
                     network.put("enable_registration", checked);
                     network.on.end = (resp, error) => {
-                        $card.cardLoader(false);
-                        if(!error) {
-                            location.reload();
-                            $el.setWaiting();
-                        }
-                        else {
+                        if(!error)
+                            location.reload()
+                        else
                             $amd.alert(_t("settings"), _t("error"));
-                            $el.prop("checked", !checked);
-                        }
                     };
                     network.post();
                 },
@@ -115,7 +110,7 @@ endif;
             <div class="-item">
                 <div class="-sub-item">
                     <label for="ask-lastname">
-				        <?php esc_html_e( "Lastname", "material-dashboard" ); ?>
+				        <?php _e( "Lastname", "material-dashboard" ); ?>
                     </label>
                 </div>
                 <div class="-sub-item">
@@ -132,7 +127,7 @@ endif;
             <div class="-item">
                 <div class="-sub-item">
                     <label for="username-field">
-				        <?php esc_html_e( "Username", "material-dashboard" ); ?>
+				        <?php _e( "Username", "material-dashboard" ); ?>
                     </label>
                 </div>
                 <div class="-sub-item">
@@ -149,7 +144,7 @@ endif;
             <div class="-item">
                 <div class="-sub-item">
                     <label for="password-conf-field">
-				        <?php esc_html_e( "Password confirmation", "material-dashboard" ); ?>
+				        <?php _e( "Password confirmation", "material-dashboard" ); ?>
                     </label>
                 </div>
                 <div class="-sub-item">
@@ -166,7 +161,7 @@ endif;
 
 <!-- Phone number -->
 <div class="amd-admin-card --setting-card">
-    <h3 class="--title"><?php esc_html_e( "Phone", "material-dashboard" ); ?></h3>
+    <h3 class="--title"><?php _e( "Phone", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">
             <div class="-item">
@@ -230,16 +225,12 @@ endif;
     (function(){
         $amd.addEvent("on_settings_saved", () => {
             let $loginAfter = $('input[name="login_after_registration"]'), $lnField = $('input[name="lastname_field"]');
-            let $unField = $('input[name="username_field"]'), $pcField = $('input[name="password_conf_field"]'),
-                $spField = $('input[name="single_phone"]');
+            let $unField = $('input[name="username_field"]'), $pcField = $('input[name="password_conf_field"]');
             return {
-                phone_field: $('input[name="phone_field"]').is(":checked") ? "true" : "false",
-                phone_field_required: $('input[name="phone_field_required"]').is(":checked") ? "true" : "false",
                 login_after_registration: $loginAfter.is(":checked") ? "true" : "false",
                 lastname_field: $lnField.is(":checked") ? "true" : "false",
                 username_field: $unField.is(":checked") ? "true" : "false",
                 password_conf_field: $pcField.is(":checked") ? "true" : "false",
-                single_phone: $spField.is(":checked") ? "true" : "false",
             }
         });
     }());
@@ -247,7 +238,7 @@ endif;
 
 <!-- Country code -->
 <div class="amd-admin-card --setting-card show_on_phone_field">
-    <h3 class="--title"><?php esc_html_e( "Country codes", "material-dashboard" ); ?></h3>
+    <h3 class="--title"><?php _e( "Country codes", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid" id="cc-items">
 			<?php foreach( $phoneRegions as $cc => $data ): ?>
@@ -280,12 +271,12 @@ endif;
                 </div>
 			<?php endforeach; ?>
         </div>
-        <h3 class="color-primary"><?php esc_html_e( "Custom", "material-dashboard" ); ?></h3>
+        <h3 class="color-primary"><?php _e( "Custom", "material-dashboard" ); ?></h3>
         <div class="__option_grid">
             <div class="-item">
                 <div class="-sub-item">
                     <label for="cc-name" class="_locale_item">
-                        <span><?php esc_html_e( "Country name", "material-dashboard" ); ?></span>
+                        <span><?php _e( "Country name", "material-dashboard" ); ?></span>
                     </label>
                 </div>
                 <div class="-sub-item">
@@ -295,31 +286,31 @@ endif;
             <div class="-item">
                 <div class="-sub-item">
                     <label for="cc-code" class="_locale_item">
-                        <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
+                        <span><?php _e( "Country code", "material-dashboard" ); ?></span>
                     </label>
                 </div>
                 <div class="-sub-item">
                     <input type="text" id="cc-code" class="amd-admin-input"
-                           placeholder="<?php esc_attr_e( "IR, US, FR, CA, etc.", "material-dashboard" ); ?>">
+                           placeholder="<?php _e( "IR, US, FR, CA, etc.", "material-dashboard" ); ?>">
                 </div>
             </div>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="cc-dc" class="_locale_item">
-                        <span><?php esc_html_e( "Dialing code", "material-dashboard" ); ?></span>
+                        <span><?php _e( "Dialing code", "material-dashboard" ); ?></span>
                     </label>
                 </div>
                 <div class="-sub-item">
                     <input type="text" id="cc-dc" class="amd-admin-input"
-                           placeholder="<?php esc_html_e( "98, 1, etc.", "material-dashboard" ); ?>">
+                           placeholder="<?php _e( "98, 1, etc.", "material-dashboard" ); ?>">
                 </div>
             </div>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="cc-format" class="_locale_item">
                         <span>
-                            <?php esc_html_e( "Number format", "material-dashboard" ); ?>
-                            <a href="javascript:void(0)" class="_show_number_format_guide_">(<?php esc_html_e( "More info", "material-dashboard" ); ?>)</a>
+                            <?php _e( "Number format", "material-dashboard" ); ?>
+                            <a href="javascript:void(0)" class="_show_number_format_guide_">(<?php _e( "More info", "material-dashboard" ); ?>)</a>
                         </span>
                     </label>
                 </div>
@@ -330,11 +321,11 @@ endif;
             </div>
             <div class="-item">
                 <div class="-sub-item">
-                    <button class="amd-admin-button --sm" id="custom-cc-add"><?php esc_html_e( "Add", "material-dashboard" ); ?></button>
+                    <button class="amd-admin-button --sm" id="custom-cc-add"><?php _e( "Add", "material-dashboard" ); ?></button>
                 </div>
                 <div class="-sub-item">
                     <button class="amd-admin-button --sm --primary --text"
-                            id="custom-cc-clear"><?php esc_html_e( "Clear", "material-dashboard" ); ?></button>
+                            id="custom-cc-clear"><?php _e( "Clear", "material-dashboard" ); ?></button>
                 </div>
             </div>
         </div>
@@ -342,7 +333,7 @@ endif;
 </div>
 <script>
     $("._show_number_format_guide_").click(function(){
-        $amd.alert(`<?php esc_html_e( "Number format", "material-dashboard" ); ?>`, `<?php amd_dump_number_format_guide(); ?>`);
+        $amd.alert(`<?php _e( "Number format", "material-dashboard" ); ?>`, `<?php amd_dump_number_format_guide(); ?>`);
     });
     (function () {
         let $field = $("#phone-field");
@@ -354,6 +345,12 @@ endif;
         check(0);
         $field.on("change", function () {
             check();
+        });
+        $amd.addEvent("on_settings_saved", () => {
+            return {
+                phone_field: $('input[name="phone_field"]').is(":checked") ? "true" : "false",
+                phone_field_required: $('input[name="phone_field_required"]').is(":checked") ? "true" : "false"
+            }
         });
     }());
     (function () {

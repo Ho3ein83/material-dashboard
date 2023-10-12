@@ -119,32 +119,6 @@ function amd_ext__api_handler_all( $r ){
 
 		}
 
-		else if( !empty( $r["save_user_fields"] ) ){
-
-			$uid = get_current_user_id();
-
-			$custom_fields = $_POST["save_user_fields"] ?? [];
-			$custom_fields = amd_sanitize_array_fields( $custom_fields );
-
-			if( empty( $custom_fields ) )
-				wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
-
-			/**
-			 * Validate fields before continue the registration
-			 * @since 1.1.1
-			 */
-			do_action( "amd_register_validate_custom_fields", $custom_fields );
-
-			/**
-			 * Save user custom fields
-			 * @since 1.0.5
-			 */
-			do_action( "amd_save_user_custom_fields", $uid, $custom_fields );
-
-			wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
-
-		}
-
 		else if( isset( $r["cancel_email_pending"] ) ){
 
 			$user = $_thisuser;
@@ -207,19 +181,19 @@ function amd_ext__api_handler_all( $r ){
 
 			$extension = amd_guess_extension_from_mime_type( $mime );
 
-			if( empty( $extension ) OR !in_array( $mime, $allowed_formats ) AND !in_array( $extension, $allowed_formats ) )
+			if( !in_array( $mime, $allowed_formats ) AND !in_array( $extension, $allowed_formats ) OR empty( $extension ) )
 				amd_send_api_error( ["msg" => esc_html__( "Image format is not allowed", "material-dashboard" )] );
 
 			$image_data = base64_decode( $image );
 			$size = intval( floor( strlen( rtrim( $image, "=" ) ) * 0.75 ) );
-			$max_size = apply_filters( "amd_max_avatar_upload_size", 1024*1024*2 );
+			$max_size = apply_filters( "amd_max_avatar_upload_size", 1024*1024 );
 
 			if( $size > $max_size )
 				amd_send_api_error( ["msg" => sprintf( esc_html__( "Uploaded image is too large. Max size is %s", "material-dashboard" ), size_format( $max_size ) )] );
 
 			$avatars_path = amd_get_avatars_path();
 			if( !file_exists( $avatars_path ) )
-				mkdir( $avatars_path, 0777, true );
+				mkdir( $avatars_path );
 			$image_path = $avatars_path . "/$user->secretKey.$extension";
 
 			$bytes = file_put_contents( $image_path, $image_data );
@@ -282,43 +256,6 @@ function amd_ext__api_handler_all( $r ){
 				wp_send_json_success( ["msg" => esc_html__( "Your password has changed successfully", "material-dashboard" )] );
 
 			wp_send_json_error( ["msg" => $error] );
-
-		}
-
-		else if( !empty( $r["change_phone"] ) ){
-
-			/**
-			 * Allow users change phone number
-			 * @since 1.0.4
-			 */
-			$allow_change_phone_number = apply_filters( "amd_allow_change_phone_number", true );
-
-			if( !$allow_change_phone_number )
-				wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
-
-			$phone = $r["change_phone"];
-			$phone = str_replace( " ", "", $phone );
-
-			$phone_field = amd_get_site_option( "phone_field" ) == "true";
-			$single_phone = amd_get_site_option( "single_phone" ) == "true";
-
-			if( !$phone_field OR empty( $phone ) )
-				wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
-
-			$formatted_phone = amd_apply_phone_format( $phone );
-
-			if( $single_phone AND amd_phone_exists( $formatted_phone ) )
-				wp_send_json_error( [ "msg" => esc_html__( "This phone number is already in use", "material-dashboard" )] );
-
-			if( !amd_validate_phone_number( $phone ) )
-				wp_send_json_error( [ "msg" => esc_html__( "Please enter your phone number correctly", "material-dashboard" )] );
-
-			$success = amd_set_user_meta( null, "phone", $formatted_phone );
-
-			if( $success )
-				do_action( "on_phone_number_updated", $formatted_phone );
-
-			wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
 
 		}
 

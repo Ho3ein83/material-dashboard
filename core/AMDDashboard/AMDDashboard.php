@@ -8,21 +8,21 @@ class AMDDashboard{
 	/**
 	 * Dashboard home page cards
 	 * @var array
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	protected $cards;
 
 	/**
 	 * Menu items, navbar items, quick options, etc.
 	 * @var array
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	protected $menu;
 
 	/**
 	 * Lazy loading pages
 	 * @var array
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	protected $pages;
 
@@ -43,7 +43,7 @@ class AMDDashboard{
 	/**
 	 * Initialize core
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function init(){
 
@@ -55,7 +55,7 @@ class AMDDashboard{
 	/**
 	 * Initialize hooks
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function initHooks(){
 
@@ -87,7 +87,7 @@ class AMDDashboard{
 	/**
 	 * Initialize dashboard when client visits dashboard and login page
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function initDashboard(){
 
@@ -101,7 +101,7 @@ class AMDDashboard{
 	 * @param array $r
 	 *
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function ajax( $r ){
 
@@ -119,7 +119,7 @@ class AMDDashboard{
 	 * Card data
 	 *
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function registerCard( $data ){
 
@@ -131,7 +131,7 @@ class AMDDashboard{
 	/**
 	 * Get registered cards
 	 * @return array
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function getCards( $filter = null, $sort = false ){
 		if( empty( $filter ) )
@@ -176,7 +176,7 @@ class AMDDashboard{
 	 * Item data
 	 *
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function addMenuItem( $id, $data ){
 
@@ -206,7 +206,7 @@ class AMDDashboard{
 	 * Item data
 	 *
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function addNavItem( $side, $data ){
 
@@ -226,7 +226,7 @@ class AMDDashboard{
 	 * `$side` is navbar item position (left or right) and `$data` is navbar data array
 	 *
 	 * @return array|mixed
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function getNav( $filter = null ){
 		$_m = $this->menu["navbar"] ?? [];
@@ -265,7 +265,7 @@ class AMDDashboard{
 	 *
 	 * @return array
 	 * Menu items array if ID exists, otherwise returns empty array
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function getMenu( $id, $void = null, $sort = true ){
 
@@ -303,7 +303,7 @@ class AMDDashboard{
 	 * Page data
 	 *
 	 * @return void
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function registerPage( $page_id, $data ){
 
@@ -325,7 +325,7 @@ class AMDDashboard{
 	 *
 	 * @return void
 	 * @see AMDDashboard::registerPage()
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function registerPageSimple( $page_id, $title, $path, $icon ){
 
@@ -344,15 +344,9 @@ class AMDDashboard{
 	 * Page ID
 	 *
 	 * @return array
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function lazyPage( $void ){
-
-		/**
-		 * Initialize getting page content
-		 * @since 1.0.1
-		 */
-		do_action( "amd_init_dashboard_page" );
 
 		do_action( "amd_dashboard_init" );
 
@@ -371,14 +365,10 @@ class AMDDashboard{
 			$path = amd_get_default( "dashboard_404" );
 		}
 
-		$redirect = apply_filters( "amd_page_redirect_$void", null );
-		$redirect = apply_filters( "amd_page_redirect", $redirect, $void );
-
 		return array(
 			"title" => $title,
 			"path" => $path,
-			"callable" => $callable,
-			"redirect" => $redirect
+			"callable" => $callable
 		);
 
 	}
@@ -407,7 +397,7 @@ class AMDDashboard{
 	 * Extra data for hooks
 	 *
 	 * @return array
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function getLazyPage( $void, $extra = [] ){
 
@@ -415,13 +405,12 @@ class AMDDashboard{
 		$__title__ = $__resp__["title"];
 		$__page__ = $__resp__["path"];
 		$__callable__ = $__resp__["callable"];
-		$__redirect__ = $__resp__["redirect"] ?? null;
 
 		if( $__page__ AND file_exists( $__page__ ) ){
 			ob_start();
 
 			# Content actions
-			do_action( "amd_before_pages", $void );
+			do_action( "amd_before_pages" );
 			do_action( "amd_before_page_$void" );
 			do_action( "amd_before_lazy_page_$void" );
 			do_action( "amd_before_lazy_load", $extra );
@@ -431,19 +420,19 @@ class AMDDashboard{
 				self::requireOnce( $__page__ );
 
 			# Content actions
-			do_action( "amd_after_pages", $void );
+			do_action( "amd_after_pages" );
 			do_action( "amd_after_page_$void" );
 			do_action( "amd_after_lazy_page_$void" );
 			do_action( "amd_after_lazy_load", $extra );
 
-			$__html__ = apply_filters( "amd_override_page_{$void}_content", ob_get_clean() );
+			$__html__ = ob_get_clean();
 		}
 		else if( is_callable( $__callable__ ) ){
 
 			ob_start();
 
 			# Content actions
-			do_action( "amd_before_pages", $void );
+			do_action( "amd_before_pages" );
 			do_action( "amd_before_pages_callback" );
 			do_action( "amd_before_page_$void" );
 			do_action( "amd_before_page_callback_$void" );
@@ -453,14 +442,14 @@ class AMDDashboard{
 			call_user_func( $__callable__, $void, $__resp__ );
 
 			# Content actions
-			do_action( "amd_after_pages", $void );
+			do_action( "amd_after_pages" );
 			do_action( "amd_after_pages_callback" );
 			do_action( "amd_after_page_$void" );
 			do_action( "amd_after_page_callback_$void" );
 			do_action( "amd_after_lazy_page_$void" );
 			do_action( "amd_after_lazy_load", $extra );
 
-			$__html__ = apply_filters( "amd_override_page_{$void}_content", ob_get_clean() );
+			$__html__ = ob_get_clean();
 
 		}
 		else{
@@ -468,15 +457,9 @@ class AMDDashboard{
 			$__html__ = amd_hbdash_ajax_fail_message();
 		}
 
-		if( $__redirect__ ){
-			$title = apply_filters( "amd_redirected_page_title", esc_html__( "Dashboard", "material-dashboard" ) );
-			$html = "";
-		}
-
 		return array(
 			"title" => $__title__,
-			"content" => $__html__,
-			"redirect" => $__redirect__
+			"content" => $__html__
 		);
 
 	}
@@ -488,7 +471,7 @@ class AMDDashboard{
 	 * Page ID
 	 *
 	 * @return array
-	 * @since 1.0.0
+	 * @sicne 1.0.0
 	 */
 	public function getDashboardPage( $void ){
 
@@ -496,8 +479,6 @@ class AMDDashboard{
 		$title = $resp["title"];
 		$page = $resp["path"];
 		$callable = $resp["callable"];
-		$redirect = $resp["redirect"] ?? null;
-		$turtle = $resp["turtle"] ?? null;
 
 		$html = "";
 		if( file_exists( $page ) ){
@@ -517,7 +498,7 @@ class AMDDashboard{
 			do_action( "amd_after_page_$void" );
 			do_action( "amd_after_page_content_$void" );
 
-			$html = apply_filters( "amd_override_page_{$void}_content", ob_get_clean() );
+			$html = ob_get_clean();
 		}
 		else if( is_callable( $callable ) ){
 
@@ -529,11 +510,7 @@ class AMDDashboard{
 			do_action( "amd_before_page_$void" );
 			do_action( "amd_before_page_callback_$void" );
 
-			$result = call_user_func( $callable, $void, $resp );
-			if( is_array( $result ) ){
-				if( isset( $result["turtle"] ) )
-					$turtle = $result["turtle"];
-			}
+			call_user_func( $callable, $void, $resp );
 
 			# Content actions
 			do_action( "amd_after_pages" );
@@ -541,7 +518,7 @@ class AMDDashboard{
 			do_action( "amd_after_page_$void" );
 			do_action( "amd_after_page_callback_$void" );
 
-			$html = apply_filters( "amd_override_page_{$void}_content", ob_get_clean() );
+			$html = ob_get_clean();
 
 		}
 		else{
@@ -549,16 +526,9 @@ class AMDDashboard{
 			$html = amd_hbdash_ajax_fail_message();
 		}
 
-		if( $redirect ){
-			$title = apply_filters( "amd_redirected_page_title", esc_html__( "Dashboard", "material-dashboard" ) );
-			$html = "";
-		}
-
 		return array(
 			"title" => $title,
-			"content" => $html,
-			"turtle" => $turtle,
-			"redirect" => $redirect
+			"content" => $html
 		);
 
 	}

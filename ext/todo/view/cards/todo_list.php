@@ -2,22 +2,12 @@
 
 $primary_color = amd_ext_todo_get_primary_color();
 
-/**
- * Set how many items should display in home page
- * @since 1.0.5
- */
-$max_tasks_to_show = apply_filters( "amd_ext_todo_max_items_to_show_in_home", 6 );
-
 ?>
 
 <?php ob_start(); ?>
-<?php echo esc_html_x( "Todo list (news)", "todo", "material-dashboard" ); ?>
-<button class="btn btn-icon-square bis-sm --transparent --button mlr-8 --sm _refresh_todo_list_" data-tooltip="<?php esc_html_e( "Refresh", "material-dashboard" ); ?>">
-	<?php _amd_icon( "refresh" ); ?>
-</button>
-<button class="btn btn-icon-square bis-sm --transparent --button --right mlr-8 --sm" data-lazy-query="?void=todo" data-tooltip="<?php esc_html_e( "Manage", "material-dashboard" ); ?>">
-	<?php _amd_icon( "todo" ); ?>
-</button>
+<?php echo esc_html_x( "Todo list", "todo", "material-dashboard" ); ?>
+<button class="btn --transparent --button mlr-8 --sm _refresh_todo_list_"><?php esc_html_e( "Refresh", "material-dashboard" ); ?></button>
+<button class="btn --transparent --button --right mlr-8 --sm" data-lazy-query="?void=todo"><?php esc_html_e( "Manage", "material-dashboard" ); ?></button>
 <?php $todo_card_title = ob_get_clean(); ?>
 
 <?php ob_start(); ?>
@@ -27,10 +17,6 @@ $max_tasks_to_show = apply_filters( "amd_ext_todo_max_items_to_show_in_home", 6 
 </div>
 <h4 class="text-center" id="todo-empty"><?php esc_html_e( "There is no item to show", "material-dashboard" ); ?></h4>
 <div class="amd-todo-row" id="todo-list-items"></div>
-<div class="text-center" id="todo-show-more" style="display:none">
-    <a href="?void=todo" class="btn btn-text --low" data-turtle="lazy"><?php esc_html_e( "More", "material-dashboard" ); ?></a>
-    <div class="h-10"></div>
-</div>
 <?php $todo_card_content = ob_get_clean(); ?>
 
 <?php amd_dump_single_card( array(
@@ -43,9 +29,7 @@ $max_tasks_to_show = apply_filters( "amd_ext_todo_max_items_to_show_in_home", 6 
 <script>
     (function(){
         var _todo_list_item_delete_icon = `<?php _amd_icon( "delete" ); ?>`;
-        let max_items_to_show = parseInt(`<?php echo $max_tasks_to_show; ?>`);
-        let $list = $("#todo-list-items"), $loading = $("#loading-todo"),
-            $more = $("#todo-show-more");
+        let $list = $("#todo-list-items"), $loading = $("#loading-todo");
         let checkList = () => {
             let $empty = $("#todo-empty");
             if($("[data-todo]").length > 0) {
@@ -72,7 +56,6 @@ $max_tasks_to_show = apply_filters( "amd_ext_todo_max_items_to_show_in_home", 6 
         function toggleTodo($el, $cb, $text, _id){
             let checked = $cb.is(":checked");
             let _network = dashboard.createNetwork();
-            $el.blur();
             _network.clean();
             _network.put("_ajax_target", "ext_todo");
             _network.put("edit_todo", _id);
@@ -140,7 +123,6 @@ $max_tasks_to_show = apply_filters( "amd_ext_todo_max_items_to_show_in_home", 6 
             _network.put("get_todo_list", "");
             _network.on.start = () => {
                 $list.html("");
-                $more.fadeOut(0);
                 setLoader();
             }
             _network.on.end = (resp, error) => {
@@ -148,26 +130,23 @@ $max_tasks_to_show = apply_filters( "amd_ext_todo_max_items_to_show_in_home", 6 
                 if(!error){
                     if(resp.success){
                         let items = resp.data.data;
-                        let entries = Object.entries(items);
-                        if(entries.length > max_items_to_show)
-                            $more.fadeIn(0);
-                        let counter = 0;
-                        for(let [id, data] of entries){
-                            if(counter >= max_items_to_show)
-                                break;
+                        for(let [id, data] of Object.entries(items)){
                             let _text = data.text || "";
                             let _status = data.status || "";
                             let primary_color = `<?php echo esc_attr( $primary_color ); ?>`;
                             let $html = $(`<div class="--item --bg" data-todo="${id}">
-                        <div class="--text _text" ${_status === "done" ? "style=\"text-decoration:line-through\"" : ""}>${_text}</div>
-                        <label class="hb-checkbox ${primary_color}">
-                            <input type="checkbox" class="_checkbox" ${_status === "done" ? "checked" : ""}>
-                            <span></span>
-                        </label>
-                        <button class="btn ${primary_color} btn-text _delete no-special">${_todo_list_item_delete_icon}</button>
+                        <p class="--text _text" ${_status === "done" ? "style=\"text-decoration:line-through\"" : ""}>${_text}</p>
+                        <div>
+                            <label class="hb-checkbox ${primary_color}">
+                                <input type="checkbox" class="_checkbox" ${_status === "done" ? "checked" : ""}>
+                                <span></span>
+                            </label>
+                        </div>
+                        <div>
+                            <button class="btn ${primary_color} btn-text _delete no-special">${_todo_list_item_delete_icon}</button>
+                        </div>
                     </div>`);
                             $list.append($html);
-                            counter++;
                         }
                         reloadListEvents();
                         checkList();
@@ -187,5 +166,5 @@ $max_tasks_to_show = apply_filters( "amd_ext_todo_max_items_to_show_in_home", 6 
     }());
 </script>
 <!-- @formatter off -->
-<style>.amd-todo-row>.--item,.amd-todo-row{display:flex;align-items:center;justify-content:center}.amd-todo-row{position:relative;flex-direction:column-reverse;flex-wrap:wrap;margin:16px}.amd-todo-row>.--item{box-sizing:border-box;flex-direction:row;border-radius:10px;margin:4px 0;width:100%;padding:8px}@media(min-width:993px){.amd-todo-row{flex-wrap:nowrap}}.amd-todo-row>.--item.--bg{background:rgba(var(<?php echo "--amd-color-$primary_color-rgb"; ?>),.2)}.amd-todo-row>.--item .btn{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;width:32px;min-width:40px;padding:9px;height:auto;aspect-ratio:1;margin:0 4px}.amd-todo-row>.--item .--text{text-align:justify;padding:0 16px;font-size:var(--amd-size-md)}.amd-todo-row>.--item .--text{flex:8}.amd-todo-row>.--item>div{flex:1}.amd-todo-row>.--item>div ._icon_{font-size:20px}</style>
+<style>.amd-todo-row>.--item,.amd-todo-row{display:flex;align-items:center;justify-content:center}.amd-todo-row{position:relative;flex-direction:column-reverse;flex-wrap:wrap;margin:16px}.amd-todo-row>.--item{box-sizing:border-box;flex-direction:row;border-radius:10px;margin:4px 0;width:100%;padding:8px}@media(min-width:993px){.amd-todo-row{flex-wrap:nowrap}}.amd-todo-row>.--item.--bg{background:rgba(var(<?php echo "--amd-color-$primary_color-rgb"; ?>),.2)}.amd-todo-row>.--item .btn{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;width:32px;height:auto;aspect-ratio:1;margin:0 4px}.amd-todo-row>.--item .--text{text-align:justify;padding:4px 24px;font-size:var(--amd-size-md)}.amd-todo-row>.--item .--text{flex:8}.amd-todo-row>.--item>div{flex:1}.amd-todo-row>.--item>div ._icon_{font-size:20px}</style>
 <!-- @formatter on -->

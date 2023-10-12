@@ -44,7 +44,6 @@ $ext_counter = 0;
 		$requirements = $info["requirements"] ?? [];
 		$is_enabled = in_array( $id, $enabled_exp );
 		$is_premium = $data["is_premium"] ?? false;
-		$text_domain = $data["text_domain"] ?? "material-dashboard";
 		$ext_counter++;
 		?>
         <div class="__card <?php echo $usable ? '' : 'waiting'; ?>">
@@ -135,5 +134,3 @@ $ext_counter = 0;
         });
     }());
 </script>
-
-<style>.amd-card-columns .__card{display:block;width:auto}</style>

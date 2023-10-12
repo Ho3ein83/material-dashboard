@@ -111,8 +111,6 @@ class AMDLoader{
 			if( !$amdLoader->canLoadTheme() )
 				amd_assert_error( "cannot_load_theme", sprintf( esc_html__( "There is no available theme for current page, your theme files may be removed or changed. Please check your theme in %ssettings%s to see what's wrong", "material-dashboard" ), "<a href=\"" . admin_url( "admin.php?page=amd-themes" ) . "\" target=\"_blank\">", "</a>" ) );
 
-			do_action( "amd_init_sidebar_items" );
-
 		} );
 
 	}
@@ -343,7 +341,6 @@ class AMDLoader{
 		$translateContext = $json->context ?? $dir;
 		$deprecated = $json->deprecated ?? false;
 		$requirements = $json->requirements ?? "";
-		$text_domain = $json->text_domain ?? "material-dashboard";
 		$extURL = plugins_url( $dir, $path );
 		$url = amd_replace_constants( $url );
 		$thumb = $json->thumbnail ?? "";
@@ -364,14 +361,13 @@ class AMDLoader{
 		return array(
 			"directory" => $dir,
 			"info" => array(
-				"name" => esc_html_x( $name, $translateContext, "$text_domain" ),
-				"description" => esc_html_x( $desc, $translateContext, "$text_domain" ),
+				"name" => esc_html_x( $name, $translateContext, "material-dashboard" ),
+				"description" => esc_html_x( $desc, $translateContext, "material-dashboard" ),
 				"version" => $ver,
 				"url" => $url,
 				"thumbnail" => $thumb,
 				"requirements" => $req,
-				"text_domain" => $text_domain,
-				"author" => esc_html_x( $author, $translateContext, "$text_domain" )
+				"author" => esc_html_x( $author, $translateContext, "material-dashboard" )
 			),
 			"json" => $json,
 			"index" => $index_php,
@@ -425,7 +421,6 @@ class AMDLoader{
 		$thumb = amd_replace_constants( $thumb );
 		$thumb = preg_replace( "/\{THEME_PATH}/", $path, $thumb );;
 		$thumb = preg_replace( "/\{THEME_URL}/", $themeURL, $thumb );;
-		$thumb = preg_replace( "/\{LOCALE}/", get_locale(), $thumb );;
 		$author = $json->author ?? "";
 		$properties = $json->properties ?? (object) [];
 		$isPremium = $json->is_premium ?? false;
@@ -800,7 +795,7 @@ class AMDLoader{
 	 */
 	public function loadPart( $part, $extra = null ){
 
-		$part = sanitize_file_name( $part );
+		$part = esc_html( $part );
 
 		$theme = self::getCurrentTheme();
 
@@ -814,55 +809,14 @@ class AMDLoader{
 
 		$amdCache->setCache( "_extra", $extra );
 
-		/**
-		 * Override part path
-		 * @since 1.0.4
-		 */
-		$page_path = apply_filters( "amd_part_{$part}_path", $page_path );
-
-		if( $page_path AND file_exists( $page_path ) ){
+		if( file_exists( $page_path ) ){
 			require( $page_path );
 
 			return true;
 		}
 
-		if( $page_path === false )
-			return true;
-
 		if( amd_is_admin() AND apply_filters( "amd_show_templates_part_error", false ) )
 			amd_dump_error( "template_part_error", sprintf( esc_html__( "You are trying to access '%s' template which doesn't exist.", "material-dashboard" ), "$part.php" ) );
-
-		return false;
-
-	}
-
-	/**
-	 * Check if theme part is available
-	 * @param string $part
-	 * Part file name (without .php extension)
-	 *
-	 * @return bool
-	 * @since 1.0.4
-	 */
-	public function partExist( $part ){
-
-		$part = sanitize_file_name( $part );
-
-		$theme = self::getCurrentTheme();
-
-		if( !$theme )
-			return false;
-
-		$page_path = $theme["path"] . "/dashboard/parts/$part.php";
-
-		/**
-		 * Override part path
-		 * @since 1.0.4
-		 */
-		$page_path = apply_filters( "amd_part_{$part}_path", $page_path );
-
-		if( $page_path AND file_exists( $page_path ) )
-			return true;
 
 		return false;
 
@@ -890,21 +844,10 @@ class AMDLoader{
 		$page = $card["page"] ?? "";
 		if( file_exists( $page ) ){
 			require( $page );
+
 			return;
 		}
 		$type = $card["type"];
-		if( !empty( $card["content"] ) ){
-			$content = $card["content"];
-			if( amd_starts_with( $content, "path:" ) AND amd_ends_with( $content, ".php" ) ){
-				$path = str_replace( "path:", "", $content );
-				if( file_exists( $path ) ){
-					ob_start();
-					require_once( $path );
-					$card["content"] = ob_get_clean();
-				}
-			}
-		}
-
 		self::loadTemplate( "card_$type", $card );
 	}
 

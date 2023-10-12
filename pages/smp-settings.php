@@ -25,7 +25,7 @@ if( !$API_OK )
     </div>
     <div class="pa-10">
 	    <?php $tabsJS = amd_dump_admin_tabs( $tabs ); ?>
-        <div data-amd-content="general"></div>
+        <div data-amd-content="_general"></div>
     </div>
     <script>
         (function () {
@@ -52,19 +52,11 @@ if( !$API_OK )
                 if(e.originalEvent || null) unsaved = true;
             });
 
-            $("#amd-save-settings").click(function(e){
-                // [SETTINGS_SAVE_HANDLER]
+            $("#amd-save-settings").click(function(){
                 let $btn = $(this);
-                $btn.blur();
-                let v = $amd.doEvent("on_settings_saved", {e});
-                let allowed = true;
-                if(typeof e.isDefaultPrevented !== "undefined")
-                    allowed = !e.isDefaultPrevented();
-                else if(typeof e.defaultPrevented !== "undefined")
-                    allowed = !e.defaultPrevented;
-                if(!allowed)
-                    return;
                 $btn.setWaiting();
+                $btn.blur();
+                let v = $amd.doEvent("on_settings_saved");
                 network.clean();
                 network.put("save_options", v);
                 network.on.start = () => $btn.html(`<span>${_t("wait_td")}</span>`);

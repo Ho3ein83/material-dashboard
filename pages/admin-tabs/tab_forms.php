@@ -17,15 +17,6 @@ $defaultSettings = array(
 );
 
 ?>
-
-<?php
-    /**
-     * Before forms tab settings
-     * @since 1.0.5
-     */
-    do_action( "amd_settings_tab_forms_before" );
-?>
-
 <!-- Forms text -->
 <div class="amd-admin-card --setting-card">
     <h3 class="--title"><?php echo esc_html_x( "Forms title", "Admin", "material-dashboard" ); ?></h3>
@@ -38,7 +29,7 @@ $defaultSettings = array(
                     </label>
                 </div>
                 <div class="-sub-item">
-                    <input type="text" id="form-title-login" class="amd-admin-input" name="login_page_title" placeholder="<?php esc_attr_e( "default", "material-dashboard" ); ?>">
+                    <input type="text" id="form-title-login" class="amd-admin-input" name="login_page_title" placeholder="<?php _e( "default", "material-dashboard" ); ?>">
                 </div>
             </div>
             <div class="-item">
@@ -48,7 +39,7 @@ $defaultSettings = array(
                     </label>
                 </div>
                 <div class="-sub-item">
-                    <input type="text" id="form-title-register" class="amd-admin-input" name="register_page_title" placeholder="<?php esc_attr_e( "default", "material-dashboard" ); ?>">
+                    <input type="text" id="form-title-register" class="amd-admin-input" name="register_page_title" placeholder="<?php _e( "default", "material-dashboard" ); ?>">
                 </div>
             </div>
             <div class="-item">
@@ -58,7 +49,7 @@ $defaultSettings = array(
                     </label>
                 </div>
                 <div class="-sub-item">
-                    <input type="text" id="form-title-fp" class="amd-admin-input" name="reset_password_page_title" placeholder="<?php esc_attr_e( "default", "material-dashboard" ); ?>">
+                    <input type="text" id="form-title-fp" class="amd-admin-input" name="reset_password_page_title" placeholder="<?php _e( "default", "material-dashboard" ); ?>">
                 </div>
             </div>
         </div>
@@ -83,7 +74,7 @@ $defaultSettings = array(
 					        data-link="dash-logo-img"><?php echo esc_html_x( "Browse", "Admin", "material-dashboard" ); ?></button>
 					<label>
 						<input type="text" id="custom-dash-logo" class="amd-admin-input"
-						       placeholder="<?php esc_attr_e( "Custom URL", "material-dashboard" ); ?>">
+						       placeholder="<?php _e( "Custom URL", "material-dashboard" ); ?>">
 					</label>
 				</div>
 				<div class="-sub-item">
@@ -112,14 +103,6 @@ $defaultSettings = array(
         });
     }())
 </script>
-
-<?php
-    /**
-     * After forms tab settings
-     * @since 1.0.5
-     */
-    do_action( "amd_settings_tab_forms_after" );
-?>
 
 <script>
     (function () {

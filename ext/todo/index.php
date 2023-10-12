@@ -23,47 +23,33 @@ function amd_ext_todo(){
  */
 add_action( "amd_dashboard_init", function(){
 
-	# Restrict access
-	$restricted = apply_filters( "amd_restrict_capability_todo", false );
-
-	if( $restricted AND apply_filters( "amd_deep_restriction", false ) )
-		return;
-
 	# Register lazy-loading pages
 	amd_register_lazy_page( "todo", esc_html_x( "Todo list", "todo", "material-dashboard" ), AMD_EXT_TODO_VIEW . '/page_todo.php', "todo" );
 
-	if( !$restricted ){
+	# Add dashboard cards (icon cards)
+	$tasks_count = count( amd_ext_todo_my_tasks() );
+	$undone_tasks_count = count( amd_ext_todo_my_undone_tasks() );
+	do_action( "amd_add_dashboard_card", array(
+		"ic_todo" => array(
+			"type" => "icon_card",
+			"title" => esc_html__( "Tasks", "material-dashboard" ),
+			"text" => esc_html( sprintf( _nx( "%d task", "%d tasks", $tasks_count, "todo", "material-dashboard" ), $tasks_count ) ),
+			"subtext" => esc_html( sprintf( _nx( "%d undone task", "%d undone tasks", $undone_tasks_count, "todo", "material-dashboard" ), $undone_tasks_count ) ),
+			"footer" => "<a href=\"javascript:void(0)\" data-lazy-query=\"?void=todo\">" . esc_html__( "View", "material-dashboard" ) . "</a>",
+			"icon" => "todo",
+			"color" => "green",
+			"priority" => 2
+		)
+	) );
 
-		# Add dashboard cards (icon cards)
-		$tasks_count = count( amd_ext_todo_my_tasks() );
-		$undone_tasks_count = count( amd_ext_todo_my_undone_tasks() );
-		do_action( "amd_add_dashboard_card", array(
-			"ic_todo" => array(
-				"type" => "icon_card",
-				"title" => esc_html__( "Tasks", "material-dashboard" ),
-				"text" => esc_html( sprintf( _nx( "%d task", "%d tasks", $tasks_count, "todo", "material-dashboard" ), $tasks_count ) ),
-				"subtext" => esc_html( sprintf( _nx( "%d undone task", "%d undone tasks", $undone_tasks_count, "todo", "material-dashboard" ), $undone_tasks_count ) ),
-				"footer" => "<a href=\"javascript:void(0)\" data-lazy-query=\"?void=todo\">" . esc_html__( "View", "material-dashboard" ) . "</a>",
-				"icon" => "todo",
-				"color" => "green",
-				"priority" => 2
-			)
-		) );
-
-		# Add dashboard cards (content cards)
-		do_action( "amd_add_dashboard_card", array(
-			"todo_list" => array(
-				"type" => "content_card",
-				"page" => AMD_EXT_TODO_VIEW . "/cards/todo_list.php",
-				"priority" => 7
-			)
-		) );
-
-	}
-
-} );
-
-add_action( "amd_init_sidebar_items", function(){
+	# Add dashboard cards (content cards)
+	do_action( "amd_add_dashboard_card", array(
+		"todo_list" => array(
+			"type" => "content_card",
+			"page" => AMD_EXT_TODO_VIEW . "/cards/todo_list.php",
+			"priority" => 7
+		)
+	) );
 
 	# Add menu item
 	do_action( "amd_add_dashboard_sidebar_menu", array(
@@ -80,7 +66,7 @@ add_action( "amd_init_sidebar_items", function(){
 
 /**
  * @return void
- * @since 1.0.0
+ * @sicne 1.0.0
  */
 function amd_ext_todo_init_hooks(){
 

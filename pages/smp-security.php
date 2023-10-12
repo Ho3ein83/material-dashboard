@@ -59,20 +59,12 @@ $tabsJS = "";
                 if(e.originalEvent || null) unsaved = true;
             });
 
-            $("#amd-save-settings").click(function(e){
-                // [SETTINGS_SAVE_HANDLER]
+            $("#amd-save-settings").click(function(){
                 let $btn = $(this);
                 let $span = $btn.find("span");
-                $btn.blur();
-                let v = $amd.doEvent("on_settings_saved", {e});
-                let allowed = true;
-                if(typeof e.isDefaultPrevented !== "undefined")
-                    allowed = !e.isDefaultPrevented();
-                else if(typeof e.defaultPrevented !== "undefined")
-                    allowed = !e.defaultPrevented;
-                if(!allowed)
-                    return;
                 $btn.setWaiting();
+                $btn.blur();
+                let v = $amd.doEvent("on_settings_saved");
                 network.clean();
                 network.put("save_options", v);
                 network.on.start = () => $btn.html(`<span>${_t("wait_td")}</span>`);

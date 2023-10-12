@@ -10,12 +10,11 @@ do_action( "amd_begin_dashboard" );
 
 if( amd_template_exists( "dashboard" ) ){
 	amd_load_template( "dashboard" );
+
 	return;
 }
 
 do_action( "amd_dashboard_start" );
-
-$break = apply_filters( "amd_break_dashboard", false );
 
 global /** @var AMDCache $amdCache */
 $amdCache;
@@ -25,7 +24,7 @@ $_get = amd_sanitize_get_fields( $_GET );
 $void = !empty( $_get["void"] ) ? $_get["void"] : "home";
 $amdCache->setCache( "void", $void );
 
-$current_locale = get_user_meta( get_current_user_id(), "locale", true ) ?? get_locale();
+$current_locale = get_locale();
 $direction = is_rtl() ? "rtl" : "ltr";
 
 # $lazy_load = amd_get_site_option( "lazy_load", "true" );
@@ -59,25 +58,22 @@ $quickOptions = apply_filters( "amd_get_dashboard_quick_options", "1" );
 $checkin_interval = amd_get_default( "checkin_interval", 30000 );
 
 $icon_pack = amd_get_icon_pack();
-$theme_id = amd_get_theme_property( "id" );
 
-amd_add_element_class( "body", [$direction, $current_locale, "icon-$icon_pack", "theme-$theme_id"] );
+amd_add_element_class( "body", [ $direction, $current_locale, $icon_pack ] );
 
 $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 
 $page_content = "";
 $page_title = "";
-global /** @var AMDDashboard $amdDashboard */
-$amdDashboard;
+if( !$lazy_load ){
 
-$page = $amdDashboard->getDashboardPage( $void );
-$turtle = $page["turtle"] ?? null;
+    global /** @var AMDDashboard $amdDashboard */
+	$amdDashboard;
 
-$force_content = false;
-if( !$lazy_load OR $turtle == "normal" ){
+    $page = $amdDashboard->getDashboardPage( $void );
     $page_title = $page["title"];
     $page_content = $page["content"];
-    $force_content = true;
+
 }
 
 ?><!doctype html>
@@ -111,101 +107,32 @@ if( !$lazy_load OR $turtle == "normal" ){
                 "right": <?php echo json_encode( $navbarItems_right ); ?>
             },
             quick_options: <?php echo json_encode( $quickOptions ); ?>,
-            checkin_interval: <?php echo is_numeric( $checkin_interval ) ? $checkin_interval : "60000"; ?>,
-            is_broken: <?php echo $break ? 'true' : 'false'; ?>,
+            checkin_interval: <?php echo is_numeric( $checkin_interval ) ? $checkin_interval : "60000"; ?>
         });
     </script>
-	<?php
-        /**
-         * After main header
-         * @since 1.0.4
-         */
-        do_action( "amd_dashboard_header_single_after" );
-	?>
 </head>
 <body class="<?php echo esc_attr( amd_element_classes( "body" ) ); ?>" <?php echo !empty( $bodyBG ) ? "style=\"background-image:url('" . esc_attr( $bodyBG ) . "')\"" : ""; ?>>
 <div class="amd-form-loading --full _suspend_screen_">
 	<?php amd_load_part( "suspension_loader" ); ?>
 </div>
-<?php if( amd_part_exist( "sidebar" ) ): ?>
-    <div id="sidebar" class="amd-sidebar <?php echo esc_attr( amd_element_classes( "sidebar" ) ); ?> collapse">
-		<?php amd_load_part( "sidebar" ); ?>
-    </div>
-<?php else: ?>
-    <style>.amd-wrapper{margin-left:0 !important;margin-right:0 !important;width:100vw !important;height:max-content}</style>
-<?php endif; ?>
+<div id="sidebar" class="amd-sidebar <?php echo esc_attr( amd_element_classes( "sidebar" ) ); ?> collapse">
+	<?php amd_load_part( "sidebar" ); ?>
+</div>
 <div id="loader">
 	<?php amd_load_part( "loader" ); ?>
 </div>
 <div id="wrapper" class="amd-wrapper <?php echo esc_attr( amd_element_classes( "wrapper" ) ); ?>">
-	<?php
-        /**
-         * Before wrapper
-         * @since 1.0.9
-         */
-        do_action( "amd_before_wrapper" );
-	?>
-    <?php if( amd_part_exist( "navbar" ) ): ?>
-        <div id="navbar" class="amd-navbar <?php echo esc_attr( amd_element_classes( "navbar" ) ); ?>">
-		    <?php amd_load_part( "navbar" ); ?>
-        </div>
-    <?php else: ?>
-        <style>.amd-wrapper{margin-top:0 !important}</style>
-    <?php endif; ?>
-    <?php
-        /**
-         * After navbar
-         * @since 1.0.9
-         */
-        do_action( "amd_after_navbar" );
-    ?>
-    <?php if( !amd_theme_support( "custom_loader" ) ): ?>
-        <div class="text-center _show_on_loader_">
-            <h2 class="_loading_text_"></h2>
-        </div>
-    <?php endif; ?>
-	<div id="before-content">
-		<?php do_action( "amd_before_dashboard_content" ); ?>
+    <div id="navbar" class="amd-navbar <?php echo esc_attr( amd_element_classes( "navbar" ) ); ?>">
+		<?php amd_load_part( "navbar" ); ?>
     </div>
-    <div id="content" class="<?php echo esc_attr( amd_element_classes( "content" ) ); ?>">
-        <?php do_action( "amd_dashboard_hard_content" ); ?>
-        <?php echo $force_content ? $page_content : ""; ?>
+    <div class="text-center _show_on_loader_">
+        <h2 class="_loading_text_"></h2>
     </div>
-	<div id="after-content">
-		<?php do_action( "amd_after_dashboard_content" ); ?>
-    </div>
-    <?php
-        /**
-         * After wrapper
-         * @since 1.0.9
-         */
-        do_action( "amd_after_wrapper" );
-	?>
+	<?php do_action( "amd_before_dashboard_content" ); ?>
+    <div id="content" class="<?php echo esc_attr( amd_element_classes( "content" ) ); ?>"><?php echo !$lazy_load ? $page_content : ""; ?></div>
+	<?php do_action( "amd_after_dashboard_content" ); ?>
 </div>
 <script>
-
-    dashboard.addLazyEvent("before_start", data => {
-        let {_void} = data;
-        if(_void){
-            let $a = $(`[data-menu-item="${_void}"] > a`);
-            let turtle = $a.hasAttr("data-turtle", true);
-            if(turtle === "normal")
-                return false;
-        }
-    });
-
-    dashboard.addLazyEvent("reload", data => {
-        let {_void, ref} = data;
-        if(_void && ref){
-            let $a = $(`[data-menu-item="${_void}"] > a`);
-            let turtle = $a.hasAttr("data-turtle", true);
-            if(turtle === "normal" && ref === "hotkey"){
-                location.reload();
-                return false;
-            }
-        }
-    });
-
     dashboard.setUser(amd_conf.getUser());
     dashboard.init();
     dashboard.initTooltips();
@@ -218,7 +145,7 @@ if( !$lazy_load OR $turtle == "normal" ){
 
     dashboard.addHotKey("control+r", function(e) {
         e.preventDefault();
-        dashboard.lazyReload(true, "hotkey");
+        dashboard.lazyReload();
         Hello.closeAll();
     });
 

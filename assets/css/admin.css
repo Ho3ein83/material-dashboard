@@ -39,7 +39,7 @@ body {
 
 .amd-admin-tabs > .--tabs {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
 }
 
@@ -86,15 +86,12 @@ body {
 
 .amd-admin-tabs > .--tabs > div > i {
     display: block;
+    font-size: 15px;
     padding: 8px;
     padding-inline-end: 0;
 }
-.amd-admin-tabs > .--tabs > div > i::before {
-    font-size: 15px;
-}
 
-.amd-admin-tabs > .--tabs > div > svg.iconhub,
-.amd-admin-tabs > .--tabs > div > svg.tabler {
+.amd-admin-tabs > .--tabs > div > svg.iconhub {
     display: block;
     height: 18px;
     width: auto;
@@ -271,7 +268,9 @@ input[data-coloris] {
     justify-content: start;
 }
 
-.amd-admin-card .__option_grid {}
+.amd-admin-card .__option_grid {
+
+}
 
 .amd-admin-card .__option_grid > .-item {
     position: relative;
@@ -279,7 +278,7 @@ input[data-coloris] {
     padding: 16px 0;
 }
 
-.amd-admin-card .__option_grid > .-item:not(:last-child, .--exclude):after {
+.amd-admin-card .__option_grid > .-item:not(:last-child):after {
     content: ' ';
     position: absolute;
     display: block;
@@ -758,22 +757,18 @@ input[data-coloris] {
     max-height: 400px;
 }
 
-.amd-admin-select.invalid,
 .amd-admin-input.invalid {
     border-color: var(--amd-color-red) !important;
 }
 
-.amd-admin-select.valid,
 .amd-admin-input.valid {
     border-color: var(--amd-color-green) !important;
 }
 
-.amd-admin-select.info,
 .amd-admin-input.info {
     border-color: var(--amd-color-blue) !important;
 }
 
-.amd-admin-select.warning,
 .amd-admin-input.warning {
     border-color: var(--amd-color-orange) !important;
 }
@@ -976,23 +971,6 @@ input[data-coloris] {
     margin: 0 4px;
 }
 
-.amd-oc-card > .--thumb > .--badges > ._item.--fill {
-    background-color: var(--amd-primary);
-    color: #fff
-}
-
-.amd-oc-card > .--thumb > .--badges > ._item.--fill.--red {
-    background-color: var(--amd-color-red);
-}
-
-.amd-oc-card > .--thumb > .--badges > ._item.--fill.--blue {
-    background-color: var(--amd-color-blue);
-}
-
-.amd-oc-card > .--thumb > .--badges > ._item.--fill.--green {
-    background-color: var(--amd-color-green);
-}
-
 .amd-oc-card > .--thumb > .--badges > ._item svg._icon_ {
     height: 13px;
     width: auto;
@@ -1031,39 +1009,4 @@ input[data-coloris] {
     padding: 4px 12px;
     margin: 4px;
     border-radius: 30px;
-}
-
-.amd-admin-badges > .--badge.--icon {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-}
-
-.amd-admin-badges > .--badge.--icon > .-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 1;
-    width: 20px;
-    height: auto;
-    margin-inline-start: 8px;
-}
-
-.amd-admin-badges > .--badge.--red {
-    background: rgba(var(--amd-color-red-rgb), .2);
-    color: var(--amd-color-red);
-}
-.amd-admin-badges > .--badge.--green {
-    background: rgba(var(--amd-color-green-rgb), .2);
-    color: var(--amd-color-green);
-}
-.amd-admin-badges > .--badge.--blue {
-    background: rgba(var(--amd-color-blue-rgb), .2);
-    color: var(--amd-color-blue);
-}
-
-.amd-admin-hr {
-    border: 1px dashed rgba(var(--amd-primary-rgb), .2) !important;
 }

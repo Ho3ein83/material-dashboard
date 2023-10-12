@@ -1,29 +1,5 @@
 <?php
 
-/**
- * Force it to display phone edit fields even if phone field is disabled by settings
- * @since 1.0.4
- */
-$force_display = apply_filters(  "amd_force_display_phone_edit", false );
-
-/**
- * Allow users change phone number
- * @since 1.0.4
- */
-$allow_change_phone_number = apply_filters( "amd_allow_change_phone_number", false );
-
-/*if( !$allow_change_phone_number )
-    return;*/
-
-if( amd_get_site_option( "phone_field" ) != "true" AND !$force_display )
-    return;
-
-$thisuser = amd_get_current_user();
-$is_phone_valid = amd_validate_phone_number( $thisuser->phone );
-
-if( $is_phone_valid AND !$allow_change_phone_number )
-    return;
-
 $regions = amd_get_regions();
 $cc_count = $regions["count"];
 $first_cc = $regions["first"];
@@ -33,15 +9,12 @@ $phone_field_required = true;
 
 ?>
 <?php ob_start(); ?>
-<?php amd_phone_fields(); ?>
-<?php $phone_change_content = ob_get_clean(); ?>
-
-<?php ob_start(); ?>
 <?php if( $cc_count > 1 ): ?>
-    <div class="_phone_field_holder_ ht-magic-select">
-        <label style="height:50px">
+    <div class="ht-magic-select">
+        <label>
             <input type="text" class="--input" data-field="country_code" data-next="phone_number"
-                   placeholder=""<?php echo $phone_field_required ? "required" : ""; ?> style="height:40px;font-size:13px;padding-top:24px">
+                   placeholder=""
+				<?php echo $phone_field_required ? "required" : ""; ?>>
             <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
             <span class="--value" dir="auto"><?php _amd_icon( "phone" ) ?></span>
         </label>
@@ -50,21 +23,21 @@ $phone_field_required = true;
                 <span data-value="<?php echo esc_attr( $region['digit'] ?? '' ); ?>"
                       data-format="<?php echo esc_attr( $region['format'] ?? '' ); ?>"
                       data-keyword="<?php echo esc_attr( $region['name'] ?? '' ); ?>">
-                                <?php echo apply_filters( "amd_phone_format_name", $region["name"] ?? "", $region["digit"] ?? "", $region["format"] ?? "" ); ?></span>
+                                <?php echo esc_html( $region["name"] ?? "" ); ?></span>
 			<?php endforeach; ?>
         </div>
         <div class="--search"></div>
     </div>
-    <label class="_phone_field_holder_ ht-input --ltr">
+    <label class="ht-input --ltr">
         <input type="text" class="not-focus" data-field="phone_number" data-pattern="" data-keys="[+0-9]"
-               data-next="submit" value="<?php echo esc_attr( $thisuser->phone ); ?>"
+               data-next="submit"
                placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
         <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
 		<?php _amd_icon( "phone" ); ?>
     </label>
 <?php else: ?>
 	<?php if( $first_cc == "98" AND apply_filters( "amd_use_phone_simple_digit", false ) ): ?>
-        <label class="_phone_field_holder_ ht-input --ltr">
+        <label class="ht-input --ltr">
             <input type="text" class="not-focus" data-field="phone_number" data-keys="[0-9]"
                    data-pattern="[0-9]" data-next="submit" placeholder=""
 				<?php echo $phone_field_required ? "required" : ""; ?>>
@@ -72,10 +45,10 @@ $phone_field_required = true;
 			<?php _amd_icon( "phone" ); ?>
         </label>
 	<?php else: ?>
-        <div class="_phone_field_holder_ ht-magic-select" style="display:none">
+        <div class="ht-magic-select" style="display:none">
             <label>
                 <input type="text" class="--input" data-field="country_code" data-next="phone_number"
-                       data-value="<?php echo esc_attr( $first_cc ); ?>" value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
+                       data-value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
 					<?php echo $phone_field_required ? "required" : ""; ?>>
                 <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
                 <span class="--value" dir="auto"><?php echo esc_html( $first_cc ); ?></span>
@@ -85,7 +58,7 @@ $phone_field_required = true;
             </div>
             <div class="--search"></div>
         </div>
-        <label class="_phone_field_holder_ ht-input --ltr">
+        <label class="ht-input --ltr">
             <input type="text" class="not-focus" data-field="phone_number" data-pattern="[0-9]{11}"
                    data-keys="[0-9]" data-next="submit"
                    placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
@@ -94,13 +67,12 @@ $phone_field_required = true;
         </label>
 	<?php endif; ?>
 <?php endif; ?>
-<?php $phone_change_content_ = ob_get_clean(); ?>
+<?php $phone_change_content = ob_get_clean(); ?>
 
 <?php ob_start(); ?>
 <div class="plr-8">
-    <button type="button" style="<?php echo $is_phone_valid ? '' : 'display:none'; ?>" class="btn" id="display-change-phone-buttons"><?php esc_html_e( "Change", "material-dashboard" ); ?></button>
-    <button type="button" style="<?php echo $is_phone_valid ? 'display:none' : ''; ?>" class="btn" data-submit="change-phone"><?php esc_html_e( "Save", "material-dashboard" ); ?></button>
-    <button type="button" style="<?php echo $is_phone_valid ? 'display:none' : ''; ?>" class="btn btn-text" data-dismiss="change-phone"><?php esc_html_e( "Dismiss", "material-dashboard" ); ?></button>
+    <button type="button" class="btn" data-submit="change-phone"><?php esc_html_e( "Change", "material-dashboard" ); ?></button>
+    <button type="button" class="btn btn-text" data-dismiss="change-phone"><?php esc_html_e( "Dismiss", "material-dashboard" ); ?></button>
 </div>
 <?php $phone_change_footer = ob_get_clean(); ?>
 
@@ -112,34 +84,9 @@ $phone_field_required = true;
 	"_id" => "change-phone-card",
     "_attrs" => 'data-form="change-phone"'
 ) ); ?>
-<?php if( $is_phone_valid ): ?>
-    <script>
-        (function(){
-            let $f1 = $('[data-submit="change-phone"]');
-            let $f2 = $('[data-dismiss="change-phone"]');
-            let $f3 = $("#display-change-phone-buttons");
-            let $holder = $("._phone_field_holder_");
-            $holder.find('[data-field="phone_number"]').val(`<?php echo esc_html( $thisuser->phone ); ?>`);
-            $holder.setWaiting();
-            $f3.click(function(){
-                $f3.fadeOut(0);
-                $f1.fadeIn();
-                $f2.fadeIn();
-                $holder.setWaiting(false);
-            });
-            $f2.click(function(){
-                $f3.fadeIn();
-                $f1.fadeOut(0);
-                $f2.fadeOut(0);
-                $holder.setWaiting();
-            });
-        }());
-    </script>
-<?php endif; ?>
 <script>
     (function(){
         let form = new AMDForm("change-phone-card");
-        let $card = $("#change-phone-card");
 
         form.on("invalid_code", data => {
             let {field, code} = data;
@@ -147,32 +94,7 @@ $phone_field_required = true;
             if(id === "phone_number")
                 dashboard.toast(_t("phone_incorrect"));
         });
-        form.on("submit", () => {
-            let data = form.getFieldsData();
-            let phone = data.phone_number.value;
-            let _n = dashboard.getApiEngine();
-            _n.clean();
-            _n.put("change_phone", phone);
-            _n.on.start = () => {
-                $card.cardLoader();
-            }
-            _n.on.end = (resp, error) => {
-                if(!error) {
-                    $amd.toast(resp.data.msg);
-                    if(resp.success){
-                        dashboard.lazyReload();
-                    }
-                    else{
-                        $card.cardLoader(false);
-                    }
-                }
-                else {
-                    $card.cardLoader(false);
-                    $amd.toast(_t("error"));
-                }
-            }
-            _n.post();
-        });
+        // TODO: continue phone register
 
         let $country_code = form.$getField("country_code");
         let $phone_number = form.$getField("phone_number");
@@ -247,10 +169,7 @@ $phone_field_required = true;
                 _f = _f.replaceAll("X", "[0-9]");
                 $phone_number.attr("data-pattern", `^\\+${cc}\\s?${_f}$`);
             }
-            let val = $country_code.val();
-            $country_code.val(val.trimChar(" "));
         });
         $country_code.trigger("change");
     }());
 </script>
-<style>.ht-magic-select._phone_field_holder_ > label{height:50px}  .ht-magic-select._phone_field_holder_ input{height:40px;font-size:13px;padding-top:24px}</style>

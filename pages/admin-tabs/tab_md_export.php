@@ -220,7 +220,6 @@ $export_variants = $amdDB->getExportVariants();
                     $amd.alert(_t("backup"), _t("error"), {
                         icon: "error"
                     });
-                    console.log(resp.xhr);
                 }
             }
             network.post();

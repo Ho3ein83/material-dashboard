@@ -11,10 +11,6 @@ jQuery.fn.extend({
         if(bool) $(this).addClass("waiting");
         else $(this).removeClass("waiting");
     },
-    setSpinner: function(bool = true) {
-        if(bool) $(this).addClass("adp-spin --rev --ease");
-        else $(this).removeClass("adp-spin --rev --ease");
-    },
     cardLoader: function(bool = true) {
         if(bool) {
             $(this).append(`<div class="indeterminate-progress-bar --card-progress"><div class="indeterminate-progress-bar__progress"></div></div>`);
@@ -48,45 +44,10 @@ jQuery.fn.extend({
         });
         $el.on("mouseup touchend", () => clearTimeout(handler));
     },
-    onDoubleClick: function(callback, timeout = 500) {
-        var handler = null;
-        var $el = $(this);
-        $el.on("click", function(e) {
-            if($(this).hasClass("--double-click-check")){
-                $el.removeClass("--double-click-check");
-                clearTimeout(handler);
-                callback(e);
-                return;
-            }
-            $el.addClass("--double-click-check");
-            handler = setTimeout(() => {
-                $el.removeClass("--double-click-check");
-            }, timeout);
-        });
-    },
-    waitHold: function(text=null){
-        let $el = $(this);
-        let lastHtml = $el.html();
-        $el.blur();
-        $el.setWaiting();
-        if(text){
-            $el.attr("data-last-html", encodeURIComponent(lastHtml));
-            $el.html(text);
-        }
-    },
-    waitRelease: function(){
-        let $el = $(this);
-        $el.setWaiting(false);
-        let lastHtml = $el.hasAttr("data-last-html", true);
-        if(lastHtml) $el.html(decodeURIComponent(lastHtml)).removeAttr("data-last-html");
-    },
-    removeSlow: function(t = 700, fromParent = false, done=()=>null) {
+    removeSlow: function(t = 700, fromParent = false) {
         let $el = fromParent ? $(this).parent() : $(this);
         $el.fadeOut();
-        setTimeout(() => {
-            $el.remove();
-            done();
-        }, t + 10);
+        setTimeout(() => $el.remove(), t + 10);
     },
     winload: (callback) => window.addEventListener("load", callback),
 })
@@ -173,7 +134,7 @@ String.prototype.trimChar = function(character) {
     let first = [...string].findIndex(char => char !== character);
     let last = [...string].reverse().findIndex(char => char !== character);
     return string.substring(first, string.length - last);
-};
+}
 /* End of main.js */
 
 /* amd.js */
@@ -276,7 +237,7 @@ var $amd = {
      * @param text
      * @param alert
      * @param toast
-     * @param $el
+     * @param change_text
      */
     copy: (text, alert = false, toast = false, $el=false) => {
         let textarea = document.createElement("textarea");
@@ -334,40 +295,7 @@ var $amd = {
     addEvent: (event, callback) => {
         if(typeof $amd.events[event] === "undefined") $amd.events[event] = [];
         if(typeof $amd.events[event].push === "undefined") $amd.events[event] = [];
-        if(event.startsWith("_SINGLE_"))
-            $amd.events[event] = [callback];
-        else
-            $amd.events[event].push(callback);
-    },
-    /**
-     * Add one-time-use event
-     * @param event
-     * @param callback
-     * @since 1.0.4
-     */
-    addDisposableEvent: (event, callback) => {
-        let key = "_DISPOSABLE_" + event;
-        $amd.addEvent(key, callback);
-    },
-    /**
-     * Single events only accepts one callback for their event handler
-     * @param event
-     * @param callback
-     * @since 1.0.4
-     */
-    addSingleEvent: (event, callback) => {
-        let key = "_SINGLE_" + event;
-        $amd.addEvent(key, callback);
-    },
-    /**
-     * These events will be removed after reloading page in any ways (lazy-load or har reload)
-     * @param event
-     * @param callback
-     * @since 1.0.4
-     */
-    addPageEvent: (event, callback) => {
-        let key = "_PAGE_" + event;
-        $amd.addEvent(key, callback);
+        $amd.events[event].push(callback);
     },
     /**
      * Unbind event
@@ -396,29 +324,6 @@ var $amd = {
      */
     doEvent: (event, arg = null) => {
         let type = typeof $amd.events[event];
-        let disposal_key = "_DISPOSABLE_" + event;
-        let disposable_type = typeof $amd.events[disposal_key];
-        if(disposable_type === "function"){
-            let v = $amd.events[disposal_key]();
-            delete $amd.events[disposal_key];
-            return v;
-        }
-        else if(disposable_type === "object"){
-            let out = {};
-            $.each($amd.events[disposal_key], (i, v) => {
-                if(typeof v === "function") {
-                    let d = v(arg);
-                    out = Object.assign(out, d);
-                }
-                $amd.events[disposal_key][i] = null;
-                delete $amd.events[disposal_key][i];
-            });
-            return out;
-        }
-        if(typeof $amd.events["_SINGLE_" + event] !== "undefined")
-            return $amd.doEvent("_SINGLE_" + event, arg);
-        if(typeof $amd.events["_PAGE_" + event] !== "undefined")
-            return $amd.doEvent("_PAGE_" + event, arg);
         if(type === "undefined")
             return null;
         else if(type === "function")
@@ -435,12 +340,6 @@ var $amd = {
         }
         return null;
     },
-    /**
-     * Do events with their name prefix
-     * @param prefix
-     * @param arg
-     * @returns {null}
-     */
     doEventsPrefix: (prefix, arg = null) => {
         let out = null;
         $.each($amd.events, (i, v) => {
@@ -480,15 +379,14 @@ var $amd = {
      */
     applyInputsDefault: def => {
         for(let [key, value] of Object.entries(def)) {
-            let $input = $(`input[type="hidden"][name="${key}"]`);
-            if($input.length > 0){
-                $input.val(value);
-                continue;
+            let $hidden = $(`input[type="hidden"][name="${key}"]`);
+            if($hidden.length > 0){
+                $hidden.val(value);
+                break;
             }
             $(`input[type="radio"][name="${key}"][value="${value}"]`).prop("checked", true);
             $(`input[type="checkbox"][name="${key}"][value="${value}"]`).prop("checked", true);
             $(`input[type="text"][name="${key}"]`).val(value);
-            $(`input[type="number"][name="${key}"]`).val(value);
             $(`select[name="${key}"]`).val(value);
             $(`textarea[name="${key}"]`).val(value);
         }
@@ -732,36 +630,6 @@ var $amd = {
                 return `${mm.toString().addZero()}:${ss.toString().addZero()}`;
         }
         return "00:00";
-    },
-    /**
-     * Get CSS variable of document or custom element
-     * @param property_name
-     * @param element
-     * @returns {string}
-     * @since 1.0.5
-     */
-    getCssVariable: (property_name, element=null) => {
-        if(element === null)
-            element = document.body;
-        return getComputedStyle(element).getPropertyValue(property_name);
-    },
-    /**
-     * Convert RGB string (e.g: "128, 23, 67") to array (e.g: [128, 23, 67])
-     * @param rgbString
-     * @returns []
-     */
-    rgbToArray: rgbString => {
-        let exp = rgbString.split(",");
-        let out = [];
-        for(let i = 0; i < exp.length; i++){
-            let a = exp[i] || "";
-            if(a){
-                let n = parseInt(a);
-                if(!isNaN(n))
-                    out.push(n);
-            }
-        }
-        return out;
     }
 }
 /* End of amd.js */
@@ -778,8 +646,6 @@ var HBTooltip = (function() {
             tooltipHeight: 30,
             fadeInTimeout: 250,
             fadeOutTimeout: 250,
-            displayInterval: 300,
-            hideInterval: 500
         }, c);
 
         var $tooltip = null;
@@ -848,14 +714,14 @@ var HBTooltip = (function() {
                     $el.on("mouseover", function(e) {
                         if($amd.isMobile()) return;
                         clearTimeout(hiding);
-                        showing = setTimeout(() => handleTooltip(), conf.displayInterval);
+                        showing = setTimeout(() => handleTooltip(), 500);
                     });
                     $el.on("mouseout", function() {
                         clearTimeout(showing);
                         hiding = setTimeout(() => {
                             $tooltip.fadeOut(conf.fadeOutTimeout);
                             setTimeout(() => $tooltip.html(""), conf.fadeOutTimeout + 100);
-                        }, conf.hideInterval);
+                        }, 1200);
                     });
                 }
             });
@@ -880,7 +746,6 @@ class AMDNetwork {
     constructor(c = {}) {
         this.data = Object.assign({}, c);
         this.options = {};
-        this.request = null;
         this.on = {
             progress: () => null,
             start: () => null,
@@ -916,7 +781,7 @@ class AMDNetwork {
             return false;
         let _this = this;
         _this.on.start();
-        this.request = send_ajax(_this.data, resp => {
+        return send_ajax(_this.data, resp => {
             _this.clean();
             _this.on.end(resp, false);
             if(resp.success)
@@ -928,7 +793,6 @@ class AMDNetwork {
             _this.on.end({xhr, options, error}, true);
             _this.on.error(xhr, options, error);
         }, xhrF);
-        return this.request;
     }
 
     postTo(url, xhrF = null) {
@@ -959,14 +823,6 @@ class AMDNetwork {
             _this.on.end({xhr, options, error}, true);
             _this.on.error(xhr, options, error);
         });
-    }
-
-    abort() {
-        if(this.request && typeof this.request.abort === "function") {
-            this.request.abort();
-            return true;
-        }
-        return false;
     }
 
     upload(key = "default") {
@@ -1289,8 +1145,6 @@ var AMDForm = (function() {
             if(pattern.length > 0) {
                 if(!$amd.validate(val, pattern))
                     invalid = 3;
-                else
-                    invalid = 0;
             }
             if(minlength && val.length < minlength) invalid = 4;
             if(maxlength && val.length > maxlength) invalid = 5;

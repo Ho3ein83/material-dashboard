@@ -10,12 +10,6 @@ if( empty( $auth ) ){
 
 do_action( "amd_begin_dashboard" );
 
-/**
- * Begin dashboard auth hook
- * @since 1.0.5
- */
-do_action( "amd_begin_dashboard_auth" );
-
 do_action( "amd_auth_begin_$auth" );
 
 if( amd_template_exists( "auth" ) ){
@@ -63,10 +57,7 @@ $show_btn = $data["show_btn"] ?? true;
 $btn_text = $data["btn_text"] ?? "";
 $btn_url = $data["btn_url"] ?? "";
 
-$icon_pack = amd_get_icon_pack();
-$theme_id = amd_get_theme_property( "id" );
-
-amd_add_element_class( "body", [$theme, $direction, $current_locale, "icon-$icon_pack", "theme-$theme_id"] );
+amd_add_element_class( "body", [$theme, $direction, $current_locale] );
 
 $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 
@@ -102,9 +93,9 @@ $blog_name = get_bloginfo( "name" );
                 <a class="btn" href="<?php echo esc_url( $btn_url ); ?>"><?php echo esc_html( $btn_text ); ?></a>
 			<?php else: ?>
 				<?php if( is_user_logged_in() ): ?>
-                    <button type="button" class="btn" data-auth="login"><?php esc_html_e( "Back to dashboard", "material-dashboard" ); ?></button>
+                    <button type="button" class="btn" data-auth="login"><?php _e( "Back to dashboard", "material-dashboard" ); ?></button>
 				<?php else: ?>
-                    <button type="button" class="btn" data-auth="login"><?php esc_html_e( "Login to your account", "material-dashboard" ); ?></button>
+                    <button type="button" class="btn" data-auth="dashboard"><?php _e( "Login to your account", "material-dashboard" ); ?></button>
 				<?php endif; ?>
 			<?php endif; ?>
         </div>
@@ -120,7 +111,7 @@ $blog_name = get_bloginfo( "name" );
         loader_id: "",
         api_url: amd_conf.api_url,
         mode: "form",
-        loading_text: `<?php esc_html_e( "Please wait", "material-dashboard" ); ?><span class="_loader_dots_"></span>`,
+        loading_text: `<?php _e( "Please wait", "material-dashboard" ); ?><span class="_loader_dots_"></span>`,
         languages: JSON.parse(`<?php echo $json_locales; ?>`),
         network: network,
         translate: {
