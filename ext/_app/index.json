@@ -1,0 +1,9 @@
+{
+  "name": "Main extension",
+  "description": "Load application and initialize dashboard",
+  "thumbnail": "{AMD_IMG}/extensions_thumb.png",
+  "version": "1.0.5",
+  "compatible": "1.0.0",
+  "url": "{DOC_URL}?e=_app",
+  "author": "Amatris"
+}

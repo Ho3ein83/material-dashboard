@@ -1,0 +1,16 @@
+{
+  "name": "Material theme",
+  "description": "User friendly dashboard UI with material components and mono-chrome icons. Customizable and free!",
+  "version": "1.0.0",
+  "thumbnail": "{THEME_URL}/thumbnail.png?ver=1.0.0",
+  "url": "{DOC_URL}?t=amatris",
+  "dashboard_style": "{THEME_PATH}/css/dashboard.css",
+  "components_style": "{THEME_PATH}/css/components.css",
+  "context": "material-theme",
+  "properties": {
+    "supports": {
+      "night_mode": true
+    }
+  },
+  "author": "Amatris"
+}

@@ -1,0 +1,1 @@
+<div class="lds-ellipsis _loader_"><?php echo str_repeat( "<div></div>", 4 ); ?></div>

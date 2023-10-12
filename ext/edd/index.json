@@ -1,0 +1,12 @@
+{
+  "name": "Easy digital downloads support",
+  "description": "Let you clients manage their transactions and downloads from edd plugin",
+  "thumbnail": "{EXT_URL}/thumbnail.png?ver=1.0.0",
+  "version": "1.0.1",
+  "compatible": ">= 1.0.0",
+  "url": "{DOC_URL}?e=edd",
+  "requirements": {
+    "Easy Digital Downloads": "class:EDD_Requirements_Check"
+  },
+  "author": "Amatris"
+}
