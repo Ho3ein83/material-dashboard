@@ -1,0 +1,47 @@
+{
+  "0": {
+    "group": "xx",
+    "id": "error",
+    "type": "error"
+  },
+  "1": {
+    "group": "xx",
+    "id": "api_disabled",
+    "type": "error"
+  },
+  "2": {
+    "group": "xx",
+    "id": "bad_request",
+    "type": "error"
+  },
+  "100": {
+    "group": "1xx",
+    "id": "invalid_user",
+    "type": "error"
+  },
+  "900": {
+    "group": "9xx",
+    "id": "register_not_allowed",
+    "type": "warning"
+  },
+  "901": {
+    "group": "9xx",
+    "id": "unable_to_import",
+    "type": "warning"
+  },
+  "902": {
+    "group": "9xx",
+    "id": "template_error",
+    "type": "error"
+  },
+  "903": {
+    "group": "9xx",
+    "id": "template_part_error",
+    "type": "error"
+  },
+  "904": {
+    "group": "9xx",
+    "id": "cannot_load_theme",
+    "type": "error"
+  }
+}
