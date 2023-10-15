@@ -27,6 +27,7 @@ Documentations are available on our [official website](https://amatris.ir/amd/d)
 -   Automatic cleanup
 -   Multiple icon packs
 -   Gregorian and solar calendar based on user language
+-   Two factor authentication (2FA)
 
 ### AVAILABLE LANGUAGES
 
