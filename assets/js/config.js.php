@@ -5,7 +5,7 @@ $isLoggedIn = is_user_logged_in();
 $userObject = null;
 
 if( $isLoggedIn ){
-	$user = amd_simple_user();
+    $user = amd_get_current_user();
 	if( $user ){
 		$userObject = array(
 			"ID" => $user->ID,

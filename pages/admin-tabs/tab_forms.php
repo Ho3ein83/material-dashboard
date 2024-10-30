@@ -17,6 +17,15 @@ $defaultSettings = array(
 );
 
 ?>
+
+<?php
+    /**
+     * Before forms tab settings
+     * @since 1.0.5
+     */
+    do_action( "amd_settings_tab_forms_before" );
+?>
+
 <!-- Forms text -->
 <div class="amd-admin-card --setting-card">
     <h3 class="--title"><?php echo esc_html_x( "Forms title", "Admin", "material-dashboard" ); ?></h3>
@@ -103,6 +112,14 @@ $defaultSettings = array(
         });
     }())
 </script>
+
+<?php
+    /**
+     * After forms tab settings
+     * @since 1.0.5
+     */
+    do_action( "amd_settings_tab_forms_after" );
+?>
 
 <script>
     (function () {

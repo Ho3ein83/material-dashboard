@@ -2,10 +2,16 @@
 
 $primary_color = amd_ext_todo_get_primary_color();
 
+/**
+ * Set how many items should display in home page
+ * @since 1.0.5
+ */
+$max_tasks_to_show = apply_filters( "amd_ext_todo_max_items_to_show_in_home", 6 );
+
 ?>
 
 <?php ob_start(); ?>
-<?php echo esc_html_x( "Todo list", "todo", "material-dashboard" ); ?>
+<?php echo esc_html_x( "Todo list (news)", "todo", "material-dashboard" ); ?>
 <button class="btn btn-icon-square bis-sm --transparent --button mlr-8 --sm _refresh_todo_list_" data-tooltip="<?php esc_html_e( "Refresh", "material-dashboard" ); ?>">
 	<?php _amd_icon( "refresh" ); ?>
 </button>
@@ -21,6 +27,10 @@ $primary_color = amd_ext_todo_get_primary_color();
 </div>
 <h4 class="text-center" id="todo-empty"><?php esc_html_e( "There is no item to show", "material-dashboard" ); ?></h4>
 <div class="amd-todo-row" id="todo-list-items"></div>
+<div class="text-center" id="todo-show-more" style="display:none">
+    <a href="?void=todo" class="btn btn-text --low" data-turtle="lazy"><?php esc_html_e( "More", "material-dashboard" ); ?></a>
+    <div class="h-10"></div>
+</div>
 <?php $todo_card_content = ob_get_clean(); ?>
 
 <?php amd_dump_single_card( array(
@@ -33,7 +43,9 @@ $primary_color = amd_ext_todo_get_primary_color();
 <script>
     (function(){
         var _todo_list_item_delete_icon = `<?php _amd_icon( "delete" ); ?>`;
-        let $list = $("#todo-list-items"), $loading = $("#loading-todo");
+        let max_items_to_show = parseInt(`<?php echo $max_tasks_to_show; ?>`);
+        let $list = $("#todo-list-items"), $loading = $("#loading-todo"),
+            $more = $("#todo-show-more");
         let checkList = () => {
             let $empty = $("#todo-empty");
             if($("[data-todo]").length > 0) {
@@ -128,6 +140,7 @@ $primary_color = amd_ext_todo_get_primary_color();
             _network.put("get_todo_list", "");
             _network.on.start = () => {
                 $list.html("");
+                $more.fadeOut(0);
                 setLoader();
             }
             _network.on.end = (resp, error) => {
@@ -135,12 +148,18 @@ $primary_color = amd_ext_todo_get_primary_color();
                 if(!error){
                     if(resp.success){
                         let items = resp.data.data;
-                        for(let [id, data] of Object.entries(items)){
+                        let entries = Object.entries(items);
+                        if(entries.length > max_items_to_show)
+                            $more.fadeIn(0);
+                        let counter = 0;
+                        for(let [id, data] of entries){
+                            if(counter >= max_items_to_show)
+                                break;
                             let _text = data.text || "";
                             let _status = data.status || "";
                             let primary_color = `<?php echo esc_attr( $primary_color ); ?>`;
                             let $html = $(`<div class="--item --bg" data-todo="${id}">
-                        <p class="--text _text" ${_status === "done" ? "style=\"text-decoration:line-through\"" : ""}>${_text}</p>
+                        <div class="--text _text" ${_status === "done" ? "style=\"text-decoration:line-through\"" : ""}>${_text}</div>
                         <label class="hb-checkbox ${primary_color}">
                             <input type="checkbox" class="_checkbox" ${_status === "done" ? "checked" : ""}>
                             <span></span>
@@ -148,6 +167,7 @@ $primary_color = amd_ext_todo_get_primary_color();
                         <button class="btn ${primary_color} btn-text _delete no-special">${_todo_list_item_delete_icon}</button>
                     </div>`);
                             $list.append($html);
+                            counter++;
                         }
                         reloadListEvents();
                         checkList();

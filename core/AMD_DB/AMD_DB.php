@@ -6,11 +6,18 @@ $amdDB = null;
 class AMD_DB {
 
 	/**
-	 * Tables name
-	 * @var string
+	 * Tables list
+	 * @var array
 	 * @since 1.0.0
 	 */
-	public $tables;
+	protected $tables;
+
+	/**
+	 * Dashboard tables list
+	 * @var array
+	 * @since 1.0.0
+	 */
+	public $dashboard_tables;
 
 	/**
 	 * WordPress database prefix
@@ -39,6 +46,20 @@ class AMD_DB {
 	 * @since 1.0.0
 	 */
 	public $db;
+
+	/**
+	 * Allowed HTML tags for to-do and other contents saving
+	 * @var array
+	 * @since 1.0.5
+	 */
+	protected $allowedHtmlTags;
+
+	/**
+	 * Version code for database setup
+	 * @var int
+	 * @since 1.0.5
+	 */
+	const db_version = 1;
 
 	/**
 	 * Tables SQL structure
@@ -71,10 +92,32 @@ class AMD_DB {
 			"wp_users" => $this->wp_prefix . "users"
 		);
 
+		$this->dashboard_tables = [];
+
 		$this->export_variants = [];
+
+		$this->allowedHtmlTags = amd_allowed_tags_with_attr( "p,button,a,div,img,i,b,strong,span,br,small,ul,ol,li,em,u" );
 
 		# initialize database
 		self::init();
+
+		# Setup database
+		add_action( "amd_after_cores_init", function(){
+
+			$ver = intval( amd_get_site_option( "db_version", "0" ) );
+			if( $ver < self::db_version ){
+
+				/**
+				 * Update database
+				 * @sicne 1.0.5
+				 */
+				do_action( "amd_update_db", self::db_version );
+
+				amd_set_site_option( "db_version", self::db_version );
+
+			}
+
+		} );
 
 	}
 
@@ -121,8 +164,56 @@ class AMD_DB {
 			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = MyISAM;"
 		) );
 
+		self::registerTable( "reports", array(
+			"id" => "INT NOT NULL AUTO_INCREMENT",
+			"report_key" => "VARCHAR(64) NOT NULL",
+			"report_user" => "VARCHAR(64) NOT NULL",
+			"report_value" => "LONGTEXT NOT NULL",
+			"report_time" => "VARCHAR(64) NOT NULL",
+			"meta" => "LONGTEXT NOT NULL",
+			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = MyISAM;"
+		) );
+
+		self::registerTable( "components", array(
+			"id" => "INT NOT NULL AUTO_INCREMENT",
+			"component_key" => "VARCHAR(64) NOT NULL",
+			"component_type" => "VARCHAR(64) NOT NULL",
+			"component_data" => "LONGTEXT NOT NULL",
+			"component_time" => "VARCHAR(64) NOT NULL",
+			"meta" => "LONGTEXT NOT NULL",
+			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = MyISAM;"
+		) );
+
 		if( $install == true )
 			self::install();
+
+	}
+
+	/**
+	 * Repair database tables and fix collations
+	 * @return void
+	 * @since 1.0.5
+	 */
+	public function repairTables(){
+
+		foreach( self::getTables() as $table_name => $table ){
+
+			if( self::isDashboardTable( $table_name ) ){
+
+				$collation = self::getTableCollation( $table );
+
+				/**
+				 * Default collation for dashboard tables
+				 * @since 1.0.5
+				 */
+				$default_collation = apply_filters( "amt_default_tables_collation", "utf8mb4_persian_ci" );
+
+				if( $collation != $default_collation )
+					self::collateTable( $table, $default_collation );
+
+			}
+
+		}
 
 	}
 
@@ -147,7 +238,23 @@ class AMD_DB {
 
 		$this->tablesSQL[$table_name] = $data_array;
 
+		$this->dashboard_tables[$table_name] = true;
+
 		return true;
+
+	}
+
+	/**
+	 * Check if table is one of the dashboard tables
+	 * @param string $table_name
+	 * Table name
+	 *
+	 * @return bool
+	 * @since 1.0.5
+	 */
+	public function isDashboardTable( $table_name ){
+
+		return (bool) ($this->dashboard_tables[$table_name] ?? false);
 
 	}
 
@@ -696,6 +803,18 @@ class AMD_DB {
 	}
 
 	/**
+	 * Get tables list
+	 *
+	 * @return array
+	 * @since 1.0.5
+	 */
+	public function getTables(){
+
+		return $this->tables;
+
+	}
+
+	/**
 	 * Create table if not exists
 	 *
 	 * @param array $tables
@@ -915,21 +1034,41 @@ class AMD_DB {
 	 * Option name
 	 * @param string $ov
 	 * Option value
+	 * @param bool $ignoreCaches
+	 * <code>[Since 1.0.5] </code>
+	 * Whether to ignore caches and set site option only into database and do not change cached items,<br>
+	 * using caches can improve site performance but site options may be old
 	 *
 	 * @return bool|int|mysqli_result|resource|null
 	 * On update: The number of rows updated, or false on error
 	 * <br>On insert: The number of rows inserted, or false on error
 	 * @since 1.0.0
 	 */
-	public function setSiteOption( $on, $ov ){
+	public function setSiteOption( $on, $ov, $ignoreCaches=false ){
+
+		global $amdCache;
+		$cache_key = "_so:$on";
+
+		/**
+		 * Whether to ignore caches and set options only into database
+		 * @since 1.0.5
+		 */
+		$ignoreCaches = apply_filters( "amd_ignore_site_option_cache", $ignoreCaches, $on ) === true;
+
+		if( !$amdCache )
+			$ignoreCaches = true;
 
 		$table = $this->getTable( "options" );
 
-		if( !self::siteOptionExists( $on ) ){
-			return $this->db->insert( $table, [ 'option_name' => $on, 'option_value' => $ov ] );
-		}
+		if( !self::siteOptionExists( $on ) )
+			$complete = $this->db->insert( $table, [ 'option_name' => $on, 'option_value' => $ov ] );
+		else
+			$complete = $this->db->update( $table, [ 'option_value' => $ov ], [ 'option_name' => $on ] );
 
-		return $this->db->update( $table, [ 'option_value' => $ov ], [ 'option_name' => $on ] );
+		if( !$ignoreCaches AND $complete )
+			$amdCache->setCache( $cache_key, $ov );
+
+		return $complete;
 
 	}
 
@@ -944,6 +1083,12 @@ class AMD_DB {
 	 * @since 1.0.0
 	 */
 	public function deleteSiteOption( $on ){
+
+		global $amdCache;
+		$cache_key = "_so:$on";
+
+		if( $amdCache AND $amdCache->cacheExists( $cache_key ) )
+			$amdCache->removeCache( $cache_key );
 
 		$table = $this->getTable( "options" );
 
@@ -961,13 +1106,32 @@ class AMD_DB {
 	 * Option name
 	 * @param string $ov
 	 * Option value
+	 * @param bool $ignoreCaches
+	 * <code>[Since 1.0.5] </code>
+	 * Whether to ignore caches and get site option directly from database or get it from system caches,<br>
+	 * using caches can improve site performance but site options may be old
 	 *
 	 * @return bool|int|mysqli_result|resource|null
 	 * @since 1.0.0
 	 */
-	public function addSiteOption( $on, $ov ){
+	public function addSiteOption( $on, $ov, $ignoreCaches=false ){
+
+		global $amdCache;
+		$cache_key = "_so:$on";
+
+		/**
+		 * Whether to ignore caches and set options only into database
+		 * @since 1.0.5
+		 */
+		$ignoreCaches = apply_filters( "amd_ignore_site_option_cache", $ignoreCaches, $on ) === true;
+
+		if( !$amdCache )
+			$ignoreCaches = true;
 
 		$table = $this->getTable( "options" );
+
+		if( !$ignoreCaches )
+			$amdCache->setCache( $cache_key, $ov );
 
 		if( !self::siteOptionExists( $on ) )
 			return $this->db->insert( $table, [ 'option_name' => $on, 'option_value' => $ov ] );
@@ -1002,17 +1166,63 @@ class AMD_DB {
 	 * Option name
 	 * @param string $default
 	 * Default value
+	 * @param bool $ignoreCaches
+	 * <code>[Since 1.0.5] </code>
+	 * Whether to ignore caches and get site option directly from database or get it from system caches,<br>
+	 * using caches can improve site performance but site options may be old
 	 *
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function getSiteOption( $on, $default="" ){
+	public function getSiteOption( $on, $default="", $ignoreCaches=false ){
+
+		$on = sanitize_text_field( $on );
+
+		global $amdCache;
+		$cache_key = "_so:$on";
+
+		/**
+		 * Whether to ignore caches and read options directly from database
+		 * @since 1.0.5
+		 */
+		$ignoreCaches = apply_filters( "amd_ignore_site_option_cache", $ignoreCaches, $on ) === true;
+
+		if( !$amdCache )
+			$ignoreCaches = true;
+
+		if( !$ignoreCaches ){
+			if( $amdCache->cacheExists( $cache_key ) ){
+				$v = $amdCache->getCache( $cache_key, "scope" );
+
+				/**
+				 * Cache restore hook
+				 * @since 1.0.5
+				 */
+				do_action( "amd_site_option_cache_restored", $v, $on );
+
+				return $v;
+			}
+		}
 
 		$table = $this->getTable( "options" );
 
-		$res = $this->safeQuery( $table, "SELECT * FROM `%{TABLE}%` WHERE option_name='$on'" );
+		$sql = $this->db->prepare( "SELECT * FROM %i WHERE option_name=%s", $table, $on );
 
-		return !empty( $res[0]->option_value ) ? $res[0]->option_value : $default;
+		$res = $this->safeQuery( $table, $sql );
+
+		$value = !empty( $res[0]->option_value ) ? $res[0]->option_value : null;
+
+		if( !$ignoreCaches ){
+			$amdCache->setCache( $cache_key, $value );
+
+			/**
+			 * Cache store hook
+			 * @since 1.0.5
+			 */
+			do_action( "amd_site_option_cache_stored", $res, $on );
+		}
+
+		return $value !== null ? $value : $default;
 
 	}
 
@@ -1020,15 +1230,55 @@ class AMD_DB {
 	 * Get result of regex search inside site_options table
 	 * @param string $regex
 	 * Search regex
+	 * @param bool $ignoreCaches
+	 * <code>[Since 1.0.5] </code>
+	 * Whether to ignore caches and get site option directly from database or get it from system caches,<br>
+	 * using caches can improve site performance but site options may be old
 	 *
-	 * @return array|object|\stdClass|null
+	 * @return array|object|stdClass|null
 	 * @since 1.0.0
 	 */
-	public function searchSiteOption( $regex ){
+	public function searchSiteOption( $regex, $ignoreCaches=false ){
+
+		global $amdCache;
+		$cache_key = "_so_search:$regex";
+
+		/**
+		 * Whether to ignore caches and read options directly from database
+		 * @since 1.0.5
+		 */
+		$ignoreCaches = apply_filters( "amd_ignore_site_option_search_cache", $ignoreCaches ) === true;
+
+		if( !$amdCache )
+			$ignoreCaches = true;
+
+		if( !$ignoreCaches ){
+			if( $amdCache->cacheExists( $cache_key ) ){
+				$v = $amdCache->getCache( $cache_key, "scope" );
+
+				/**
+				 * Cache restore hook
+				 * @since 1.0.5
+				 */
+				do_action( "amd_site_option_search_cache_restored", $v, $regex );
+
+				return $v;
+			}
+		}
 
 		$table = $this->getTable( "options" );
 
 		$res = $this->safeQuery( $table, "SELECT * FROM `%{TABLE}%` WHERE `option_name` REGEXP '$regex'" );
+
+		if( !$ignoreCaches ){
+			$amdCache->setCache( $cache_key, $res );
+
+			/**
+			 * Cache store hook
+			 * @since 1.0.5
+			 */
+			do_action( "amd_site_option_search_cache_stored", $res, $regex );
+		}
 
 		return $res;
 
@@ -1051,7 +1301,9 @@ class AMD_DB {
 
 		$table = $this->getTable( "temp" );
 
-		$res = $this->safeQuery( $table, "SELECT * FROM `%{TABLE}%` WHERE temp_key='$name'" );
+		$sql = $this->db->prepare( "SELECT * FROM %i WHERE temp_key=%s", $table, $name );
+
+		$res = $this->safeQuery( $table, $sql );
 
 		if( count( $res ) <= 0 )
 			return $single ? "" : false;
@@ -1105,7 +1357,9 @@ class AMD_DB {
 
 		$table = $this->getTable( "temp" );
 
-		$res = $this->safeQuery( $table, "SELECT * FROM `%{TABLE}%` WHERE temp_key='$name'" );
+		$sql = $this->db->prepare( "SELECT * FROM %i WHERE temp_key=%s", $table, $name );
+
+		$res = $this->safeQuery( $table, $sql );
 
 		return count( $res ) > 0;
 
@@ -1130,7 +1384,7 @@ class AMD_DB {
 
 		$table = $this->getTable( "temp" );
 
-		$sql = "SELECT * FROM `%{TABLE}%` WHERE `$col` REGEXP '$regex'";
+		$sql = $this->db->prepare( "SELECT * FROM %i WHERE %i REGEXP '$regex'", $table, $col );
 		$res = $this->safeQuery( $table, $sql );
 
 		return $get ? $res : count( $res ) > 0;
@@ -1197,9 +1451,11 @@ class AMD_DB {
 		$table = $this->getTable( "temp" );
 
 		if( empty( $name ) )
-			$sql = "DELETE FROM `%{TABLE}%` WHERE expire <= " . time();
+			$sql = "DELETE FROM %i WHERE expire <= " . time();
 		else
-			$sql = "DELETE FROM `%{TABLE}%` WHERE temp_key='$name'" . ( $timeCheck ? " AND expire <= " . time() : "" );
+			$sql = "DELETE FROM %i WHERE temp_key='$name'" . ( $timeCheck ? " AND expire <= " . time() : "" );
+
+		$sql = $this->db->prepare( $sql, $table );
 
 		return $this->safeQuery( $table, $sql );
 
@@ -1231,7 +1487,9 @@ class AMD_DB {
 
 		$table = $this->getTable( "temp" );
 
-		$this->safeQuery( $table, "DELETE FROM `%{TABLE}%` WHERE `temp_key` REGEXP '$regex'" );
+		$sql = $this->db->prepare( "DELETE FROM %i WHERE `temp_key` REGEXP '$regex'", $table );
+
+		$this->safeQuery( $table, $sql );
 
 	}
 
@@ -1258,7 +1516,7 @@ class AMD_DB {
 	 */
 	public function addTodo( $key, $value, $status, $salt, $meta = [], $encode = true ){
 
-		$encoded_value = $encode ? json_encode( amd_encrypt_aes( $value, $salt ) ) : $value;
+		$encoded_value = $encode ? json_encode( amd_encrypt_aes( self::formatHtml( $value ), $salt ) ) : $value;
 
 		$table = $this->getTable( "todo" );
 
@@ -1270,6 +1528,45 @@ class AMD_DB {
 		] );
 
 		return $success ? $this->db->insert_id : false;
+
+	}
+
+	/**
+	 * Format HTML contents and strip tags
+	 *
+	 * @param string $html
+	 * HTML content
+	 * @param array|null $tags
+	 * Allowed tags for {@see wp_kses} function or null to use default tags
+	 *
+	 * @return string
+	 * Filtered HTML content
+	 * @since 1.0.5
+	 */
+	public function formatHtml( $html, $tags=null ){
+
+		if( $tags === null )
+			$tags = $this->allowedHtmlTags;
+
+		return wp_kses( $html, $tags );
+
+	}
+
+	/**
+	 * Get allowed HTML tags
+	 *
+	 * @param bool $simple
+	 * Whether to get simple tags array list or get complete tags data
+	 *
+	 * @return array
+	 * @since 1.1.1
+	 */
+	public function getAllowedHtmlTags( $simple=false ){
+
+		if( $simple )
+			return array_keys( $this->allowedHtmlTags );
+
+		return $this->allowedHtmlTags;
 
 	}
 
@@ -1289,8 +1586,17 @@ class AMD_DB {
 	 */
 	public function updateTodo( $data, $where, $salt = "" ){
 
+		if( !empty( $where["id"] ) ){
+			$id = $where["id"];
+			if( !empty( $data["priority"] ?? null )){
+				global $amdDB;
+				$amdDB->setTodoMeta( $id, "priority", intval( $data["priority"] ) );
+			}
+		}
+
 		if( !empty( $data["todo_value"] ) ){
 			$v = $data["todo_value"];
+			$v = wp_kses( $v, $this->allowedHtmlTags );
 			$data["todo_value"] = json_encode( amd_encrypt_aes( $v, $salt ) );
 		}
 
@@ -1303,6 +1609,90 @@ class AMD_DB {
 		$table = $this->getTable( "todo" );
 
 		return (bool) $this->db->update( $table, $data, $where );
+
+	}
+
+	/**
+	 * Update to-do item meta-data
+	 * @param int $id
+	 * To-do ID
+	 * @param string $meta_name
+	 * Meta name
+	 * @param string $meta_value
+	 * Meta value to change / push / pull
+	 * @param false|int $pullOrPush
+	 * Whether to update the whole value or pull / push<br>
+	 * <b>false:</b> Update,
+	 * <b>1:</b> Push,
+	 * <b>2:</b> Pull
+	 * @param bool $delete
+	 * Whether to delete meta item or not. If pass true, $meta_value and $pullOrPush parameters won't be used
+	 *
+	 * @return bool
+	 * True on success, false on failure
+	 * @since 1.0.5
+	 */
+	public function setTodoMeta( $id, $meta_name, $meta_value, $pullOrPush=false, $delete=false ){
+
+		$task = self::getTodoList( ["id" => $id] );
+
+		if( !empty( $task[0] ) ){
+
+			$meta = unserialize( $task[0]->meta ?? serialize( [] ) );
+
+			if( !is_array( $meta ) )
+				$meta = [];
+
+			if( $delete ){
+				$meta[$meta_name] = null;
+				unset( $meta[$meta_name] );
+			}
+			else{
+				$value = $meta_value;
+				if( $pullOrPush ){
+					$value = $meta[$meta_name] ?? "";
+					if( $pullOrPush === 1 )
+						$value = amd_push_value( $value, $meta_value );
+					else if( $pullOrPush === 2 )
+						$value = amd_pull_value( $value, $meta_value );
+				}
+				$meta[$meta_name] = $value;
+			}
+
+			return self::updateTodo( ["meta" => serialize( $meta )], ["id" => $id] );
+
+		}
+
+		return false;
+
+	}
+
+	/**
+	 * Get to-do item meta-data
+	 * @param int $id
+	 * To-do item ID
+	 * @param string $meta_name
+	 * Meta name
+	 * @param string|mixed $default
+	 * Default value to be returned, default is empty string
+	 *
+	 * @return mixed|string
+	 * String meta value on success, $default parameter on failure
+	 * @since 1.0.5
+	 */
+	public function getTodoMeta( $id, $meta_name, $default="" ){
+
+		$task = self::getTodoList( ["id" => $id] );
+
+		if( !empty( $task[0] ) ){
+
+			$meta = unserialize( $task[0]->meta ?? serialize( [] ) );
+
+			return $meta[$meta_name] ?: $default;
+
+		}
+
+		return $default;
 
 	}
 
@@ -1324,7 +1714,9 @@ class AMD_DB {
 
 		$table = $this->getTable( "todo" );
 
-		$res = $this->safeQuery( $table, "SELECT * FROM `%{TABLE}%` " . $filter . " ORDER BY `id` DESC" );
+		$sql = $this->db->prepare( "SELECT * FROM %i " . $filter . " ORDER BY `id` DESC", $table );
+
+		$res = $this->safeQuery( $table, $sql );
 
 		return $single ? ( count( $res ) > 0 ? $res[0]->todo_value : "" ) : $res;
 
@@ -1366,6 +1758,455 @@ class AMD_DB {
 
 		return $this->query( "DROP TABLE $tables" );
 
+	}
+
+	/**
+	 * Get table collation
+	 * @param string $table
+	 * Table name
+	 *
+	 * @return string
+	 * Table collation string or empty string on failure
+	 * @since 1.0.5
+	 */
+	public function getTableCollation( $table ){
+
+		$res = self::safeQuery( $table, "SHOW TABLE STATUS LIKE '%{TABLE}%'" );
+
+		if( empty( $res[0] ) )
+			return "";
+
+		return $res[0]->Collation ?? "";
+
+	}
+
+	/**
+	 * Change table collation
+	 * @param string $table
+	 * Table name
+	 * @param string $collation
+	 * New collation string
+	 *
+	 * @return void
+	 * @since 1.0.5
+	 */
+	public function collateTable( $table, $collation ){
+
+		$sql = $this->db->prepare( "ALTER TABLE %i COLLATE %s", $table, $collation );
+
+		$this->db->query( $sql );
+
+	}
+
+	/**
+	 * Register new report
+	 * @param string $key
+	 * Report key
+	 * @param string $value
+	 * Report value
+	 * @param int|false $user
+	 * User ID or false to ignore user
+	 * @param array $meta
+	 * Meta-data array
+	 *
+	 * @return false|int
+	 * Inserted row ID or false on failure
+	 * @since 1.0.5
+	 */
+	public function addReport( $key, $value, $user=false, $meta=[] ){
+
+		$table = $this->getTable( "reports" );
+
+		return $this->safeInsert( $table, array(
+			"report_key" => $key,
+			"report_value" => $value,
+			"report_user" => $user ?: "",
+			"report_time" => time(),
+			"meta" => serialize( $meta )
+		) );
+
+	}
+
+	/**
+	 * Read report card(s) from database
+	 * @param string $key
+	 * Report key
+	 * @param int|false $user
+	 * User ID or false to ignore user
+	 * @param bool $single
+	 * Whether to get first result
+	 * @param string $order
+	 * Results order, 'ASC' or 'DESC'
+	 *
+	 * @return array|mixed|object|stdClass
+	 * Result array for group results, stdClass for single result
+	 * @since 1.0.5
+	 */
+	public function readReports( $key, $user=false, $single=false, $order="DESC" ){
+
+		$table = $this->getTable( "reports" );
+
+		$sql = $this->db->prepare( "SELECT * FROM %i WHERE `report_key`=%s AND `report_user`=%s ORDER BY `id` $order", $table, $key, $user ? "$user" : "" );
+
+		$res = $this->safeQuery( $table, $sql );
+
+		if( !empty( $res ) )
+			return $single ? $res[0] : $res;
+
+		return [];
+
+	}
+
+	/**
+	 * Get report by ID
+	 * @param int $report_id
+	 * Report ID
+	 *
+	 * @return mixed
+	 * Report single object result from database
+	 * @since 1.0.5
+	 */
+	public function getReport( $report_id ){
+
+		$table = $this->getTable( "reports" );
+
+		$sql = $this->db->prepare( "SELECT * FROM %i WHERE `id`=%d", $table, $report_id );
+
+		$res = $this->safeQuery( $table, $sql );
+
+		return !empty( $res[0] ) ? $res[0] : [];
+
+	}
+
+	/**
+	 * Edit report item from database
+	 * @param int $id
+	 * Report ID
+	 * @param array $data
+	 * Report data
+	 *
+	 * @return bool
+	 * True on success, false on failure
+	 * @since 1.0.5
+	 */
+	public function editReport( $id, $data ){
+
+		$table = $this->getTable( "reports" );
+
+		return (bool) $this->db->update( $table, $data, ["id" => $id] );
+
+	}
+
+	/**
+	 * Insert new component in database
+	 * @param string $type
+	 * Component type (custom string)
+	 * @param string $data
+	 * Component data (must be string, you can encode objects to JSON)
+	 * @param string|null $key
+	 * Component unique key, pass null to generate automatically
+	 * @param array|null $meta
+	 * Component meta-data, pass null to use default meta-data
+	 *
+	 * @return false|int
+	 * Row ID on success, otherwise false
+	 * @since 1.0.5
+	 */
+	public function addComponent( $type, $data, $key=null, $meta = null ){
+
+		if( !$key )
+			$key = amd_generate_string( 16 );
+
+		if( $meta === null )
+			$meta = ["author" => get_current_user_id()];
+
+		$table = $this->getTable( "components" );
+
+		return $this->safeInsert( $table, array(
+			"component_key" => $key,
+			"component_type" => $type,
+			"component_data" => $data,
+			"component_time" => time(),
+			"meta" => json_encode( $meta )
+		) );
+
+	}
+
+	/**
+	 * Insert new component or update if it already exists
+	 *
+	 * @param int|empty $id
+	 * Component ID
+	 * @param array $data
+	 * Data array
+	 * @param bool $allow_insert
+	 * Whether to insert new component if component doesn't exist
+	 *
+	 * @return bool|int
+	 * True on successfully update, row ID on successfully insert, otherwise false
+	 * @since 1.0.5
+	 */
+	public function upsertComponent( $id, $data, $allow_insert=true ){
+
+		$type = $data["component_type"];
+		$_data = $data["component_data"];
+		$key = $data["component_key"] ?? null;
+		$meta = $data["meta"] ?? null;
+
+		if( empty( $id ) OR !self::componentExist( $id ) )
+			return $allow_insert ? self::addComponent( $type, $_data, $key, $meta ) : false;
+
+		$update_data = ["component_data" => $_data];
+
+		if( $key )
+			$update_data["component_key"] = $key;
+
+		return self::updateComponent( $id, $update_data );
+
+	}
+
+	/**
+	 * Check if component exist
+	 * @param string $value
+	 * Value to search inside components, default is component ID
+	 * @param string $by
+	 * Field to search into, default is "id"
+	 *
+	 * @return bool|int
+	 * True or first result ID if component(s) does exist, otherwise false
+	 * @since 1.0.5
+	 */
+	public function componentExist( $value, $by="id" ){
+
+		$by = strtolower( $by );
+		$by = str_replace( "type", "component_type", $by );
+		$by = str_replace( "key", "component_key", $by );
+
+		$table = $this->getTable( "components" );
+
+		$sql = $this->db->prepare( "SELECT * FROM %i WHERE %i=%s", $table, $by, $value );
+
+		$res = $this->safeQuery( $table, $sql );
+
+		return !empty( $res ) ? ( $res[0]->id ?? true ) : false;
+
+	}
+
+	/**
+	 * Update component
+	 * @param int $id
+	 * Component ID
+	 * @param array $data
+	 * Component data to update with {@see wpdb::update()}
+	 *
+	 * @return bool
+	 * True on success, false on failure
+	 * @since 1.0.5
+	 */
+	public function updateComponent( $id, $data ){
+
+		$table = $this->getTable( "components" );
+
+		return (bool) $this->db->update( $table, $data, ["id" => $id] );
+
+	}
+
+	/**
+	 * Delete component with ID
+	 * @param int $id
+	 * Component ID to delete
+	 *
+	 * @return bool
+	 * True on success, false on failure
+	 * @since 1.0.5
+	 */
+	public function deleteComponent( $id ){
+
+		return self::deleteComponentBy( "id", $id );
+
+	}
+
+	/**
+	 * Delete component(s) with specific field
+	 * @param string $by
+	 * Case-insensitive field name (e.g: "ID", "id", "type", "key", "component_key", "component_type")
+	 * @param string $field
+	 * Field value to search
+	 *
+	 * @return bool
+	 * True on success, false on failure
+	 * @since 1.0.5
+	 */
+	public function deleteComponentBy( $by, $field ){
+
+		$by = strtolower( $by );
+		$by = str_replace( "type", "component_type", $by );
+		$by = str_replace( "key", "component_key", $by );
+
+		return self::deleteComponentWhere( [$by => $field] );
+
+	}
+
+	/**
+	 * Delete component(s) with custom filter
+	 * @param array $where
+	 * A named array of WHERE clauses
+	 *
+	 * @return bool
+	 * @since 1.0.5
+	 * @see wpdb::delete()
+	 */
+	public function deleteComponentWhere( $where ){
+
+		$table = $this->getTable( "components" );
+
+		return (bool) $this->db->delete( $table, $where );
+
+	}
+
+	/**
+	 * Get components by specific field
+	 * @param string $by
+	 * Case-insensitive field name (e.g: "ID", "id", "type", "key", "component_key", "component_type")
+	 * @param string $part
+	 * Field value to search
+	 * @param bool $make
+	 * Whether to make object for results or not
+	 * @param bool $single
+	 * Whether to return first result or full results
+	 *
+	 * @return AMDComponent|array|mixed|object|stdClass|null
+	 * {@see AMDComponent} object if you need to make object, otherwise {@see wpdb::query()} results
+	 * @since 1.0.5
+	 */
+	public function getComponents( $by, $part, $make=false, $single=false ){
+
+		$by = strtolower( $by );
+		$by = str_replace( "type", "component_type", $by );
+		$by = str_replace( "key", "component_key", $by );
+
+		$table = $this->getTable( "components" );
+
+		$sql = $this->db->prepare( "SELECT * FROM %i WHERE %i=%s", $table, $by, $part );
+
+		$res = $this->safeQuery( $table, $sql );
+
+		if( $make )
+			return self::makeComponents( $res, $single );
+
+		return $single ? ( $res[0] ?? [] ) : $res;
+
+	}
+
+	/**
+	 * Make component objects
+	 * @param mixed $results
+	 * Database query results
+	 * @param bool $single
+	 * Whether to get first object or full results list
+	 *
+	 * @return AMDComponent|array
+	 * Single {@see AMDComponent} object if $single is true, otherwise array of made objects
+	 *
+	 * @since 1.0.5
+	 */
+	public function makeComponents( $results, $single = false ){
+
+		require_once( AMD_CORE . "/objects/AMDComponent.php" );
+
+		if( empty( $results ) )
+			return new AMDComponent();
+
+
+		$out = [];
+
+		foreach( $results as $result ){
+
+			$id = $result->id ?? null;
+
+			if( !$id )
+				continue;
+
+			$obj = new AMDComponent();
+
+			$obj->set_id( $id );
+			$obj->set_type( $result->component_type );
+			$obj->set_key( $result->component_key );
+			$obj->set_data( $result->component_data );
+			$obj->set_time( intval( $result->component_time ) );
+			$obj->set_meta( @json_decode( $result->meta, true ) );
+
+			if( $single )
+				return $obj;
+
+			$out[] = $obj;
+
+		}
+
+		return $out;
+
+	}
+
+	/**
+	 * Update component meta-data from database
+	 * @param int $id
+	 * Component ID
+	 * @param string|string[] $meta_key_s
+	 * Single meta key like "my_field" or names list for multiple items, like: ["field_1", "field_2", "field_3"]
+	 * @param scalar|array $meta_value_s
+	 * Single meta value like "my_value" ot values list for multiple items, like ["value_1", 100, "value_3"]
+	 *
+	 * @return bool
+	 * True on success, false on failure
+	 * @since 1.0.5
+	 */
+	public function setComponentMeta( $id, $meta_key_s, $meta_value_s ){
+
+		$c = self::getComponents( "id", $id, true, true );
+
+		if( $c->get_id() ){
+
+			$meta = $c->get_meta();
+
+			if( !is_array( $meta ) )
+				$meta = [];
+
+			if( is_string( $meta_key_s ) )
+				$meta[$meta_key_s] = $meta_value_s;
+
+			if( is_array( $meta_key_s ) ){
+				for( $i = 0; $i < count( $meta_key_s ); $i++ )
+					$meta[$meta_key_s[$i]] = $meta_value_s[$i] ?? "";
+			}
+
+			return self::updateComponent( $id, ["meta" => json_encode( $meta )] );
+
+		}
+
+		return false;
+
+	}
+
+	/**
+	 * Build component data array to export or print in JavaScript
+	 * @param array $items
+	 * {@see AMD_DB::getComponents()} array list output
+	 *
+	 * @return array
+	 * Simple data array
+	 * @since 1.0.5
+	 */
+	public function buildComponentsData( $items ){
+
+		$data = [];
+
+		foreach( $items as $item ){
+			$key = $item->component_key ?? "";
+			if( $key )
+				$data[$key] = @json_decode( $item->component_data ?? "" );
+		}
+
+		return $data;
 	}
 
 }

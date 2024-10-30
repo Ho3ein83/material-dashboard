@@ -123,6 +123,10 @@ class AMDCache{
 		$this->addStyle( 'dashboard:cropper', AMD_MOD . '/cropper/cropper.css', "1.5.11" );
 		$this->addScript( 'dashboard:cropper', AMD_MOD . '/cropper/cropper.js', "1.5.11" );
 
+        # Dashboard: Quill JS editor
+		$this->addStyle( 'global:quill', AMD_MOD . '/quill-editor/quill.snow.css', "1.0.0" );
+		$this->addScript( 'global:quill', AMD_MOD . '/quill-editor/quill.js', "1.0.0" );
+
 	}
 
 	/**

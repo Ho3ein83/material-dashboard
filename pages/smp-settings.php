@@ -25,7 +25,7 @@ if( !$API_OK )
     </div>
     <div class="pa-10">
 	    <?php $tabsJS = amd_dump_admin_tabs( $tabs ); ?>
-        <div data-amd-content="_general"></div>
+        <div data-amd-content="general"></div>
     </div>
     <script>
         (function () {

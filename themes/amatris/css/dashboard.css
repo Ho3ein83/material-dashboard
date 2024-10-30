@@ -817,10 +817,11 @@ body.dark .-gr-blue { background: linear-gradient(8deg, #2f43a1, #4667b5) !impor
     position: fixed;
     color: var(--amd-wrapper-fg);
     background: var(--amd-text-color);
+    height: max-content;
+    max-width: 300px;
     padding: 6px 12px;
     font-size: 14px;
     border-radius: 5px;
-    height: 18px;
     z-index: 99999;
 }
 

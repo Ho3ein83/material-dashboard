@@ -5,7 +5,7 @@
  * Description: The best material dashboard for WordPress! If you want to delete this plugin, delete its data from cleanup menu first.
  * Plugin URI: https://amatris.ir/amd
  * Author: Hossein
- * Version: 1.0.4
+ * Version: 1.0.5
  * Requires at least: 5.2
  * Requires PHP: 7.4.0
  * Tested up to: 6.2
@@ -51,13 +51,16 @@ function amd_plugin_translation(){
 }
 
 # Load required variables and constants
-require_once( "var.php" );
+require_once( __DIR__ . "/var.php" );
 
 # Initialize cores
 require_once( AMD_CORE . '/init.php' );
 
+# Load hooks
+require_once( AMD_INCLUDES . "/hooks.php" );
+
 # Require functions
-require_once( "functions.php" );
+require_once( __DIR__ . "/functions.php" );
 
 # Initialize plugin hook
 do_action( "amd_init" );
@@ -178,6 +181,7 @@ add_action( "amd_init_translation", function(){
 		"backup_files" => esc_html__( "Backup files", "material-dashboard" ),
 		"delete_backup_files" => esc_html__( "Delete backup files", "material-dashboard" ),
 		"delete_confirm" => esc_html__( "Are you sure about deleting selected items?", "material-dashboard" ),
+		"deleting" => esc_html__( "Deleting", "material-dashboard" ),
 		"note" => esc_html__( "Note ", "material-dashboard" ),
 		"least_one" => esc_html__( "You must select at lease one item!", "material-dashboard" ),
 		"svg_icon" => esc_html__( "SVG icon", "material-dashboard" ),
@@ -222,6 +226,14 @@ add_action( "amd_init_translation", function(){
 		"single:n_days_ago" => _nx( "%s day ago", "%s days ago", 1, "Admin", "material-dashboard" ),
 		"plural:n_days_ago" => _nx( "%s day ago", "%s days ago", 2, "Admin", "material-dashboard" ),
 		"backup_includes" => esc_html__( "Backup includes", "material-dashboard" ),
+		"move" => esc_html__( "Move", "material-dashboard" ),
+		"move_up" => esc_html__( "Move up", "material-dashboard" ),
+		"move_down" => esc_html__( "Move down", "material-dashboard" ),
+		"reloading_tasks" => esc_html__( "Reloading tasks", "material-dashboard" ),
+		"todo_double_click_to_edit" => esc_html__( "Double click on texts to edit", "material-dashboard" ),
+		"todo_enter_to_save" => esc_html__( "Hit enter or double click on outside the text to save", "material-dashboard" ),
+		"saving_orders" => esc_html__( "Saving orders", "material-dashboard" ),
+		"write_a_text" => esc_html__( "Write anything", "material-dashboard" ),
 	) );
 
 } );

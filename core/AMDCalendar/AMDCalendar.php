@@ -86,7 +86,7 @@ class AMDCalendar{
 
 		require_once( "calendar.php" );
 
-		return jdate( $format, $time );
+		return amd_jdate( $format, $time );
 
 	}
 

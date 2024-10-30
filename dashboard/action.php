@@ -11,6 +11,12 @@ if( empty( $action ) ){
 
 do_action( "amd_begin_dashboard" );
 
+/**
+ * Begin dashboard action hook
+ * @since 1.0.5
+ */
+do_action( "amd_begin_dashboard_action" );
+
 if( amd_template_exists( "action" ) ){
 	amd_load_template( "action" );
 	return;
@@ -52,9 +58,11 @@ $error = $data["error"] ?? true;
 $title = $data["title"] ?? esc_html__( "An error has occurred", "material-dashboard" );
 $text = $data["text"] ?? esc_html__( "The address you are looking for is not valid or has been expired", "material-dashboard" );
 $html = $data["html"] ?? "";
+$page_path = $data["page"] ?? "";
 $show_btn = $data["show_btn"] ?? true;
 $btn_text = $data["btn_text"] ?? "";
 $btn_url = $data["btn_url"] ?? "";
+$btn_style = $data["btn_style"] ?? "";
 
 $icon_pack = amd_get_icon_pack();
 $theme = amd_get_theme_property( "id" );
@@ -83,21 +91,29 @@ $blog_name = get_bloginfo( 'name' );
         <img src="<?php echo esc_url( $dashLogoURL ); ?>" alt="">
     </div>
     <h1 class="--title"><?php echo wp_kses( $title, amd_allowed_tags_with_attr( "br,span,a" ) ); ?></h1>
-	<?php if( !empty( $text ) ): ?>
-        <h4 class="--sub-title"><?php echo wp_kses( $text, amd_allowed_tags_with_attr( "br,span,a" ) ); ?></h4>
-	<?php endif; ?>
-	<?php echo wp_kses( $html, amd_allowed_tags_with_attr( "br,span,a,p,button" ) ); ?>
+
+    <?php if( $page_path ): ?>
+        <?php
+            if( file_exists( $page_path ) )
+                require_once( $page_path );
+        ?>
+    <?php else: ?>
+        <?php if( !empty( $text ) ): ?>
+            <h4 class="--sub-title"><?php echo wp_kses( $text, amd_allowed_tags_with_attr( "br,span,a" ) ); ?></h4>
+        <?php endif; ?>
+	    <?php echo wp_kses( $html, amd_allowed_tags_with_attr( "br,span,a,p,button" ) ); ?>
+    <?php endif; ?>
     <?php do_action( "amd_action_content_$action" ); ?>
     <div class="h-10"></div>
 	<?php if( $show_btn ): ?>
         <div class="amd-lr-buttons">
 			<?php if( !empty( $btn_text ) AND !empty( $btn_url ) ): ?>
-                <a class="btn" href="<?php echo esc_url( $btn_url ); ?>"><?php echo esc_html( $btn_text ); ?></a>
+                <a class="btn <?php echo esc_attr( $btn_style ); ?>" href="<?php echo esc_url( $btn_url ); ?>"><?php echo esc_html( $btn_text ); ?></a>
 			<?php else: ?>
 				<?php if( is_user_logged_in() ): ?>
-                    <button type="button" class="btn" data-auth="login"><?php _e( "Back to dashboard", "material-dashboard" ); ?></button>
+                    <button type="button" class="btn <?php echo esc_attr( $btn_style ); ?>" data-auth="login"><?php esc_html_e( "Back to dashboard", "material-dashboard" ); ?></button>
 				<?php else: ?>
-                    <button type="button" class="btn" data-auth="login"><?php _e( "Login to your account", "material-dashboard" ); ?></button>
+                    <button type="button" class="btn <?php echo esc_attr( $btn_style ); ?>" data-auth="login"><?php esc_html_e( "Login to your account", "material-dashboard" ); ?></button>
 				<?php endif; ?>
 			<?php endif; ?>
         </div>
@@ -113,7 +129,7 @@ $blog_name = get_bloginfo( 'name' );
         loader_id: "",
         api_url: amd_conf.api_url,
         mode: "form",
-        loading_text: `<?php _e( "Please wait", "material-dashboard" ); ?><span class="_loader_dots_"></span>`,
+        loading_text: `<?php esc_html_e( "Please wait", "material-dashboard" ); ?><span class="_loader_dots_"></span>`,
         languages: JSON.parse(`<?php echo $json_locales; ?>`),
         network: network,
         translate: {

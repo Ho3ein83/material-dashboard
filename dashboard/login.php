@@ -14,6 +14,12 @@ if( amd_login_attempts_reached() ){
 
 do_action( "amd_begin_dashboard" );
 
+/**
+ * Begin dashboard login hook
+ * @since 1.0.5
+ */
+do_action( "amd_begin_dashboard_login" );
+
 if( amd_template_exists( "login" ) ){
     amd_load_template( "login" );
     return;
@@ -239,6 +245,8 @@ $regions = amd_get_regions();
             dashboard.resume();
             if (!error) {
                 if (resp.success) {
+                    // [COOKIE_KEY]
+                    // $amd.setCookie("amd_login_pending", "true", "1 day");
                     form.log(resp.data.msg, "green");
                 }
                 else {

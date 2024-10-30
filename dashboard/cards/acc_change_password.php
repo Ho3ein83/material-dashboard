@@ -6,7 +6,7 @@
 	<?php _amd_icon( "hide_password", null, [], [ "class" => "clickable -pt --show-password" ] ); ?>
 </label>
 <div class="plr-8">
-    <p class="text-justify color-blue"><?php _e( "Note: after you change your password you have to log-in again", "material-dashboard" ); ?>.</p>
+    <p class="text-justify color-blue"><?php esc_html_e( "Note: after you change your password you have to log-in again", "material-dashboard" ); ?>.</p>
 </div>
 <?php $change_password_content = ob_get_clean(); ?>
 

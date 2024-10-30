@@ -119,6 +119,32 @@ function amd_ext__api_handler_all( $r ){
 
 		}
 
+		else if( !empty( $r["save_user_fields"] ) ){
+
+			$uid = get_current_user_id();
+
+			$custom_fields = $_POST["save_user_fields"] ?? [];
+			$custom_fields = amd_sanitize_array_fields( $custom_fields );
+
+			if( empty( $custom_fields ) )
+				wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+
+			/**
+			 * Validate fields before continue the registration
+			 * @since 1.1.1
+			 */
+			do_action( "amd_register_validate_custom_fields", $custom_fields );
+
+			/**
+			 * Save user custom fields
+			 * @sicne 1.0.5
+			 */
+			do_action( "amd_save_user_custom_fields", $uid, $custom_fields );
+
+			wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+
+		}
+
 		else if( isset( $r["cancel_email_pending"] ) ){
 
 			$user = $_thisuser;

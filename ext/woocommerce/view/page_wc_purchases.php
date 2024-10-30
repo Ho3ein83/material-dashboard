@@ -5,6 +5,29 @@ if( !empty( $_GET["view"] ) ){
 	return;
 }
 
+if( isset( $_GET["wallet"] ) ){
+
+	$wallet = sanitize_text_field( $_GET["wallet"] );
+
+	if( $wallet == "tera" ){
+		$tera_wallet_support = amd_get_site_option( "tera_wallet_support", "true" );
+		if( $tera_wallet_support == "true" AND function_exists( "woo_wallet" ) ){
+			require_once( AMD_EXT_WC_PATH . "/view/page_tera_wallet.php" );
+			return;
+		}
+	}
+
+	if( has_action( "amd_ext_wc_wallet_$wallet" ) ){
+		/**
+		 * Print wallet management
+		 * @since 1.0.5
+		 */
+		do_action( "amd_ext_wc_wallet_$wallet" );
+		return;
+	}
+
+}
+
 $_get = amd_sanitize_get_fields( $_GET );
 $page = !empty( $_get["_page"] ) ? $_get["_page"] : 1;
 $maxInPage = apply_filters( "amd_ext_wc_max_orders_in_page", 10 );

@@ -2,10 +2,9 @@
 
 /*
  * This library has written by http://jdf.scr.ir
- * [non-edited version]
  */
 
-function jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Tehran' ){
+function amd_jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Tehran' ){
 
 	$T_sec = 0;
 	/* <= رفع خطاي زمان سرور ، با اعداد '+' و '-' بر حسب ثانيه */
@@ -15,9 +14,9 @@ function jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Teh
 	if( $time_zone != 'local' ){
 		date_default_timezone_set( ( $time_zone === '' ) ? 'Asia/Tehran' : $time_zone );
 	}
-	$ts = $T_sec + ( ( $timestamp === '' ) ? time() : tr_num( $timestamp ) );
+	$ts = $T_sec + ( ( $timestamp === '' ) ? time() : amd_tr_num( $timestamp ) );
 	$date = explode( '_', date( 'H_i_j_n_O_P_s_w_Y', $ts ) );
-	list( $j_y, $j_m, $j_d ) = gregorian_to_jalali( $date[8], $date[3], $date[2] );
+	list( $j_y, $j_m, $j_d ) = amd_gregorian_to_jalali( $date[8], $date[3], $date[2] );
 	$doy = ( $j_m < 7 ) ? ( ( $j_m - 1 ) * 31 ) + $j_d - 1 : ( ( $j_m - 7 ) * 30 ) + $j_d + 185;
 	$kab = ( ( ( ( $j_y % 33 ) % 4 ) - 1 ) == ( (int) ( ( $j_y % 33 ) * 0.05 ) ) ) ? 1 : 0;
 	$sl = strlen( $format );
@@ -67,15 +66,15 @@ function jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Teh
 				break;
 
 			case'D':
-				$out .= jdate_words( array( 'kh' => $date[7] ), ' ' );
+				$out .= amd_jdate_words( array( 'kh' => $date[7] ), ' ' );
 				break;
 
 			case'f':
-				$out .= jdate_words( array( 'ff' => $j_m ), ' ' );
+				$out .= amd_jdate_words( array( 'ff' => $j_m ), ' ' );
 				break;
 
 			case'F':
-				$out .= jdate_words( array( 'mm' => $j_m ), ' ' );
+				$out .= amd_jdate_words( array( 'mm' => $j_m ), ' ' );
 				break;
 
 			case'H':
@@ -91,19 +90,19 @@ function jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Teh
 				break;
 
 			case'J':
-				$out .= jdate_words( array( 'rr' => $j_d ), ' ' );
+				$out .= amd_jdate_words( array( 'rr' => $j_d ), ' ' );
 				break;
 
 			case'k';
-				$out .= tr_num( 100 - (int) ( $doy / ( $kab + 365 ) * 1000 ) / 10, $tr_num );
+				$out .= amd_tr_num( 100 - (int) ( $doy / ( $kab + 365 ) * 1000 ) / 10, $tr_num );
 				break;
 
 			case'K':
-				$out .= tr_num( (int) ( $doy / ( $kab + 365 ) * 1000 ) / 10, $tr_num );
+				$out .= amd_tr_num( (int) ( $doy / ( $kab + 365 ) * 1000 ) / 10, $tr_num );
 				break;
 
 			case'l':
-				$out .= jdate_words( array( 'rh' => $date[7] ), ' ' );
+				$out .= amd_jdate_words( array( 'rh' => $date[7] ), ' ' );
 				break;
 
 			case'L':
@@ -115,7 +114,7 @@ function jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Teh
 				break;
 
 			case'M':
-				$out .= jdate_words( array( 'km' => $j_m ), ' ' );
+				$out .= amd_jdate_words( array( 'km' => $j_m ), ' ' );
 				break;
 
 			case'n':
@@ -137,7 +136,7 @@ function jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Teh
 				break;
 
 			case'p':
-				$out .= jdate_words( array( 'mb' => $j_m ), ' ' );
+				$out .= amd_jdate_words( array( 'mb' => $j_m ), ' ' );
 				break;
 
 			case'P':
@@ -145,7 +144,7 @@ function jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Teh
 				break;
 
 			case'q':
-				$out .= jdate_words( array( 'sh' => $j_y ), ' ' );
+				$out .= amd_jdate_words( array( 'sh' => $j_y ), ' ' );
 				break;
 
 			case'Q':
@@ -153,7 +152,7 @@ function jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Teh
 				break;
 
 			case'r':
-				$key = jdate_words( array( 'rh' => $date[7], 'mm' => $j_m ) );
+				$key = amd_jdate_words( array( 'rh' => $date[7], 'mm' => $j_m ) );
 				$out .= $date[0] . ':' . $date[1] . ':' . $date[6] . ' ' . $date[4] . ' ' . $key['rh'] . '، ' . $j_d . ' ' . $key['mm'] . ' ' . $j_y;
 				break;
 
@@ -174,11 +173,11 @@ function jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Teh
 				break;
 
 			case'v':
-				$out .= jdate_words( array( 'ss' => ( $j_y % 100 ) ), ' ' );
+				$out .= amd_jdate_words( array( 'ss' => ( $j_y % 100 ) ), ' ' );
 				break;
 
 			case'V':
-				$out .= jdate_words( array( 'ss' => $j_y ), ' ' );
+				$out .= amd_jdate_words( array( 'ss' => $j_y ), ' ' );
 				break;
 
 			case'w':
@@ -221,10 +220,10 @@ function jdate( $format, $timestamp = '', $tr_num = 'fa', $time_zone = 'Asia/Teh
 		}
 	}
 
-	return ( $tr_num != 'en' ) ? tr_num( $out, 'fa', '.' ) : $out;
+	return ( $tr_num != 'en' ) ? amd_tr_num( $out, 'fa', '.' ) : $out;
 }
 
-function tr_num( $str, $mod = 'en', $mf = '٫' ){
+function amd_tr_num( $str, $mod = 'en', $mf = '٫' ){
 
 	$num_a = array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' );
 	$key_a = array( '۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹', $mf );
@@ -232,10 +231,10 @@ function tr_num( $str, $mod = 'en', $mf = '٫' ){
 	return ( $mod == 'fa' ) ? str_replace( $num_a, $key_a, $str ) : str_replace( $key_a, $num_a, $str );
 }
 
-function jdate_words( $array, $mod = '' ){
+function amd_jdate_words( $array, $mod = '' ){
 
 	foreach( $array as $type => $num ){
-		$num = (int) tr_num( $num );
+		$num = (int) amd_tr_num( $num );
 		switch( $type ){
 
 			case'ss':
@@ -400,10 +399,9 @@ function jdate_words( $array, $mod = '' ){
 	return ( $mod === '' ) ? $array : implode( $mod, $array );
 }
 
-/*	F	*/
-function gregorian_to_jalali( $gy, $gm, $gd, $mod = '' ){
+function amd_gregorian_to_jalali( $gy, $gm, $gd, $mod = '' ){
 
-	list( $gy, $gm, $gd ) = explode( '_', tr_num( $gy . '_' . $gm . '_' . $gd ) );/* <= Extra :اين سطر ، جزء تابع اصلي نيست */
+	list( $gy, $gm, $gd ) = explode( '_', amd_tr_num( $gy . '_' . $gm . '_' . $gd ) );/* <= Extra :اين سطر ، جزء تابع اصلي نيست */
 	$g_d_m = array( 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 );
 	if( $gy > 1600 ){
 		$jy = 979;
@@ -435,10 +433,9 @@ function gregorian_to_jalali( $gy, $gm, $gd, $mod = '' ){
 	return ( $mod === '' ) ? array( $jy, $jm, $jd ) : $jy . $mod . $jm . $mod . $jd;
 }
 
-/*	F	*/
-function jalali_to_gregorian( $jy, $jm, $jd, $mod = '' ){
+function amd_jalali_to_gregorian( $jy, $jm, $jd, $mod = '' ){
 
-	list( $jy, $jm, $jd ) = explode( '_', tr_num( $jy . '_' . $jm . '_' . $jd ) );/* <= Extra :اين سطر ، جزء تابع اصلي نيست */
+	list( $jy, $jm, $jd ) = explode( '_', amd_tr_num( $jy . '_' . $jm . '_' . $jd ) );/* <= Extra :اين سطر ، جزء تابع اصلي نيست */
 	if( $jy > 979 ){
 		$gy = 1600;
 		$jy -= 979;

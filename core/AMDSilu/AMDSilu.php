@@ -176,11 +176,14 @@ class AMDSilu{
 	 * Meta name
 	 * @param string $default
 	 * Default value
+	 * @param bool $useCache
+	 * <code>[Since 1.0.5] </code>
+	 * Whether to use caches to restore user meta or not
 	 *
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function getUserMeta( $uid, $mn, $default = "" ){
+	public function getUserMeta( $uid, $mn, $default = "", $useCache=true ){
 
 		if( $uid == null ){
 			if( !is_user_logged_in() )
@@ -188,7 +191,7 @@ class AMDSilu{
 			$uid = wp_get_current_user()->ID;
 		}
 
-		return self::userMetaExists( $uid, $mn, true, $default );
+		return self::userMetaExists( $uid, $mn, true, $default, $useCache );
 
 	}
 
@@ -226,16 +229,45 @@ class AMDSilu{
 	 * Whether to get meta value or not
 	 * @param mixed $default
 	 * Default value
+	 * @param bool $useCache
+	 * <code>[Since 1.0.5] </code>
+	 * Whether to use caches to restore user meta or not
 	 *
 	 * @return string
 	 * @since 1.0.0
 	 */
-	public function userMetaExists( $uid, $mn, $get = false, $default = "" ){
+	public function userMetaExists( $uid, $mn, $get = false, $default = "", $useCache=true ){
 
 		if( empty( $uid ) ){
 			if( !is_user_logged_in() )
 				return "";
 			$uid = wp_get_current_user()->ID;
+		}
+
+		global $amdCache;
+		$cache_key = "_um:$uid/$mn";
+
+		/**
+		 * Whether to ignore caches and read options directly from database
+		 * @since 1.0.5
+		 */
+		$useCache = apply_filters( "amd_get_user_meta_use_cache", $useCache, $uid, $mn ) === true;
+
+		if( !$amdCache )
+			$useCache = false;
+
+		if( $useCache ){
+			if( $amdCache->cacheExists( $cache_key ) ){
+				$v = $amdCache->getCache( $cache_key, "scope" );
+
+				/**
+				 * Cache restore hook
+				 * @since 1.0.5
+				 */
+				do_action( "amd_user_meta_cache_restored", $uid, $mn, $v );
+
+				return $get ? $v : $v !== null;
+			}
 		}
 
 		global /** @var AMD_DB $amdDB */
@@ -245,10 +277,19 @@ class AMDSilu{
 
 		$res = $amdDB->safeQuery( $table_name, "SELECT * FROM `%{TABLE}%` WHERE user_id='$uid' AND meta_name='$mn'" );
 
-		if( $get )
-			return !empty( $res[0]->meta_value ) ? $res[0]->meta_value : $default;
+		if( $get ){
+			$return = !empty( $res[0]->meta_value ) ? $res[0]->meta_value : $default;
+			$cache = $return;
+		}
+		else{
+			$return = count( $res ) > 0;
+			$cache = $return ? true : null;
+		}
 
-		return count( $res ) > 0;
+		if( $useCache )
+			$amdCache->setCache( $cache_key, $cache );
+
+		return $return;
 
 	}
 
@@ -656,11 +697,23 @@ class AMDSilu{
 	 */
 	public function login( $login, $password, $remember = false ){
 
-		return wp_signon( array(
+		$signon = wp_signon( array(
 			'user_login' => $login,
 			'user_password' => $password,
 			'remember' => $remember
 		) );
+
+		if( !is_wp_error( $signon ) ){
+
+			/**
+			 * After successful login
+			 * @since 1.0.5
+			 */
+			do_action("amd_login", $signon );
+
+		}
+
+		return $signon;
 
 	}
 
@@ -848,6 +901,34 @@ class AMDSilu{
 	public function placeholderAvatar(){
 
 		return amd_avatar_url( "placeholder" );
+
+	}
+
+	/**
+	 * Unauthorized Safe Login
+	 * @param AMDUser $u
+	 * User object to log in as that user
+	 *
+	 * @return bool
+	 * True on success, false on failure
+	 * @since 1.0.5
+	 */
+	public function usl( $u ){
+
+		if( $u->ID ){
+			wp_clear_auth_cookie();
+			wp_set_current_user( $u->ID );
+			wp_set_auth_cookie( $u->ID );
+
+			/**
+			 * After successful login
+			 * @since 1.0.5
+			 */
+			do_action("amd_login", $u->wpUser );
+
+			return true;
+		}
+		return false;
 
 	}
 

@@ -564,21 +564,15 @@ svg.iconhub > polyline:not(.--exclude) {
     margin: auto
 }
 
-.text-center {
-    text-align: center
-}
+.text-center { text-align: center }
+.text-start { text-align: start }
+.text-end { text-align: end }
+.text-justify { text-align: justify }
 
-.text-start {
-    text-align: start
-}
-
-.text-end {
-    text-align: end
-}
-
-.text-justify {
-    text-align: justify
-}
+.text-center-im { text-align: center !important }
+.text-start-im { text-align: start !important }
+.text-end-im { text-align: end !important }
+.text-justify-im { text-align: justify !important }
 
 /* Padding all */
 .pa-10 {

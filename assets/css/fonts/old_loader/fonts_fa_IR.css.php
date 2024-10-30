@@ -6,6 +6,11 @@
 # Destroy the execution if it isn't loaded from this plugin
 defined( 'AMD_PATH' ) OR die();
 
+if( isset( $_GET["screen"] ) AND $_GET["screen"] == "admin" ){
+    require_once __DIR__ . "/fonts_en_US.css.php";
+    return;
+}
+
 # Fonts base URL
 $baseURL = AMD_CSS . "/fonts";
 

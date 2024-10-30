@@ -2,8 +2,8 @@
 Contributors: ho3einie,amatris
 Tags: dashboard, material dashboard, user profile, woocommerce, easy digital downloads
 Requires at least: 5.2
-Tested up to: 6.2
-Stable tag: 1.0.2
+Tested up to: 6.3
+Stable tag: 1.0.5
 Requires PHP: 7.4.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -63,6 +63,18 @@ Currently, we do not collect any information without your explicit consent. If w
 You can create your own extensions and themes for your dashboard and publish it with your name if you want. You can get started by reading our [documentation](https://amatris.ir/amd/d).
 
 == Changelog ==
+
+= 1.0.5 =
+* Database cache added
+* Database collation fixed for Persian language
+* Cache core improved
+* Components feature added (templates, custom fields, etc.)
+* Custom field feature added to improve registration
+* 2-factor authentication (2FA) feature added
+* Login reports feature added
+* Sessions manager feature added
+* Tera wallet supported
+* Bugs fixed
 
 = 1.0.4 =
 * Login with phone number added

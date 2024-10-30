@@ -76,6 +76,25 @@ add_action( "amd_dashboard_init", function(){
 			)
 		) );
 
+		$tera_wallet_support = amd_get_site_option( "tera_wallet_support", "true" );
+
+		if( $tera_wallet_support == "true" AND function_exists( "woo_wallet" ) ){
+
+			$balance = woo_wallet()->wallet->get_wallet_balance( get_current_user_id() );
+
+			do_action( "amd_add_dashboard_card", array(
+				"ic_woo_wallet" => array(
+					"type" => "icon_card",
+					"title" => esc_html__( "Wallet", "woo-wallet" ),
+					"text" => $balance,
+					"subtext" => "&#160;",
+					"footer" => "<a href=\"?void=wc_purchases&wallet=tera\" data-turtle=\"lazy\">" . esc_html__( "Manage", "material-dashboard" ) . "</a href=\"javascript:void(0)\">",
+					"icon" => "money",
+					"color" => "orange",
+					"priority" => 10
+				)
+			) );
+		}
 
 	}
 

@@ -10,6 +10,12 @@ if( empty( $auth ) ){
 
 do_action( "amd_begin_dashboard" );
 
+/**
+ * Begin dashboard auth hook
+ * @since 1.0.5
+ */
+do_action( "amd_begin_dashboard_auth" );
+
 do_action( "amd_auth_begin_$auth" );
 
 if( amd_template_exists( "auth" ) ){

@@ -188,6 +188,35 @@ add_filter( "amd_email_changed_message", function( $uid, $new_email ){
 	return sprintf( esc_html__( "Dear %s, your email address has been changed successfully", "material-dashboard" ), $user->firstname );
 }, 10, 2 );
 
+/**
+ * 2FA code send message
+ * @since 1.0.5
+ */
+add_action( "amd_send_2fa_code", function( $code, $user_id ){
+	$user = amd_get_user( $user_id );
+	if( !$user )
+		return;
+
+    global $amdWarn;
+
+    /**
+     * Message method ("email", "sms", "email,sms")
+     * @since 1.0.5
+     */
+    $method = apply_filters( "amd_2fa_code_send_method", "email,sms" );
+
+    $message = sprintf( esc_html__( "Dear %s, your 2FA code is: %s", "material-dashboard" ), $user->firstname, "\n$code" );
+    $data = [
+        "email" => $user->email,
+        "phone" => $user->phone,
+        "subject" => esc_html__( "Two factor authentication", "material-dashboard" ),
+        "message" => $message
+    ];
+
+    $amdWarn->sendMessage( $data, $method );
+
+}, 10, 2 );
+
 # Set dashboard navbar items
 add_action( "amd_add_dashboard_navbar_item", function( $side, $data ){
 
@@ -271,6 +300,42 @@ add_filter( "amd_action_change_email", function( $scope ){
 		"error" => false,
 		"title" => esc_html__( "Your email has changed", "material-dashboard" ),
 		"text" => esc_html__( "Your email has been changed successfully", "material-dashboard" )
+	);
+
+} );
+
+/**
+ * 2FA login
+ * @since 1.0.5
+ */
+add_filter( "amd_action_user_2fa", function( $scope ){
+
+	$failed = array(
+		"error" => true,
+		"title" => esc_html__( "An error has occurred", "material-dashboard" ),
+		"text" => esc_html__( "The address you are looking for is not valid or has been expired", "material-dashboard" )
+	);
+
+	if( empty( $scope ) )
+		return $failed;
+
+	$temp = amd_get_temp( "user_2fa:" . $scope, false );
+    $expire = ( $temp->expire ?? 0 ) - time();
+    if( $expire <= 0 )
+        return $failed;
+
+    $uid = intval( amd_get_temp( "user_2fa:" . $scope ) );
+
+	$user = amd_get_user_by( "ID", $uid );
+
+	if( !$user )
+		return $failed;
+
+	return array(
+		"error" => false,
+		"title" => esc_html__( "2 Factor Authentication", "material-dashboard" ),
+		"page" => AMD_DASHBOARD . "/pages/toolkit-2fa.php",
+		"show_btn" => false
 	);
 
 } );
@@ -617,7 +682,7 @@ add_action( "amd_dashboard_header", function(){
     <?php amd_wp_head_alternate(); ?>
 
 <!-- Dashboard -->
-	<link rel="stylesheet" href="<?php echo esc_url( amd_merge_url_query( $API_URL, "stylesheets=_fonts&locale=$current_locale&ver=" . AMD_VER ) ); ?>">
+	<link rel="stylesheet" href="<?php echo esc_url( amd_merge_url_query( $API_URL, "stylesheets=_fonts&locale=$current_locale&screen=dashboard&ver=" . AMD_VER ) ); ?>">
 	<link rel="stylesheet" href="<?php echo esc_url( amd_merge_url_query( $API_URL, 'stylesheets=_components,_dashboard&ver' . AMD_VER ) ); ?>">
     <?php
     if( amd_is_dashboard_page() )
@@ -631,7 +696,7 @@ add_action( "amd_dashboard_header", function(){
     <?php $amdCache->dumpStyles(); ?>
 
 	<!-- Dashboard -->
-	<script src="<?php echo esc_url( amd_merge_url_query( $API_URL, 'scripts=_config&ver=' . AMD_VER ) ); ?>"></script>
+	<script src="<?php echo esc_url( amd_merge_url_query( $API_URL, 'scripts=_config&cache=' . time() ) ); ?>"></script>
 	<!-- Icon pack -->
     <?php $amdCache->dumpScript( "icon" ); ?>
     <?php
@@ -1057,6 +1122,11 @@ add_action( "amd_dashboard_init", function(){
 		),
 		"change_phone" => array(
 			"page" => AMD_DASHBOARD . '/cards/acc_change_phone.php',
+			"type" => "acc_card",
+			"priority" => 10
+		),
+        "security" => array(
+			"page" => AMD_DASHBOARD . '/cards/acc_security.php',
 			"type" => "acc_card",
 			"priority" => 10
 		),

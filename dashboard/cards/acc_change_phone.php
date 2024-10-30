@@ -12,13 +12,17 @@ $force_display = apply_filters( "amd_force_display_phone_edit", false );
  */
 $allow_change_phone_number = apply_filters( "amd_allow_change_phone_number", false );
 
-if( !$allow_change_phone_number )
-    return;
+/*if( !$allow_change_phone_number )
+    return;*/
+
 if( amd_get_site_option( "phone_field" ) != "true" AND !$force_display )
     return;
 
 $thisuser = amd_get_current_user();
 $is_phone_valid = amd_validate_phone_number( $thisuser->phone );
+
+if( $is_phone_valid AND !$allow_change_phone_number )
+    return;
 
 $regions = amd_get_regions();
 $cc_count = $regions["count"];

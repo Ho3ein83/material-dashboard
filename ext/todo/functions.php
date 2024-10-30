@@ -1,7 +1,7 @@
 <?php
 
 # Load to-do class
-require_once( "AMD_Todo.php" );
+require_once( __DIR__ . "/AMD_Todo.php" );
 
 /**
  * Add allowed status IDs
@@ -56,12 +56,16 @@ add_filter( "amd_ext_todo_authorize_required_for_edit", "amd_ext_todo_authorize_
 
 /**
  * Handle AJAX request
+ *
  * @param array $r
+ * Sanitized and filtered request data
+ * @param array $unfilteredRequest
+ * Non-sanitized request data (<b>Note: this is only available in 1.0.5 version and above!</b>)
  *
  * @return void
  * @sicne 1.0.0
  */
-function amd_ajax_target_ext_todo( $r ){
+function amd_ajax_target_ext_todo( $r, $unfilteredRequest ){
 
 	# Current user
 	$_current_user = amd_get_current_user();
@@ -89,13 +93,12 @@ function amd_ajax_target_ext_todo( $r ){
 		$user = $_thisuser;
 
 		$data = $r["add_todo"];
+		$unfilteredData = $unfilteredRequest["add_todo"] ?? [];
 
-		$text = wp_kses( $data["text"] ?? "", array(
-			"b" => [],
-			"strong" => [],
-			"br" => [],
-			"i" => []
-		) );
+//		$text = wp_kses( $unfilteredData["text"] ?? "", amd_allowed_tags_with_attr( "i,b,br" ) );
+		$text = $unfilteredData["text"] ?? "";
+
+		$text = str_replace( "\n", "<br>", $text );
 
 		if( empty( $text ) )
 			amd_send_api_success( ["msg" => esc_html__( "Please fill out all fields correctly", "material-dashboard" )] );
@@ -104,8 +107,12 @@ function amd_ajax_target_ext_todo( $r ){
 
 		$success = $todo->insert( $user->serial, $text, "pending", [] );
 
-		if( $success )
-			amd_send_api_success( ["msg" => esc_html__( "Success", "material-dashboard" ), "id" => $success] );
+		if( $success ){
+			$priority = $data["priority"] ?? 0;
+			global $amdDB;
+			$amdDB->setTodoMeta( $success, "priority", $priority );
+			amd_send_api_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "id" => $success, "formatted_text" => $amdDB->formatHtml( $text ) ] );
+		}
 
 		amd_send_api_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
 
@@ -158,7 +165,8 @@ function amd_ajax_target_ext_todo( $r ){
 	else if( !empty( $r["edit_todo"] ) ){
 
 		$id = $r["edit_todo"];
-		$data = $r["data"] ?? "";
+		$data = $r["data"] ?? [];
+		$unfilteredData = $unfilteredRequest["data"] ?? [];
 
 		/**
 		 * Send error if current user is not allowed to modify this to-do item
@@ -171,14 +179,56 @@ function amd_ajax_target_ext_todo( $r ){
 
 		if( !empty( $data ) ){
 
-			$success = amd_edit_todo( $id, $data );
+			$formatted_text = "";
+			if( !empty( $unfilteredData["todo_value"] ) ){
+				global $amdDB;
+				$data["todo_value"] = $unfilteredData["todo_value"];
+				$formatted_text = $amdDB->formatHtml( $data["todo_value"] );
+			}
+
+			$success = amd_edit_todo( $id, $data, $_thisuser->secretKey );
 
 			if( $success )
-				amd_send_api_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+				amd_send_api_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "formatted_text" => $formatted_text ] );
 
 		}
 
 		amd_send_api_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+
+	}
+
+	else if( !empty( $r["import_tasks_priority"] ) ){
+
+		$data = $r["import_tasks_priority"] ?? [];
+		$items = explode( ",", $data );
+		$success = false;
+
+		global $amdDB;
+
+		foreach( $items as $item ){
+			$exp = explode( ":", $item );
+			$id = $exp[0];
+			$priority = $exp[1] ?? null;
+			if( !$id OR $priority === null )
+				continue;
+			/**
+			 * Send error if current user is not allowed to modify this to-do item
+			 * @since 1.0.4
+			 */
+			$authorize = apply_filters( "amd_ext_todo_authorize_required_for_edit", false, $id );
+
+			if( $authorize === false )
+				continue;
+
+			$amdDB->setTodoMeta( $id, "priority", $priority );
+
+			$success = true;
+		}
+
+		if( $success )
+			amd_send_api_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+		else
+			amd_send_api_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
 
 	}
 
@@ -210,6 +260,7 @@ function amd_ext_todo_tasks( $serial, $salt=null ){
 			"id" => esc_html( $item->id ),
 			"text" => str_replace( "\n", "<br>", $item->text ),
 			"status" => $item->status,
+			"priority" => $item->priority,
 		);
 	}
 

@@ -6,6 +6,11 @@ $forceSSL = amd_get_site_option( "force_ssl", "false" );
 $avatarUpload = amd_get_site_option( "avatar_upload_allowed", "true" );
 $changeEmail = amd_get_site_option( "change_email_allowed", "false" );
 $useLazyLoading = amd_get_site_option( "use_lazy_loading", "true" );
+$tera_wallet_support = amd_get_site_option( "tera_wallet_support", "true" );
+
+$tera_wallet_available = function_exists( "woo_wallet" );
+if( !$tera_wallet_available )
+    $tera_wallet_support = "false";
 
 $defaultSettings = array(
 	"optimizer" => $optimizer,
@@ -13,7 +18,8 @@ $defaultSettings = array(
 	"force_ssl" => $forceSSL,
 	"change_email_allowed" => $changeEmail,
 	"avatar_upload" => $avatarUpload,
-	"use_lazy_loading" => $useLazyLoading
+	"use_lazy_loading" => $useLazyLoading,
+	"tera_wallet_support" => $tera_wallet_support,
 );
 
 ?>
@@ -166,23 +172,46 @@ $defaultSettings = array(
     </div>
 </div>
 
+<!-- Woocommerce -->
+<div class="amd-admin-card --setting-card">
+    <h3 class="--title"><?php echo esc_html_x( "Woocommerce", "Admin", "material-dashboard" ); ?></h3>
+    <div class="--content">
+        <div class="__option_grid">
+            <div class="-item">
+                <div class="-sub-item <?php echo $tera_wallet_available ? '' : 'waiting'; ?>">
+                    <label for="terawallet-support">
+						<?php echo esc_html_x( "Tera wallet support", "Admin", "material-dashboard" ); ?>
+                    </label>
+                </div>
+                <div class="-sub-item <?php echo $tera_wallet_available ? '' : 'waiting'; ?>">
+                    <label class="hb-switch">
+                        <input type="checkbox" role="switch" name="tera_wallet_support" value="true" id="terawallet-support" <?php echo $tera_wallet_support == "true" ? 'checked' : ''; ?>>
+                        <span></span>
+                    </label>
+                </div>
+                <div class="-sub-item --full">
+                    <p class="color-blue"><?php echo esc_html_x( "By enabling this item, Tera wallet balance and deposit their account.", "Admin", "material-dashboard" ); ?></p>
+                    <?php if( !$tera_wallet_available ): ?>
+                        <p class="color-red"><?php printf( esc_html_x( "You need to install %sTera wallet%s plugin to use this option.", "Admin", "material-dashboard" ), '<a href="https://wordpress.org/plugins/woo-wallet/" target="_blank">', '</a>' ); ?></p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     (function () {
         $amd.applyInputsDefault(<?php echo json_encode( $defaultSettings ); ?>)
         $amd.addEvent("on_settings_saved", () => {
-            let $optimizer = $("#optimizer");
-            let $indexing = $("#indexing");
-            let $forceSSL = $("#force-ssl");
-            let $avatarUpload = $('#avatar-upload');
-            let $changeEmail = $('#change-email');
-            let $useLazyLoading = $('#fast-loading');
             return {
-                "optimizer": $optimizer.is(":checked") ? "true" : "false",
-                "indexing": $indexing.is(":checked") ? "no-index" : "index",
-                "force_ssl": $forceSSL.is(":checked") ? "true" : "false",
-                "change_email_allowed": $changeEmail.is(":checked") ? "true" : "false",
-                "avatar_upload_allowed": $avatarUpload.is(":checked") ? "true" : "false",
-                "use_lazy_loading": $useLazyLoading.is(":checked") ? "true" : "false"
+                "optimizer": $("#optimizer").is(":checked") ? "true" : "false",
+                "indexing": $("#indexing").is(":checked") ? "no-index" : "index",
+                "force_ssl": $("#force-ssl").is(":checked") ? "true" : "false",
+                "change_email_allowed": $('#change-email').is(":checked") ? "true" : "false",
+                "avatar_upload_allowed": $('#avatar-upload').is(":checked") ? "true" : "false",
+                "use_lazy_loading": $('#fast-loading').is(":checked") ? "true" : "false",
+                "tera_wallet_support": $("#terawallet-support").is(":checked") ? "true" : "false",
             }
         });
     }());

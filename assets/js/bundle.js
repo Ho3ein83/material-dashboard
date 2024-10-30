@@ -48,6 +48,22 @@ jQuery.fn.extend({
         });
         $el.on("mouseup touchend", () => clearTimeout(handler));
     },
+    onDoubleClick: function(callback, timeout = 500) {
+        var handler = null;
+        var $el = $(this);
+        $el.on("click", function(e) {
+            if($(this).hasClass("--double-click-check")){
+                $el.removeClass("--double-click-check");
+                clearTimeout(handler);
+                callback(e);
+                return;
+            }
+            $el.addClass("--double-click-check");
+            handler = setTimeout(() => {
+                $el.removeClass("--double-click-check");
+            }, timeout);
+        });
+    },
     waitHold: function(text=null){
         let $el = $(this);
         let lastHtml = $el.html();
@@ -64,10 +80,13 @@ jQuery.fn.extend({
         let lastHtml = $el.hasAttr("data-last-html", true);
         if(lastHtml) $el.html(decodeURIComponent(lastHtml)).removeAttr("data-last-html");
     },
-    removeSlow: function(t = 700, fromParent = false) {
+    removeSlow: function(t = 700, fromParent = false, done=()=>null) {
         let $el = fromParent ? $(this).parent() : $(this);
         $el.fadeOut();
-        setTimeout(() => $el.remove(), t + 10);
+        setTimeout(() => {
+            $el.remove();
+            done();
+        }, t + 10);
     },
     winload: (callback) => window.addEventListener("load", callback),
 })
@@ -257,7 +276,7 @@ var $amd = {
      * @param text
      * @param alert
      * @param toast
-     * @param change_text
+     * @param $el
      */
     copy: (text, alert = false, toast = false, $el=false) => {
         let textarea = document.createElement("textarea");
@@ -713,6 +732,36 @@ var $amd = {
                 return `${mm.toString().addZero()}:${ss.toString().addZero()}`;
         }
         return "00:00";
+    },
+    /**
+     * Get CSS variable of document or custom element
+     * @param property_name
+     * @param element
+     * @returns {string}
+     * @since 1.0.5
+     */
+    getCssVariable: (property_name, element=null) => {
+        if(element === null)
+            element = document.body;
+        return getComputedStyle(element).getPropertyValue(property_name);
+    },
+    /**
+     * Convert RGB string (e.g: "128, 23, 67") to array (e.g: [128, 23, 67])
+     * @param rgbString
+     * @returns []
+     */
+    rgbToArray: rgbString => {
+        let exp = rgbString.split(",");
+        let out = [];
+        for(let i = 0; i < exp.length; i++){
+            let a = exp[i] || "";
+            if(a){
+                let n = parseInt(a);
+                if(!isNaN(n))
+                    out.push(n);
+            }
+        }
+        return out;
     }
 }
 /* End of amd.js */
@@ -1240,6 +1289,8 @@ var AMDForm = (function() {
             if(pattern.length > 0) {
                 if(!$amd.validate(val, pattern))
                     invalid = 3;
+                else
+                    invalid = 0;
             }
             if(minlength && val.length < minlength) invalid = 4;
             if(maxlength && val.length > maxlength) invalid = 5;

@@ -484,7 +484,7 @@ class AMDCore{
 		# Config script
 		add_action( "amd_config_script", function(){
 			?>
-            <script src="<?php echo esc_url( amd_get_api_url( "?scripts=_config&ver=" . AMD_VER ) ); ?>"></script>
+            <script src="<?php echo esc_url( amd_get_api_url( "?scripts=_config&cache=" . time() ) ); ?>"></script>
 			<?php
 		} );
 
@@ -632,6 +632,86 @@ class AMDCore{
 		 */
         add_action( "amd_register_cleanup_variant", [$this, "registerCleanupVariant"], 10, 2 );
 
+        /**
+		 * Handle login for login reports
+         * @since 1.0.5
+		 */
+		add_action( "amd_login", function( $wp_user ){
+
+            $uid = $wp_user->ID ?? 0;
+
+            if( !$uid )
+                return;
+
+            global $amdDB;
+
+            $user = amd_get_user_by( "ID", $uid );
+
+            if( $amdDB AND $user ){
+
+	            if( $amdDB ){
+
+                    global $amdWall, $amdCache;
+
+		            $agent = $amdWall->parseAgent();
+
+                    $report = $amdDB->addReport( "login", "null", $user->ID, ["ip" => $amdWall->getActualIP(), "identity" => $agent->export()] );
+
+                    if( $report )
+                        $amdCache->setCookie( "login_pending", $report, 1 );
+
+	            }
+
+            }
+
+		} );
+
+		/**
+		 * Add cookie for login reports handler
+         * @since 1.0.5
+		 */
+        add_action( "amd_after_cores_init", function(){
+
+	        global $amdCache, $amdDB;
+
+	        $login_report = $amdCache->getCache( "login_pending", "cookie" );
+
+            if( $login_report ){
+
+                $report = $amdDB->getReport( $login_report );
+	            $thisuser = amd_get_current_user();
+                if( $report AND $thisuser ){
+                    $token = wp_get_session_token();
+                    $token = amd_encrypt_aes( $token, $thisuser->secretKey );
+                    $amdDB->editReport( $login_report, ["report_value" => $token] );
+                }
+
+	            $amdCache->removeCookie( "login_pending" );
+
+            }
+
+        } );
+
+		/**
+		 * Add login card
+         * @since 1.0.5
+		 */
+        add_action( "amd_dashboard_init", function(){
+
+	        $display_login_reports = amd_get_site_option( "display_login_reports", "true" );
+
+            if( $display_login_reports == "true" ){
+	            do_action( "amd_add_dashboard_card", array(
+		            "login_reports" => array(
+			            "type" => "content_card",
+			            "page" => AMD_DASHBOARD . "/cards/acc_login_reports.php",
+			            "priority" => 20
+		            )
+	            ) );
+            }
+
+        } );
+
 	}
 
 	/**
@@ -711,7 +791,12 @@ class AMDCore{
 			"change_email_allowed" => "BOOL",
 			"use_lazy_loading" => "BOOL",
 			"extensions" => "STRING",
-			"theme" => "STRING"
+			"theme" => "STRING",
+			"db_version" => "NUMBER",
+			"use_login_2fa" => "BOOL",
+			"force_login_2fa" => "BOOL",
+			"display_login_reports" => "BOOL",
+			"tera_wallet_support" => "BOOL"
 		) );
 
 		# Set default export variants
@@ -882,6 +967,13 @@ class AMDCore{
 				"page" => AMD_PAGES . "/admin-tabs/tab_registration.php",
 				"priority" => 40
 			),
+            "login" => array(
+				"id" => "login",
+				"title" => esc_html__( "Login", "material-dashboard" ),
+				"icon" => "person",
+				"page" => AMD_PAGES . "/admin-tabs/tab_login.php",
+				"priority" => 40
+			),
 			"forms" => array(
 				"id" => "forms",
 				"title" => esc_html_x( "Forms", "Admin", "material-dashboard" ),
@@ -1033,7 +1125,12 @@ class AMDCore{
 			"change_email_allowed" => "false",
 			"use_lazy_loading" => "true",
 			"extensions" => "",
-			"theme" => AMD_DEFAULT_THEME
+			"theme" => AMD_DEFAULT_THEME,
+			"db_version" => "1",
+			"use_login_2fa" => "false",
+			"force_login_2fa" => "false",
+			"display_login_reports" => "true",
+			"tera_wallet_support" => "true"
 		);
 
 		$amdCache->setDefault( "options_data", json_encode( $data ) );
@@ -1108,6 +1205,21 @@ class AMDCore{
 			}
 
 		} );
+
+		/**
+		 * Display icons for shortcodes
+         * @since 1.0.5
+		 */
+        add_shortcode( "amd-icon", function( $attr ){
+
+            $attrs = shortcode_atts( array(
+		        "icon" => ""
+	        ), $attr, 'amd-icon' );
+
+            if( !empty( $attrs["icon"] ) )
+                _amd_icon( $attr["icon"] );
+
+        } );
 
 		# Change dashboard pages template
 		add_action( "template_include", function( $template ){
@@ -1714,7 +1826,7 @@ class AMDCore{
                  * After edit profile table items
                  * @since 1.0.1
                  */
-                do_action( "amd_after_user_edit_profile_items" );
+                do_action( "amd_after_user_edit_profile_items", $u );
             ?>
 
             </tbody>

@@ -1,10 +1,10 @@
 <!-- Repair/Install -->
 <div class="amd-admin-card --setting-card">
-    <h3 class="--title"><?php _ex( "Repair/Install", "Admin", "material-dashboard" ); ?></h3>
+    <h3 class="--title"><?php echo esc_html_x( "Repair/Install", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
-        <p><?php _ex( "If tables relative to this plugin are deleted or you want to install or repair database click on the button below.", "Admin", "material-dashboard" ); ?></p>
-        <p class="color-blue"><?php _ex( "Note: repairing database has no effect on your data. Also it will ignore repairing if there is no problem.", "Admin", "material-dashboard" ); ?></p>
-        <button class="amd-btn" id="repair-db"><?php _ex( "Repair", "Admin", "material-dashboard" ); ?></button>
+        <p><?php echo esc_html_x( "If tables relative to this plugin are deleted or you want to install or repair database click on the button below.", "Admin", "material-dashboard" ); ?></p>
+        <p class="color-blue"><?php echo esc_html_x( "Note: repairing database has no effect on your data. Also it will ignore repairing if there is no problem.", "Admin", "material-dashboard" ); ?></p>
+        <button class="amd-btn" id="repair-db"><?php echo esc_html_x( "Repair", "Admin", "material-dashboard" ); ?></button>
     </div>
 </div>
 <script>

@@ -99,6 +99,12 @@ define( 'AMD_PAGES', AMD_PATH . DIRECTORY_SEPARATOR . 'pages' );
 define( 'AMD_DASHBOARD', AMD_PATH . DIRECTORY_SEPARATOR . 'dashboard' );
 
 /**
+ * Includes path
+ * @since 1.0.5
+ */
+define( 'AMD_INCLUDES', AMD_PATH . DIRECTORY_SEPARATOR . 'includes' );
+
+/**
  * API handler
  * @since 1.0.0
  */
@@ -139,7 +145,7 @@ define( 'AMD_UPLOAD_PATH', $_upload_base_dir . DIRECTORY_SEPARATOR . AMD_DIRECTO
  * Plugin current version
  * @since 1.0.4
  */
-define( 'AMD_VER', '1.0.4' );
+define( 'AMD_VER', '1.0.5' );
 
 /**
  * Version codes

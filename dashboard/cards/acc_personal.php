@@ -13,9 +13,11 @@ $pending_email = "";
 if( is_countable( $temps ) AND count( $temps ) > 0 )
 	$pending_email = $temps[0]->temp_value;
 
+$ncode = amd_get_user_meta( $thisuser->ID, "ncode" );
+
 ?>
 <?php ob_start(); ?>
-<div data-form="personal_info">
+<div>
 	<?php if( $lastname_field ): ?>
         <div class="ht-input-row">
             <label class="ht-input">
@@ -66,6 +68,13 @@ if( is_countable( $temps ) AND count( $temps ) > 0 )
 			<?php _amd_icon( "phone" ); ?>
         </label>
 	<?php endif; ?>
+
+    <?php if( $ncode ): ?>
+        <label class="ht-input waiting">
+            <input type="text" value="<?php echo esc_attr( $ncode ); ?>" placeholder="" style="direction:ltr">
+            <span><?php esc_html_e( "National code", "material-dashboard" ); ?></span>
+        </label>
+	<?php endif; ?>
 </div>
 <?php $personal_card_content = ob_get_clean(); ?>
 
@@ -85,7 +94,7 @@ if( is_countable( $temps ) AND count( $temps ) > 0 )
     "_attrs" => 'data-form="personal"'
 ) ); ?>
 
-<!--suppress JSUnusedLocalSymbols -->
+
 <script>
     (function() {
         let engine = dashboard.getApiEngine();
@@ -93,7 +102,6 @@ if( is_countable( $temps ) AND count( $temps ) > 0 )
         var form = new AMDForm("personal-form");
         var $ep_box = $("#email-pending-box");
         var $cancel_email_change = $("._cancel_email_change_"), $resend_email_change = $("._resend_email_change_");
-        // dashboard.addLazyEvent("start", () => form.dispose());
         form.on("submit", d => {
             let data = form.getFieldsEntries();
             engine.clean();

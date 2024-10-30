@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Amatris Material Dashboard\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-10-21 13:07+0000\n"
-"PO-Revision-Date: 2023-08-31 10:52+0000\n"
+"PO-Revision-Date: 2023-09-14 10:47+0000\n"
 "Last-Translator: \n"
 "Language-Team: فارسی\n"
 "Language: fa_IR\n"
@@ -12,24 +12,37 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.6.4; wp-6.2\n"
+"X-Loco-Version: 2.6.4; wp-6.2.2\n"
 "X-Domain: material-dashboard"
 
-#: core/AMDCore/AMDCore.php:1679 ext/edd/index.php:58
-#, php-format
+#: core/AMDCore/AMDCore.php:1791 ext/edd/index.php:58
 msgid "%d download"
 msgid_plural "%d downloads"
 msgstr[0] "%d دانلود"
 msgstr[1] "%d دانلود"
 
-#: core/AMDCore/AMDCore.php:1693 ext/woocommerce/index.php:61
-#, php-format
+#: core/AMDCore/AMDCore.php:1805 ext/woocommerce/index.php:61
 msgid "%d purchase"
 msgid_plural "%d purchases"
 msgstr[0] "%d خرید"
 msgstr[1] "%d خرید"
 
-#: index.php:187
+#: functions.php:3627
+#, php-format
+msgid "%s day"
+msgid_plural "%s days"
+msgstr[0] "%s روز"
+msgstr[1] "%s روز"
+
+#: functions.php:3625
+#, php-format
+msgid "%s day ago"
+msgid_plural "%s days ago"
+msgstr[0] "%s روز پیش"
+msgstr[1] "%s روز پیش"
+
+#: index.php:191
+#, php-format
 #| msgid "Extension"
 msgid "%s extension"
 msgstr "ماژول %s"
@@ -39,7 +52,54 @@ msgstr "ماژول %s"
 msgid "%s file format is not allowed"
 msgstr "فرمت %s مجاز نیست"
 
-#: core/AMD_DB/AMD_DB.php:284
+#: functions.php:3611
+#, php-format
+msgid "%s month"
+msgid_plural "%s months"
+msgstr[0] "%s ماه"
+msgstr[1] "%s ماه"
+
+#: functions.php:3609
+#, php-format
+msgid "%s month ago"
+msgid_plural "%s months ago"
+msgstr[0] "%s ماه پیش"
+msgstr[1] "%s ماه پیش"
+
+#: core/AMDNetwork/AMDNetwork.php:657
+#, php-format
+msgid "%s version"
+msgstr "نسخه %s"
+
+#: functions.php:3619
+#, php-format
+msgid "%s week"
+msgid_plural "%s weeks"
+msgstr[0] "%s هفته"
+msgstr[1] "%s هفته"
+
+#: functions.php:3617
+#, php-format
+msgid "%s week ago"
+msgid_plural "%s weeks ago"
+msgstr[0] "%s هفته پیش"
+msgstr[1] "%s هفته پیش"
+
+#: functions.php:3603
+#, php-format
+msgid "%s year"
+msgid_plural "%s years"
+msgstr[0] "%s سال"
+msgstr[1] "%s سال"
+
+#: functions.php:3601
+#, php-format
+msgid "%s year ago"
+msgid_plural "%s years ago"
+msgstr[0] "%s سال پیش"
+msgstr[1] "%s سال پیش"
+
+#: core/AMD_DB/AMD_DB.php:363
 #| msgid ""
 #| ", however some data was unable to be imported. For more information check "
 #| "for error code 901 in documentation"
@@ -50,27 +110,43 @@ msgstr ""
 "، هرچند برخی از اطلاعات درون ریزی نشدند. برای اطلاعات بیشتر کد خطای ۹۰۱ را "
 "در صفحه مستندات افزونه بررسی کنید"
 
-#: index.php:421 pages/admin-tabs/tab_more_contact.php:34
+#: index.php:435 pages/admin-tabs/tab_more_contact.php:34
 msgid "1 Minute Of Your Time"
 msgstr "1 دقیقه از وقت شما"
+
+#: ext/_app/index.php:336
+msgid "2 Factor Authentication"
+msgstr "ورود دو مرحله‌ای"
 
 #: pages/admin-tabs/tab_registration.php:314
 msgid "98, 1, etc."
 msgstr "مثلا 98، 1 و..."
 
-#: ext/_app/index.php:379 ext/_app/index.php:448
+#: functions.php:4397
+msgid "<code>XXX-XXX-XXXX</code>: 012-345-6789"
+msgstr "<code>XXX-XXX-XXXX</code>: 012-345-6789"
+
+#: functions.php:4398
+msgid "<code>XXX-XXXX-XXX</code>: 012-3456-789"
+msgstr "<code>XXX-XXXX-XXX</code>: 012-3456-789"
+
+#: functions.php:4399
+msgid "<code>XXXXXXXXXX</code>: 0123456789"
+msgstr "<code>XXXXXXXXXX</code>: 0123456789"
+
+#: ext/_app/index.php:444 ext/_app/index.php:513
 msgid "Account"
 msgstr "حساب کاربری"
 
-#: index.php:210
+#: index.php:214
 msgid "Account information"
 msgstr "اطلاعات حساب"
 
-#: pages/admin-tabs/tab_registration.php:333 ext/todo/view/page_todo.php:18
+#: pages/admin-tabs/tab_registration.php:333 ext/todo/view/page_todo.php:22
 msgid "Add"
 msgstr "افزودن"
 
-#: index.php:222 index.php:223
+#: index.php:226 index.php:227
 #, php-format
 msgctxt "Admin"
 msgid "%s day ago"
@@ -78,7 +154,7 @@ msgid_plural "%s days ago"
 msgstr[0] "%s روز پیش"
 msgstr[1] "%s روز پیش"
 
-#: index.php:220 index.php:221
+#: index.php:224 index.php:225
 #, php-format
 msgctxt "Admin"
 msgid "%s file"
@@ -108,17 +184,17 @@ msgstr ""
 "تمام گزینه های موجود فقط مربوط به اطلاعات این افزونه هستند و از هیچ یک از "
 "اطلاعات دیگر سایت شما خروجی نخواهد گرفت."
 
-#: pages/admin-tabs/tab_general.php:102 ext/_app/wizard/steps/step_6.php:80
+#: pages/admin-tabs/tab_general.php:108 ext/_app/wizard/steps/step_6.php:80
 msgctxt "Admin"
 msgid "Allow avatar image upload"
 msgstr "اجازه بارگزاری تصویر آواتار"
 
-#: pages/admin-tabs/tab_general.php:152 ext/_app/wizard/steps/step_6.php:134
+#: pages/admin-tabs/tab_general.php:158 ext/_app/wizard/steps/step_6.php:134
 msgctxt "Admin"
 msgid "Allow users to change their email"
 msgstr "به کاربران اجازه دهید ایمیل خود را تغییر دهند"
 
-#: core/AMDCore/AMDCore.php:1066
+#: core/AMDCore/AMDCore.php:1163
 msgctxt "Admin"
 msgid "An error has occurred, login as admin to see error details"
 msgstr ""
@@ -130,7 +206,7 @@ msgctxt "Admin"
 msgid "Anyone can register"
 msgstr "هرکسی میتواند نام نویسی کند"
 
-#: pages/admin-tabs/tab_api.php:14 core/AMDCore/AMDCore.php:894
+#: pages/admin-tabs/tab_api.php:14 core/AMDCore/AMDCore.php:986
 msgctxt "Admin"
 msgid "API"
 msgstr "API"
@@ -142,7 +218,7 @@ msgstr ""
 "برای استفاده از این آدرس API را فعال کنید تا تمام بخش های API فعال شوند"
 
 #: pages/admin-dashboard.php:81 pages/admin-tabs/tab_pages.php:142
-#: core/AMDCore/AMDCore.php:1105
+#: core/AMDCore/AMDCore.php:1202
 msgctxt "Admin"
 msgid "API page"
 msgstr "صفحه API"
@@ -152,12 +228,12 @@ msgctxt "Admin"
 msgid "API URL"
 msgstr "آدرس API"
 
-#: core/AMDCore/AMDCore.php:1153
+#: core/AMDCore/AMDCore.php:1265
 msgctxt "Admin"
 msgid "Appearance"
 msgstr "ظاهر"
 
-#: pages/admin-tabs/tab_general.php:96 ext/_app/wizard/steps/step_6.php:74
+#: pages/admin-tabs/tab_general.php:102 ext/_app/wizard/steps/step_6.php:74
 msgctxt "Admin"
 msgid "Avatar image"
 msgstr "تصویر آواتار"
@@ -172,7 +248,7 @@ msgctxt "Admin"
 msgid "Backup"
 msgstr "پشتیبانی"
 
-#: core/AMDNetwork/AMDNetwork.php:607
+#: core/AMDNetwork/AMDNetwork.php:914
 msgctxt "Admin"
 msgid "Backup file is not valid"
 msgstr "فایل پشتیبانی معتبر نیست"
@@ -187,13 +263,13 @@ msgctxt "Admin"
 msgid "Blue"
 msgstr "آبی"
 
-#: index.php:219 pages/admin-tabs/tab_md_import.php:11
-#: pages/admin-tabs/tab_forms.php:74
+#: index.php:223 pages/admin-tabs/tab_md_import.php:11
+#: pages/admin-tabs/tab_forms.php:83
 msgctxt "Admin"
 msgid "Browse"
 msgstr "انتخاب"
 
-#: pages/admin-tabs/tab_general.php:162 ext/_app/wizard/steps/step_6.php:145
+#: pages/admin-tabs/tab_general.php:168 ext/_app/wizard/steps/step_6.php:145
 msgctxt "Admin"
 msgid ""
 "By changing email, users downloads and purchases won't be lost. If you are "
@@ -207,7 +283,7 @@ msgstr ""
 "است بدون تغییر نمانند. درصورت فعالسازی لطفا مطمئن شوید اطلاعات کاربران شما "
 "وابسته به ایمیل آنها نیست."
 
-#: pages/admin-tabs/tab_general.php:137 ext/_app/wizard/steps/step_6.php:118
+#: pages/admin-tabs/tab_general.php:143 ext/_app/wizard/steps/step_6.php:118
 msgctxt "Admin"
 msgid ""
 "By enabling fast loading dashboard pages will not be refreshed and contents "
@@ -237,7 +313,12 @@ msgstr ""
 "با فعالسازی این گزینه، این فیلد ضروری خواهد بود و کاربران حتما باید آن را "
 "وارد کنند."
 
-#: pages/admin-tabs/tab_general.php:38
+#: pages/admin-tabs/tab_general.php:193
+msgctxt "Admin"
+msgid "By enabling this item, Tera wallet balance and deposit their account."
+msgstr "با فعالسازی این مورد کیف پول Tera wallet در داشبورد در دسترس خواهد بود"
+
+#: pages/admin-tabs/tab_general.php:44
 msgctxt "Admin"
 msgid ""
 "By enabling this item, WordPress header won't be printed in dashboard pages. "
@@ -258,12 +339,12 @@ msgstr ""
 "با فعالسازی این مورد فیلد شماره موبایل به صفحه ثبت نام اضافه خواهد شد، پس از "
 "فعالسازی، گزینه های بیشتری به شما نمایش داده خواهد شد."
 
-#: core/AMDCore/AMDCore.php:821
+#: core/AMDCore/AMDCore.php:906
 msgctxt "Admin"
 msgid "Cannot import users avatars"
 msgstr "نمی‌توان تصاویر آواتار کاربران را درون ریزی کرد"
 
-#: pages/admin-tabs/tab_general.php:146 ext/_app/wizard/steps/step_6.php:128
+#: pages/admin-tabs/tab_general.php:152 ext/_app/wizard/steps/step_6.php:128
 msgctxt "Admin"
 msgid "Change email"
 msgstr "تغییر ایمیل"
@@ -280,7 +361,7 @@ msgctxt "Admin"
 msgid "Clear"
 msgstr "پاک کردن"
 
-#: core/AMDCore/AMDCore.php:912
+#: core/AMDCore/AMDCore.php:1004
 msgctxt "Admin"
 msgid "Colors"
 msgstr "رنگ ها"
@@ -291,7 +372,7 @@ msgctxt "Admin"
 msgid "Contact us"
 msgstr "تماس با ما"
 
-#: pages/admin-tabs/tab_general.php:121 ext/_app/wizard/steps/step_6.php:101
+#: pages/admin-tabs/tab_general.php:127 ext/_app/wizard/steps/step_6.php:101
 msgctxt "Admin"
 msgid "Content"
 msgstr "محتوا"
@@ -311,7 +392,7 @@ msgctxt "Admin"
 msgid "Dark mode"
 msgstr "حالت شب"
 
-#: core/AMDCore/AMDCore.php:924 core/AMDCore/AMDCore.php:1143
+#: core/AMDCore/AMDCore.php:1016 core/AMDCore/AMDCore.php:1255
 msgctxt "Admin"
 msgid "Dashboard"
 msgstr "داشبورد"
@@ -321,12 +402,12 @@ msgctxt "Admin"
 msgid "Dashboard default"
 msgstr "پیشفرض داشبورد"
 
-#: pages/admin-tabs/tab_forms.php:68
+#: pages/admin-tabs/tab_forms.php:77
 msgctxt "Admin"
 msgid "Dashboard logo"
 msgstr "لوگو داشبورد"
 
-#: pages/admin-tabs/tab_forms.php:89
+#: pages/admin-tabs/tab_forms.php:98
 msgctxt "Admin"
 msgid ""
 "Dashboard logo is your business logo and it'll show on the login form and "
@@ -340,18 +421,18 @@ msgctxt "Admin"
 msgid "Dashboard page"
 msgstr "صفحه داشبورد"
 
-#: pages/admin-dashboard.php:47 core/AMDCore/AMDCore.php:1063
+#: pages/admin-dashboard.php:47 core/AMDCore/AMDCore.php:1160
 msgctxt "Admin"
 msgid "dashboard page"
 msgstr "صفحه داشبورد"
 
-#: core/AMDCore/AMDCore.php:901 core/AMDCore/AMDCore.php:954
+#: core/AMDCore/AMDCore.php:993 core/AMDCore/AMDCore.php:1046
 #: ext/_app/wizard/initialize_script.php:21
 msgctxt "Admin"
 msgid "Database"
 msgstr "پایگاه داده"
 
-#: core/AMDCore/AMDCore.php:962
+#: core/AMDCore/AMDCore.php:1054
 msgctxt "Admin"
 msgid "Database cleaned up"
 msgstr "پایگاه داده پاکسازی شد"
@@ -381,7 +462,7 @@ msgctxt "Admin"
 msgid "Do not overwrite existing options"
 msgstr "فقط گزینه های جدید اضافه شوند و تنظیمات فعلی بدون تغییر بمانند"
 
-#: index.php:258 pages/smp-more.php:14 pages/admin-tabs/tab_api.php:30
+#: index.php:270 pages/smp-more.php:14 pages/admin-tabs/tab_api.php:30
 #: pages/admin-tabs/tab_more_documentation.php:7
 msgctxt "Admin"
 msgid "Documentation"
@@ -397,7 +478,7 @@ msgctxt "Admin"
 msgid "Enable API"
 msgstr "فعالسازی API"
 
-#: pages/admin-tabs/tab_general.php:28
+#: pages/admin-tabs/tab_general.php:34
 msgctxt "Admin"
 msgid "Enable dashboard optimizer"
 msgstr "فعالسازی بهینه ساز داشبورد"
@@ -412,7 +493,7 @@ msgstr ""
 "با فعال کردن این گزینه میتوانید از ثبت کردن شماره موبایل تکراری جلوگیری کنید "
 "تا هر کاربر فقط شماره تلفن منحصر به فرد خود را داشته باشد"
 
-#: core/AMDCore/AMDCore.php:1173
+#: core/AMDCore/AMDCore.php:1285
 msgctxt "Admin"
 msgid "Extensions"
 msgstr "ماژول ها"
@@ -422,17 +503,17 @@ msgctxt "Admin"
 msgid "Fields"
 msgstr "فیلد ها"
 
-#: core/AMDCore/AMDCore.php:969
+#: core/AMDCore/AMDCore.php:1061
 msgctxt "Admin"
 msgid "Files"
 msgstr "فایل ها"
 
-#: core/AMDCore/AMDCore.php:984
+#: core/AMDCore/AMDCore.php:1076
 msgctxt "Admin"
 msgid "Files cleaned up"
 msgstr "فایل ها پاکسازی شد"
 
-#: pages/admin-tabs/tab_general.php:87 ext/_app/wizard/steps/step_6.php:64
+#: pages/admin-tabs/tab_general.php:93 ext/_app/wizard/steps/step_6.php:64
 msgctxt "Admin"
 msgid ""
 "Force clients to use https instead of http. Please consider that this plugin "
@@ -442,22 +523,22 @@ msgstr ""
 "نصب بودن گواهی SSL. توجه داشته باشید که هیچ تغییری روی فایل .htaccess هاست "
 "شما ایجاد نخواهد شد و صرفا یک تغییر مسیر در وردپرس است"
 
-#: pages/admin-tabs/tab_general.php:77 ext/_app/wizard/steps/step_6.php:54
+#: pages/admin-tabs/tab_general.php:83 ext/_app/wizard/steps/step_6.php:54
 msgctxt "Admin"
 msgid "Force SSL"
 msgstr "اس‌اس‌ال اجباری"
 
-#: core/AMDCore/AMDCore.php:887
+#: core/AMDCore/AMDCore.php:979
 msgctxt "Admin"
 msgid "Forms"
 msgstr "فرم ها"
 
-#: pages/admin-tabs/tab_forms.php:22
+#: pages/admin-tabs/tab_forms.php:31
 msgctxt "Admin"
 msgid "Forms title"
 msgstr "عنوان فرم ها"
 
-#: core/AMDCore/AMDCore.php:859
+#: core/AMDCore/AMDCore.php:944
 msgctxt "Admin"
 msgid "General"
 msgstr "عمومی"
@@ -472,12 +553,23 @@ msgctxt "Admin"
 msgid "Green"
 msgstr "سبز"
 
+#: functions.php:1763
+#, php-format
+msgctxt "Admin"
+msgid ""
+"Hi %s! Thanks for using our plugin, we hope you enjoy using it. You can "
+"setup your dashboard simply from %sWizard%s or admin panel."
+msgstr ""
+"سلام %s عزیز، با تشکر از شما برای استفاده از این افزونه امیدواریم از آن "
+"بهترین استفاده را داشته باشید. شما می‌توایند داشبورد خود را از قسمت %sنصب "
+"آسان%s به سادگی راه اندازی کنید."
+
 #: pages/admin-tabs/tab_sec_login.php:23
 msgctxt "Admin"
 msgid "Hide login page"
 msgstr "مخفی کردن صفحه ورود"
 
-#: core/AMDCore/AMDCore.php:918 ext/_app/wizard/steps/step_4.php:10
+#: core/AMDCore/AMDCore.php:1010 ext/_app/wizard/steps/step_4.php:10
 msgctxt "Admin"
 msgid "Icons"
 msgstr "آیکن ها"
@@ -500,7 +592,7 @@ msgstr ""
 "اگر این گزینه را غیرفعال کنید فیلد نام کاربری نمایش داده نخواهد شد و پس از "
 "ثبت نام یک نام کاربری برای آنها به صورت خودکار ایجاد خواهد شد."
 
-#: pages/admin-tabs/tab_general.php:63 ext/_app/wizard/steps/step_6.php:38
+#: pages/admin-tabs/tab_general.php:69 ext/_app/wizard/steps/step_6.php:38
 msgctxt "Admin"
 msgid ""
 "If you enable this item dashboard page will not show in search engines "
@@ -544,13 +636,18 @@ msgstr ""
 "به کلی حذف کنید پس از پاکسازی وارد هیچ یک از صفحات داشبورد و تنظیمات نشوید و "
 "افزونه را از طریق قسمت افزونه ها حذف کنید"
 
-#: pages/admin-tabs/tab_translate.php:23 core/AMDCore/AMDCore.php:873
+#: pages/admin-tabs/tab_translate.php:23 core/AMDCore/AMDCore.php:958
 #: ext/_app/wizard/steps/step_3.php:11
 msgctxt "Admin"
 msgid "Languages"
 msgstr "زبان ها"
 
-#: pages/admin-tabs/tab_general.php:112 ext/_app/wizard/steps/step_6.php:91
+#: functions.php:4403
+msgctxt "Admin"
+msgid "Learn how to use number formats"
+msgstr "آموزش استفاده از فرمت اعداد"
+
+#: pages/admin-tabs/tab_general.php:118 ext/_app/wizard/steps/step_6.php:91
 #| msgid ""
 #| "Let users to upload their custom avatar picture. Avatar pictures will be "
 #| "cropped in 1:1 ratio (square image) and they will be converted to png to "
@@ -595,8 +692,8 @@ msgctxt "Admin"
 msgid "Login page"
 msgstr "صفحه ورود"
 
-#: pages/admin-dashboard.php:64 pages/admin-tabs/tab_forms.php:28
-#: core/AMDCore/AMDCore.php:1086
+#: pages/admin-dashboard.php:64 pages/admin-tabs/tab_forms.php:37
+#: core/AMDCore/AMDCore.php:1183
 msgctxt "Admin"
 msgid "login page"
 msgstr "صفحه ورود"
@@ -608,12 +705,12 @@ msgctxt "Admin"
 msgid "make automatically"
 msgstr "ساختن خودکار"
 
-#: core/AMDCore/AMDCore.php:1158
+#: core/AMDCore/AMDCore.php:1270
 msgctxt "Admin"
 msgid "Manage data"
 msgstr "مدیریت اطلاعات"
 
-#: pages/admin-dashboard.php:185 core/AMDCore/AMDCore.php:1143
+#: pages/admin-dashboard.php:185 core/AMDCore/AMDCore.php:1255
 msgctxt "Admin"
 msgid "Material dashboard"
 msgstr "داشبورد متریال"
@@ -639,7 +736,7 @@ msgctxt "Admin"
 msgid "No extension located"
 msgstr "هیچ ماژولی پیدا نشد"
 
-#: pages/admin-tabs/tab_general.php:53 ext/_app/wizard/steps/step_6.php:28
+#: pages/admin-tabs/tab_general.php:59 ext/_app/wizard/steps/step_6.php:28
 msgctxt "Admin"
 msgid "No index"
 msgstr "نو ایندکس (no-index)"
@@ -648,6 +745,16 @@ msgstr "نو ایندکس (no-index)"
 msgctxt "Admin"
 msgid "No indicator"
 msgstr "بدون نشانگر"
+
+#: pages/admin-tabs/tab_login.php:46
+msgctxt "Admin"
+msgid ""
+"Normally users can choose whether to use 2FA or not, but if you force it "
+"they have to pass two factor authentication to login."
+msgstr ""
+"درحالت عادی کاربران می‌توانند انتخاب کنند که آیا ورود دو مرحله‌ای برای آنها "
+"فعال باشد یا خیر، اما اگر این گزینه را فعال کنید ورود دو مرحله‌ای برای همه "
+"کاربران فعال خواهد شد."
 
 #: pages/admin-dashboard.php:95 pages/admin-dashboard.php:100
 msgctxt "Admin"
@@ -668,7 +775,7 @@ msgctxt "Admin"
 msgid "Online users"
 msgstr "کاربران آنلاین"
 
-#: pages/admin-tabs/tab_general.php:22
+#: pages/admin-tabs/tab_general.php:28
 msgctxt "Admin"
 msgid "Optimizer"
 msgstr "بهینه ساز"
@@ -678,7 +785,7 @@ msgctxt "Admin"
 msgid "Orange"
 msgstr "نارنجی"
 
-#: core/AMDCore/AMDCore.php:866 ext/_app/wizard/initialize_script.php:41
+#: core/AMDCore/AMDCore.php:951 ext/_app/wizard/initialize_script.php:41
 #: ext/_app/wizard/steps/step_2.php:21
 msgctxt "Admin"
 msgid "Pages"
@@ -724,7 +831,7 @@ msgctxt "Admin"
 msgid "Refresh"
 msgstr "تازه سازی"
 
-#: core/AMDCore/AMDCore.php:880
+#: core/AMDCore/AMDCore.php:965
 msgctxt "Admin"
 msgid "Registration"
 msgstr "ثبت نام"
@@ -739,7 +846,7 @@ msgstr ""
 "امکان ثبت نام در سایت شما غیرفعال است. برای فعال سازی ثبت نام وارد "
 "%sتنظیمات%s شوید و گزینه 'هر کسی می‌تواند نام‌نویسی کند' را فعال کنید"
 
-#: pages/admin-tabs/tab_forms.php:38
+#: pages/admin-tabs/tab_forms.php:47
 msgctxt "Admin"
 msgid "registration page"
 msgstr "صفحه ثبت نام"
@@ -759,7 +866,7 @@ msgctxt "Admin"
 msgid "Requirements: "
 msgstr "پیش نیاز ها:"
 
-#: pages/admin-tabs/tab_forms.php:48
+#: pages/admin-tabs/tab_forms.php:57
 msgctxt "Admin"
 msgid "Reset password page"
 msgstr "صفحه بازیابی کلمه عبور"
@@ -774,7 +881,7 @@ msgctxt "Admin"
 msgid "Restore"
 msgstr "بازنشانی"
 
-#: core/AMDCore/AMDCore.php:1163
+#: core/AMDCore/AMDCore.php:1275
 msgctxt "Admin"
 msgid "Security"
 msgstr "امنیت"
@@ -813,12 +920,12 @@ msgctxt "Admin"
 msgid "Select which data you want to delete"
 msgstr "مشخص کنید میخواهید کدام یک از موارد زیر را حذف کنید"
 
-#: pages/admin-tabs/tab_general.php:47 ext/_app/wizard/steps/step_6.php:22
+#: pages/admin-tabs/tab_general.php:53 ext/_app/wizard/steps/step_6.php:22
 msgctxt "Admin"
 msgid "Seo"
 msgstr "سئو"
 
-#: core/AMDCore/AMDCore.php:1148
+#: core/AMDCore/AMDCore.php:1260
 msgctxt "Admin"
 msgid "Settings"
 msgstr "تنظیمات"
@@ -833,17 +940,17 @@ msgctxt "Admin"
 msgid "Show region"
 msgstr "نمایش منطقه"
 
-#: core/AMDCore/AMDCore.php:720
+#: core/AMDCore/AMDCore.php:805
 msgctxt "Admin"
 msgid "Site options"
 msgstr "تنظیمات سایت"
 
-#: core/AMD_DB/AMD_DB.php:653
+#: core/AMD_DB/AMD_DB.php:732
 msgctxt "Admin"
 msgid "Site settings import failed"
 msgstr "بازنشانی تنظیمات سایت انجام نشد"
 
-#: core/AMD_DB/AMD_DB.php:646 core/AMDCore/AMDCore.php:735
+#: core/AMD_DB/AMD_DB.php:725 core/AMDCore/AMDCore.php:820
 msgctxt "Admin"
 msgid "Site settings imported"
 msgstr "تنظیمات سایت بازنشانی شد"
@@ -872,7 +979,6 @@ msgstr "آمار"
 #: themes/amatris/view/dashboard_tab.php:48
 #: themes/amatris/view/dashboard_tab.php:78
 #: themes/amatris/view/dashboard_tab.php:107
-#, php-format
 msgctxt "Admin"
 msgid "Style %d"
 msgstr "ظاهر %d"
@@ -887,22 +993,27 @@ msgctxt "Admin"
 msgid "System default"
 msgstr "پیشفرض سیستم"
 
-#: core/AMDCore/AMDCore.php:776
+#: core/AMDCore/AMDCore.php:861
 msgctxt "Admin"
 msgid "Temporarily data"
 msgstr "اطلاعات موقت"
 
-#: core/AMDCore/AMDCore.php:804
+#: core/AMDCore/AMDCore.php:889
 msgctxt "Admin"
 msgid "Temporarily data imported"
 msgstr "اطلاعات موقت سایت درون ریزی شدند"
+
+#: pages/admin-tabs/tab_general.php:183
+msgctxt "Admin"
+msgid "Tera wallet support"
+msgstr "پشتیبانی از کیف پول Tera wallet"
 
 #: pages/admin-tabs/tab_ap_colors.php:171
 msgctxt "Admin"
 msgid "Theme preview"
 msgstr "پیشنمایش قالب"
 
-#: core/AMDCore/AMDCore.php:1178
+#: core/AMDCore/AMDCore.php:1290
 msgctxt "Admin"
 msgid "Themes"
 msgstr "قالب ها"
@@ -924,7 +1035,7 @@ msgctxt "Admin"
 msgid "There is no registered themes located"
 msgstr "درحال حاضر هیچ قالبی ثبت نشده است"
 
-#: pages/admin-tabs/tab_forms.php:59
+#: pages/admin-tabs/tab_forms.php:68
 msgctxt "Admin"
 msgid ""
 "These texts will show on top of the login and registration forms, leave it "
@@ -947,7 +1058,7 @@ msgstr ""
 "این گزینه باید فعال شده باشد تا سایر گزینه ها به شما نمایش داده شوند و به "
 "کاربران اجازه دهید ثبت نام کنند."
 
-#: core/AMDNetwork/AMDNetwork.php:517
+#: core/AMDNetwork/AMDNetwork.php:824
 #, php-format
 msgctxt "Admin"
 msgid ""
@@ -969,42 +1080,53 @@ msgctxt "Admin"
 msgid "Translate"
 msgstr "ترجمه"
 
+#: pages/admin-tabs/tab_login.php:30
+msgctxt "Admin"
+msgid ""
+"Two factor authentication (2FA) is a security layer for users authentication."
+" If users uses 2FA they should enter the authentication code before they can "
+"log into their account."
+msgstr ""
+"ورود دو مرحله‌ای (2FA) یک روش برای بهبود امنیت حساب کاربری است که کاربران "
+"پیش از ورود باید از طریق ایمیل و یا پیامک کد تایید ارسال شده را وارد کنند تا "
+"اجازه ورود داشته باشند."
+
 #: pages/admin-tabs/tab_registration.php:211
 msgctxt "Admin"
 msgid "Unique phone number"
 msgstr "شماره موبایل منحصر به فرد"
 
-#: pages/admin-tabs/tab_general.php:71 ext/_app/wizard/steps/step_6.php:48
+#: pages/admin-tabs/tab_general.php:77 ext/_app/wizard/steps/step_6.php:48
 msgctxt "Admin"
 msgid "URL and addresses"
 msgstr "آدرس اینترنتی"
 
-#: pages/admin-tabs/tab_general.php:127 ext/_app/wizard/steps/step_6.php:107
+#: pages/admin-tabs/tab_general.php:133 ext/_app/wizard/steps/step_6.php:107
 msgctxt "Admin"
 msgid "Use fast loading"
 msgstr "استفاده از بارگزاری سریع"
 
-#: ext/todo/functions.php:84 ext/_api/functions.php:27
+#: ext/todo/functions.php:88 ext/_api/functions.php:27
 msgctxt "Admin"
 msgid "User not found"
 msgstr "کاربر مورد نظر یافت نشد"
 
-#: core/AMDCore/AMDCore.php:809
+#: core/AMDCore/AMDCore.php:894
 msgctxt "Admin"
 msgid "Users avatar"
 msgstr "تصویر آواتار کاربران"
 
-#: core/AMDCore/AMDCore.php:847
+#: core/AMDCore/AMDCore.php:932
 msgctxt "Admin"
 msgid "Users avatars imported successfully"
 msgstr "تصاویر آواتار کاربران با موفقیت درون ریزی شد"
 
-#: core/AMDCore/AMDCore.php:740
+#: core/AMDCore/AMDCore.php:825
 msgctxt "Admin"
 msgid "Users meta"
 msgstr "اطلاعات کاربران"
 
-#: core/AMDCore/AMDCore.php:771
+#: core/AMDCore/AMDCore.php:856
 msgctxt "Admin"
 msgid "Users meta-data imported"
 msgstr "اطلاعات کاربران درون ریزی شد"
@@ -1052,7 +1174,7 @@ msgctxt "Admin"
 msgid "Welcome to wizard installation!"
 msgstr "به نصب آسان خوش آمدید!"
 
-#: core/AMDCore/AMDCore.php:1168
+#: core/AMDCore/AMDCore.php:1280
 msgctxt "Admin"
 msgid "Wizard"
 msgstr "نصب آسان"
@@ -1062,8 +1184,13 @@ msgctxt "Admin"
 msgid "Wizard installation"
 msgstr "نصب آسان"
 
-#: core/AMDCore/AMDCore.php:1063 core/AMDCore/AMDCore.php:1086
-#: core/AMDCore/AMDCore.php:1105
+#: pages/admin-tabs/tab_general.php:177
+msgctxt "Admin"
+msgid "Woocommerce"
+msgstr "ووکامرس"
+
+#: core/AMDCore/AMDCore.php:1160 core/AMDCore/AMDCore.php:1183
+#: core/AMDCore/AMDCore.php:1202
 #, php-format
 msgctxt "Admin"
 msgid ""
@@ -1098,6 +1225,12 @@ msgstr ""
 "درحال حاضر هیچ صفحه ای وجود ندارد، میتوانید به صورت خودکار %sیک صفحه ایجاد "
 "کنید%s"
 
+#: pages/admin-tabs/tab_general.php:195
+#, php-format
+msgctxt "Admin"
+msgid "You need to install %sTera wallet%s plugin to use this option."
+msgstr "برای استفاده از این گزینه ابتدا افزونه %sTera wallet%s را نصب کنید."
+
 #: ext/_app/wizard/index.php:161
 msgctxt "Admin"
 msgid ""
@@ -1117,13 +1250,13 @@ msgstr ""
 "فایل بدون ایراد است آن را بارگزاری کنید تا درصورت امکان بازنشانی اطلاعات "
 "انجام شود"
 
-#: core/AMDNetwork/AMDNetwork.php:589
+#: core/AMDNetwork/AMDNetwork.php:896
 #| msgid "Zip archive cannot be open"
 msgctxt "Admin"
 msgid "Zip archive cannot be opened"
 msgstr "امکان باز کردن آرشیو zip وجود ندارد"
 
-#: index.php:277
+#: index.php:289
 msgid "Amatris"
 msgstr "آماتریس"
 
@@ -1131,26 +1264,27 @@ msgstr "آماتریس"
 msgid "Amatris Material Dashboard"
 msgstr "پنل کاربری متریال آماتریس"
 
-#: index.php:131 dashboard/auth.php:53 dashboard/action.php:52
-#: core/AMDNetwork/AMDNetwork.php:56 core/AMDNetwork/AMDNetwork.php:314
-#: core/AMDNetwork/AMDNetwork.php:364 core/AMDNetwork/AMDNetwork.php:390
-#: core/AMDNetwork/AMDNetwork.php:821 core/AMDDashboard/ajax.php:20
+#: index.php:134 functions.php:2807 functions.php:4084 functions.php:4118
+#: dashboard/auth.php:59 dashboard/action.php:58
+#: core/AMDNetwork/AMDNetwork.php:58 core/AMDNetwork/AMDNetwork.php:360
+#: core/AMDNetwork/AMDNetwork.php:484 core/AMDNetwork/AMDNetwork.php:511
+#: core/AMDNetwork/AMDNetwork.php:1128 core/AMDDashboard/ajax.php:20
 #: core/AMDDashboard/ajax.php:66 ext/edd/functions.php:25
-#: ext/todo/functions.php:76 ext/todo/functions.php:185 ext/_app/index.php:236
-#: ext/_app/index.php:258 ext/_app/index.php:283
+#: ext/todo/functions.php:80 ext/todo/functions.php:235 ext/_app/index.php:265
+#: ext/_app/index.php:287 ext/_app/index.php:315 ext/_app/index.php:348
 #: ext/woocommerce/functions.php:25
 msgid "An error has occurred"
 msgstr "متاسفانه خطایی رخ داده است"
 
-#: core/AMDNetwork/AMDNetwork.php:308 core/AMDNetwork/AMDNetwork.php:338
+#: core/AMDNetwork/AMDNetwork.php:354 core/AMDNetwork/AMDNetwork.php:384
 msgid "An error has occurred while sending email"
 msgstr "متاسفانه هنگام ارسال ایمیل خطایی رخ داده است"
 
-#: core/AMDNetwork/AMDNetwork.php:533
+#: core/AMDNetwork/AMDNetwork.php:840
 msgid "An error has occurred while uploading"
 msgstr "هنگام بارگزاری فایل خطای رخ داده است"
 
-#: index.php:165
+#: index.php:168
 msgid "An error has occurred, please check console"
 msgstr "متاسفانه خطایی رخ داده است، لطفا کنسول مرورگر خود را چک کنید"
 
@@ -1164,19 +1298,35 @@ msgctxt "API message"
 msgid "Request is not executable"
 msgstr "درخواست شما قابل اجرا نیست"
 
-#: index.php:284
+#: index.php:296 functions.php:2399
 msgid "API page"
 msgstr "صفحه API"
 
-#: index.php:160
+#: functions.php:2400
+msgid ""
+"API page is required for settings and styles to be loaded, do you allow to "
+"create it automatically?"
+msgstr ""
+"صفحه API برای بارگیری تنظیمات و منابع ضروری است، آیا مایل به ایجاد این صفحه "
+"هستید؟"
+
+#: index.php:163
 msgid "Appearance"
 msgstr "ظاهر"
 
-#: index.php:180
+#: dashboard/pages/page-login-reports.php:66
+msgid ""
+"Are you sure about closing this session? users with that session will be "
+"logged out from their account."
+msgstr ""
+"آیا از حذف نشست مطمعن هستید؟ با حذف آن کاربرانی که در این نشست هستند از حساب "
+"شما خارج خواهند شد."
+
+#: index.php:183
 msgid "Are you sure about deleting selected items?"
 msgstr "آیا از حذف موارد انتخاب شده مطمئنید؟"
 
-#: index.php:209
+#: index.php:213
 msgid "Are you sure your want to remove all items in your cart?"
 msgstr "آیا مطمئن هستید میخواهید سبد خرید خود را خالی کنید؟"
 
@@ -1186,12 +1336,12 @@ msgctxt "At time"
 msgid "%s at %s"
 msgstr "%s ساعت %s"
 
-#: index.php:152
+#: index.php:155
 msgid "Avatar image"
 msgstr "تصویر آواتار"
 
-#: index.php:213 ext/_api/functions.php:203 ext/_api/functions.php:220
-#: ext/_api/functions.php:240
+#: index.php:217 ext/_api/functions.php:229 ext/_api/functions.php:246
+#: ext/_api/functions.php:266
 msgid "Avatar image changed"
 msgstr "تصویر آواتار تغییر کرد"
 
@@ -1199,43 +1349,57 @@ msgstr "تصویر آواتار تغییر کرد"
 msgid "Avatar picture"
 msgstr "تصویر آواتار"
 
-#: index.php:144 ext/edd/view/view_purchase.php:16
-#: ext/edd/view/page_edd_cart.php:3 ext/edd/view/page_edd_downloads.php:95
+#: index.php:147 dashboard/pages/toolkit-2fa.php:29
+#: ext/edd/view/view_purchase.php:16 ext/edd/view/page_edd_cart.php:3
+#: ext/edd/view/page_edd_downloads.php:95
 #: ext/woocommerce/view/view_purchase.php:16
 #: ext/woocommerce/view/page_wc_cart.php:3
-#: ext/woocommerce/view/page_wc_purchases.php:106
+#: ext/woocommerce/view/page_wc_purchases.php:129
 #: themes/amatris/dashboard/templates/page_404.php:4
 msgid "Back"
 msgstr "بازگشت"
 
-#: ext/_app/index.php:468
+#: ext/_app/index.php:533
 #, php-format
 msgid "Back to %s"
 msgstr "بازگشت به %s"
 
-#: dashboard/auth.php:99 dashboard/action.php:98
+#: dashboard/auth.php:105 dashboard/action.php:114
 msgid "Back to dashboard"
 msgstr "بازگشت به داشبورد"
 
-#: ext/_app/index.php:305
+#: ext/_app/index.php:370
 msgid "Back to site"
 msgstr "بازگشت به سایت"
 
-#: index.php:175
+#: index.php:178
 msgid "Backup"
 msgstr "پشتیبان گیری"
 
-#: index.php:171
+#: index.php:174
 msgid "Backup author"
 msgstr "پشتیبانی توسط کاربر"
 
-#: index.php:178
+#: index.php:181
 msgid "Backup files"
 msgstr "فایل های پشتیبانی"
 
-#: index.php:224
+#: index.php:228
 msgid "Backup includes"
 msgstr "پشتیبانی شامل"
+
+#: dashboard/pages/page-login-reports.php:21
+#: dashboard/cards/acc_login_reports.php:26
+msgid "Browser"
+msgstr "مرورگر"
+
+#: dashboard/cards/acc_security.php:22
+msgid ""
+"By enabling 2 factor authentication you have to enter received code on your "
+"mobile to login to your account."
+msgstr ""
+"با فعالسازی تایید دو مرحله‌ای، میبایست پیش از ورود کد تایید ارسال شده برای "
+"شما را وارد کنید تا بتوانید وارد حساب کاربری خود شوید."
 
 #: pages/admin-tabs/tab_more_documentation.php:9
 msgid ""
@@ -1249,18 +1413,18 @@ msgstr ""
 "حاضر ممکن است مستندات کامل نباشد اما در تلاشیم در کمترین زمان ممکن آن را "
 "تکمیل کنیم"
 
-#: index.php:141 dashboard/cards/acc_personal.php:75
-#: ext/todo/view/page_todo.php:19
+#: index.php:144 dashboard/cards/acc_personal.php:84
+#: ext/todo/view/page_todo.php:23
 msgid "Cancel"
 msgstr "لغو"
 
-#: index.php:208 ext/edd/index.php:49 ext/edd/index.php:100
-#: ext/woocommerce/index.php:50 ext/woocommerce/index.php:104
+#: index.php:212 ext/edd/index.php:49 ext/edd/index.php:100
+#: ext/woocommerce/index.php:50 ext/woocommerce/index.php:123
 #: ext/edd/view/page_edd_cart.php:12 ext/woocommerce/view/page_wc_cart.php:14
 msgid "Cart"
 msgstr "سبد خرید"
 
-#: index.php:211 dashboard/cards/acc_change_phone.php:97
+#: index.php:215 dashboard/cards/acc_change_phone.php:97
 #: dashboard/cards/acc_change_password.php:15
 msgid "Change"
 msgstr "تغییر"
@@ -1269,7 +1433,7 @@ msgstr "تغییر"
 msgid "Change email"
 msgstr "تغییر ایمیل"
 
-#: index.php:214 dashboard/cards/acc_change_password.php:22
+#: index.php:218 dashboard/cards/acc_change_password.php:22
 msgid "Change password"
 msgstr "تغییر کلمه عبور"
 
@@ -1277,7 +1441,7 @@ msgstr "تغییر کلمه عبور"
 msgid "Change phone number"
 msgstr "تغییر شماره موبایل"
 
-#: ext/_api/functions.php:100 ext/_api/functions.php:153
+#: ext/_api/functions.php:100 ext/_api/functions.php:179
 msgid "Change your email"
 msgstr "تغییر ایمیل"
 
@@ -1285,20 +1449,24 @@ msgstr "تغییر ایمیل"
 msgid "Clear"
 msgstr "پاکسازی"
 
-#: index.php:140
+#: index.php:143
 msgid "Close"
 msgstr "بستن"
 
-#: index.php:142
+#: dashboard/cards/acc_security.php:44
+msgid "Close other sessions"
+msgstr "بیرون رفتن از بقیه دستگاه ها"
+
+#: index.php:145
 msgid "Confirm"
 msgstr "تایید"
 
-#: index.php:192 ext/edd/view/page_edd_cart.php:53
+#: index.php:196 ext/edd/view/page_edd_cart.php:53
 #: ext/woocommerce/view/page_wc_cart.php:49
 msgid "Continue"
 msgstr "ادامه"
 
-#: index.php:145
+#: index.php:148
 msgid "Copied"
 msgstr "کپی شد"
 
@@ -1312,13 +1480,14 @@ msgstr "کپی شد"
 msgid "Copy"
 msgstr "کپی"
 
+#: functions.php:4818 functions.php:4853
 #: pages/admin-tabs/tab_registration.php:298
 #: dashboard/cards/acc_change_phone.php:41
 #: dashboard/cards/acc_change_phone.php:76
 msgid "Country code"
 msgstr "کد کشور"
 
-#: index.php:188 pages/admin-tabs/tab_registration.php:250
+#: index.php:192 pages/admin-tabs/tab_registration.php:250
 msgid "Country codes"
 msgstr "پیش شماره ها"
 
@@ -1326,7 +1495,7 @@ msgstr "پیش شماره ها"
 msgid "Country name"
 msgstr "نام کشور"
 
-#: ext/_app/index.php:558
+#: ext/_app/index.php:623
 msgid "Create new account"
 msgstr "ساخت حساب"
 
@@ -1338,35 +1507,35 @@ msgstr "برش"
 msgid "Custom"
 msgstr "دلخواه"
 
-#: pages/admin-tabs/tab_forms.php:77
+#: pages/admin-tabs/tab_forms.php:86
 msgid "Custom URL"
 msgstr "آدرس دلخواه"
 
-#: ext/_app/index.php:426 ext/_app/index.php:477
+#: ext/_app/index.php:491 ext/_app/index.php:542
 msgid "Dark mode"
 msgstr "حالت شب"
 
-#: index.php:186 dashboard/dashboard.php:89
+#: index.php:190 dashboard/dashboard.php:89
 #: core/AMDDashboard/AMDDashboard.php:359
 #: core/AMDDashboard/AMDDashboard.php:472
-#: core/AMDDashboard/AMDDashboard.php:553 core/AMDCore/AMDCore.php:1650
-#: ext/_app/index.php:372
+#: core/AMDDashboard/AMDDashboard.php:553 core/AMDCore/AMDCore.php:1762
+#: ext/_app/index.php:437
 msgid "Dashboard"
 msgstr "داشبورد"
 
-#: index.php:282
+#: index.php:294
 msgid "Dashboard page"
 msgstr "صفحه داشبورد"
 
-#: core/AMD_DB/AMD_DB.php:282
+#: core/AMD_DB/AMD_DB.php:361
 msgid "Data imported successfully"
 msgstr "اطلاعات با موفقیت درون ریزی شد"
 
-#: index.php:158
+#: index.php:161 functions.php:2339
 msgid "Database"
 msgstr "پایگاه داده"
 
-#: index.php:45
+#: index.php:45 functions.php:2340
 msgid ""
 "Database is not installed correctly or needs to be updated, do you want to "
 "do it now?"
@@ -1374,8 +1543,9 @@ msgstr ""
 "پایگاه داده به درستی نصب نشده است و یا نیاز به بروزرسانی دارد، آیا مایل به "
 "بروزرسانی هستید؟"
 
-#: index.php:170 ext/_app/index.php:498 ext/edd/view/view_purchase.php:34
-#: ext/woocommerce/view/view_purchase.php:59
+#: index.php:173 dashboard/pages/page-login-reports.php:19
+#: dashboard/cards/acc_login_reports.php:25 ext/_app/index.php:563
+#: ext/edd/view/view_purchase.php:34 ext/woocommerce/view/view_purchase.php:59
 msgid "Date"
 msgstr "تاریخ"
 
@@ -1387,6 +1557,11 @@ msgid ""
 msgstr ""
 "%s عزیز، درخواست شما برای تغییر ایمیل حساب کاربری خود به %s انجام شد‌‌، برای "
 "تغییر ایمیل خود روی لینک زیر کلیک کنید. %s"
+
+#: ext/_app/index.php:208
+#, php-format
+msgid "Dear %s, your 2FA code is: %s"
+msgstr "سلام %s عزیز، کد تایید دو مرحله‌ای شما: %s"
 
 #: ext/_app/index.php:188
 #, php-format
@@ -1411,22 +1586,34 @@ msgstr "%s عزیز، کد تایید زیر برای بازیابی کلمه ع
 msgid "Default"
 msgstr "پیشفرض"
 
-#: pages/admin-tabs/tab_forms.php:32 pages/admin-tabs/tab_forms.php:42
-#: pages/admin-tabs/tab_forms.php:52
+#: pages/admin-tabs/tab_forms.php:41 pages/admin-tabs/tab_forms.php:51
+#: pages/admin-tabs/tab_forms.php:61
 msgid "default"
 msgstr "پیشفرض"
 
-#: index.php:177
+#: index.php:180
 msgid "delete"
 msgstr "حذف"
 
-#: index.php:179
+#: index.php:182
 msgid "Delete backup files"
 msgstr "حذف فایل های پشتیبانی"
+
+#: index.php:184
+msgid "Deleting"
+msgstr "درحال حذف"
+
+#: dashboard/pages/page-login-reports.php:66 core/AMDNetwork/AMDNetwork.php:671
+msgid "Destroy session"
+msgstr "بیرون انداختن"
 
 #: pages/admin-tabs/tab_more_contact.php:22
 msgid "Developer email"
 msgstr "ایمیل توسعه دهنده"
+
+#: dashboard/pages/page-login-reports.php:20
+msgid "Device"
+msgstr "دستگاه"
 
 #: pages/admin-tabs/tab_registration.php:309
 msgid "Dialing code"
@@ -1441,15 +1628,23 @@ msgstr "تخفیف"
 msgid "Dismiss"
 msgstr "لغو"
 
-#: index.php:201
+#: pages/admin-tabs/tab_login.php:67
+msgid "Display login reports to users"
+msgstr "نمایش گزارش ورود به کاربران"
+
+#: index.php:205
 msgid "Do you want to logout from your account?"
 msgstr "آیا از خروج از حساب کاربری خود مطمئن هستید؟"
 
-#: index.php:426
+#: index.php:440
 msgid "Don't show again"
 msgstr "دیگر نمایش نده"
 
-#: index.php:176
+#: index.php:233
+msgid "Double click on texts to edit"
+msgstr "برای ویرایش متن ها دوبار روی آنها کلیک کنید"
+
+#: index.php:179
 msgid "download"
 msgstr "دانلود"
 
@@ -1461,7 +1656,7 @@ msgstr ""
 "درحال حاضر فایل های دانلود در دسترس نیست، درصورتی که سفارش شما تایید نشده "
 "است لطفا تا انجام تاییدیه صبر کنید و مجددا امتحان کنید"
 
-#: core/AMDCore/AMDCore.php:1677 ext/edd/index.php:50 ext/edd/index.php:57
+#: core/AMDCore/AMDCore.php:1789 ext/edd/index.php:50 ext/edd/index.php:57
 #: ext/edd/index.php:85 ext/woocommerce/view/view_purchase.php:168
 #: ext/edd/view/cards/edd_card_downloads.php:62
 msgid "Downloads"
@@ -1488,24 +1683,24 @@ msgstr ""
 "به مشتریان خود اجازه دهید از طریق داشبورد تراکنش ها و دانلود هایشان را "
 "پیگیری کنند"
 
-#: index.php:218
+#: index.php:222
 msgid "Edit"
 msgstr "ویرایش"
 
-#: dashboard/register.php:143 dashboard/reset-password.php:95
-#: dashboard/cards/acc_personal.php:45
+#: dashboard/register.php:176 dashboard/reset-password.php:99
+#: dashboard/cards/acc_personal.php:47
 msgid "Email"
 msgstr "ایمیل"
 
-#: ext/_api/functions.php:105 ext/_api/functions.php:157
+#: ext/_api/functions.php:105 ext/_api/functions.php:183
 msgid "Email change confirmation sent to your email"
 msgstr "لینک تایید تغییر ایمیل به ایمیل فعلی شما ارسال شد"
 
-#: core/AMDSilu/AMDSilu.php:835
+#: core/AMDSilu/AMDSilu.php:888
 msgid "Email changed"
 msgstr "ایمیل تغییر کرد"
 
-#: core/AMDNetwork/AMDNetwork.php:278 core/AMDNetwork/AMDNetwork.php:325
+#: core/AMDNetwork/AMDNetwork.php:324 core/AMDNetwork/AMDNetwork.php:371
 msgid "Email not found"
 msgstr "ایمیل وارد شده پیدا نشد"
 
@@ -1514,25 +1709,38 @@ msgctxt "Empty cart"
 msgid "Empty"
 msgstr "خالی کردن"
 
+#: pages/admin-tabs/tab_login.php:21
+msgid "Enable 2 factor authentication"
+msgstr "فعالسازی ورود دو مرحله‌ای"
+
+#: dashboard/cards/acc_security.php:12
+msgid "Enable 2FA"
+msgstr "فعالسازی تایید دو مرحله‌ای"
+
 #: ext/_api/functions.php:70
 msgid "Entered email is invalid"
 msgstr "ایمیل وارد شده نامعتبر است"
 
-#: core/AMDNetwork/AMDNetwork.php:292
+#: core/AMDNetwork/AMDNetwork.php:338 core/AMDNetwork/AMDNetwork.php:437
 msgid "Entered verification code is not correct or has been expired"
 msgstr "کد تایید وارد شده صحیح نیست و یا منقضی شده است"
 
-#: core/AMDCore/AMDCore.php:1063 core/AMDCore/AMDCore.php:1086
-#: core/AMDCore/AMDCore.php:1105
+#: core/AMDCore/AMDCore.php:1160 core/AMDCore/AMDCore.php:1183
+#: core/AMDCore/AMDCore.php:1202
 #, php-format
 msgid "Error %s"
 msgstr "خطای %s"
 
-#: index.php:164
+#: functions.php:4084 functions.php:4086 functions.php:4118 functions.php:4120
+#, php-format
+msgid "Error code %s"
+msgstr "کد خطای %s"
+
+#: index.php:167
 msgid "Export"
 msgstr "برون بری"
 
-#: core/AMDNetwork/AMDNetwork.php:685
+#: core/AMDNetwork/AMDNetwork.php:992
 msgid ""
 "Export data is empty or permission to save files is not granted, please "
 "check your WordPress uploads directory permission."
@@ -1540,23 +1748,28 @@ msgstr ""
 "داده‌ای برای پشتیبان گیری یافت نشد و یا دسترسی برای ایجاد فایل پشتیبانی وجود "
 "ندارد. لطفا دسترسی پوشه آپلود های وردپرس را در هاست خود بررسی کنید."
 
-#: index.php:130 core/AMDNetwork/AMDNetwork.php:184
-#: core/AMDNetwork/AMDNetwork.php:198 core/AMDNetwork/AMDNetwork.php:214
-#: core/AMDNetwork/AMDNetwork.php:241 core/AMDNetwork/AMDNetwork.php:287
-#: core/AMDNetwork/AMDNetwork.php:299 core/AMDNetwork/AMDNetwork.php:329
-#: core/AMDNetwork/AMDNetwork.php:508 core/AMDNetwork/AMDNetwork.php:552
-#: core/AMDNetwork/AMDNetwork.php:652 core/AMDNetwork/AMDNetwork.php:752
-#: core/AMDNetwork/AMDNetwork.php:798 core/AMDExplorer/AMDExplorer.php:356
-#: core/AMDSilu/AMDSilu.php:424 core/AMDSilu/AMDSilu.php:688
-#: ext/todo/functions.php:110 ext/todo/functions.php:130
-#: ext/todo/functions.php:148 ext/todo/functions.php:155
-#: ext/todo/functions.php:170 ext/todo/functions.php:181
-#: ext/_api/functions.php:206 ext/_api/functions.php:271
-#: ext/_api/functions.php:280
+#: index.php:133 functions.php:2196 functions.php:2256 functions.php:2359
+#: functions.php:2419 core/AMDNetwork/AMDNetwork.php:160
+#: core/AMDNetwork/AMDNetwork.php:222 core/AMDNetwork/AMDNetwork.php:236
+#: core/AMDNetwork/AMDNetwork.php:252 core/AMDNetwork/AMDNetwork.php:279
+#: core/AMDNetwork/AMDNetwork.php:333 core/AMDNetwork/AMDNetwork.php:345
+#: core/AMDNetwork/AMDNetwork.php:375 core/AMDNetwork/AMDNetwork.php:455
+#: core/AMDNetwork/AMDNetwork.php:478 core/AMDNetwork/AMDNetwork.php:551
+#: core/AMDNetwork/AMDNetwork.php:559 core/AMDNetwork/AMDNetwork.php:708
+#: core/AMDNetwork/AMDNetwork.php:815 core/AMDNetwork/AMDNetwork.php:859
+#: core/AMDNetwork/AMDNetwork.php:959 core/AMDNetwork/AMDNetwork.php:1059
+#: core/AMDNetwork/AMDNetwork.php:1105 core/AMDExplorer/AMDExplorer.php:356
+#: core/AMDSilu/AMDSilu.php:465 core/AMDSilu/AMDSilu.php:741
+#: ext/todo/functions.php:117 ext/todo/functions.php:137
+#: ext/todo/functions.php:155 ext/todo/functions.php:162
+#: ext/todo/functions.php:178 ext/todo/functions.php:196
+#: ext/todo/functions.php:231 ext/_api/functions.php:130
+#: ext/_api/functions.php:232 ext/_api/functions.php:297
+#: ext/_api/functions.php:306
 msgid "Failed"
 msgstr "عملیات انجام نشد"
 
-#: core/AMDNetwork/AMDNetwork.php:537
+#: core/AMDNetwork/AMDNetwork.php:844
 msgid "File format is not allowed"
 msgstr "فرمت فایل بارگزاری شده مجاز نیست"
 
@@ -1564,23 +1777,27 @@ msgstr "فرمت فایل بارگزاری شده مجاز نیست"
 msgid "Files"
 msgstr "فایل ها"
 
-#: dashboard/cards/acc_personal.php:24 dashboard/cards/acc_personal.php:38
+#: dashboard/cards/acc_personal.php:26 dashboard/cards/acc_personal.php:40
 msgid "First name"
 msgstr "نام"
 
-#: dashboard/register.php:117
+#: dashboard/register.php:132
 msgid "Firstname"
 msgstr "نام"
 
-#: dashboard/register.php:129
+#: pages/admin-tabs/tab_login.php:37
+msgid "Force 2FA"
+msgstr "ورود دو مرحله‌ای اجباری"
+
+#: dashboard/register.php:144
 msgid "Fullname"
 msgstr "نام و نام خانوادگی"
 
-#: index.php:157
+#: index.php:160
 msgid "General"
 msgstr "عمومی"
 
-#: ext/_app/index.php:1077
+#: ext/_app/index.php:1147
 #, php-format
 msgid ""
 "Hello dear %s! Thanks for subscribing to our site, we hope you enjoy using "
@@ -1589,9 +1806,13 @@ msgstr ""
 "سلام %s عزیز، از عضویت شما سپاس گذاریم. امیدواریم بهترین استفاده را از "
 "داشبورد ببرید. همچنین درصورت نیاز می‌توانید با ما در ارتباط باشید!"
 
-#: index.php:161
+#: index.php:164
 msgid "Hello world"
 msgstr "سلام دنیا"
+
+#: index.php:234
+msgid "Hit enter or double click on outside the text to save"
+msgstr "کلید enter را فشار دهید و یا خارج از کادر دوبار کلیک کنید"
 
 #. Author of the plugin
 msgid "Hossein"
@@ -1605,7 +1826,7 @@ msgstr "https://amatris.ir/amd"
 msgid "https://amatris.ir/amd/author"
 msgstr "https://amatris.ir/amd/author"
 
-#: index.php:184
+#: index.php:188
 #, php-format
 msgid ""
 "Icons that marked with %s are SVG icon which takes more data usage and may "
@@ -1615,6 +1836,14 @@ msgstr ""
 "آیکن هایی که با %s علامت گذاری شده اند آیکن های SVG هستند که ممکن است "
 "بارگزاری صفحات داشبورد را آهسته تر کنند، لطفا مطمئن شوید که هاست شما از "
 "منابع کافی برخوردار است."
+
+#: dashboard/cards/acc_security.php:48
+msgid ""
+"If you are logged in with public computers and you need to log-out from "
+"other devices, click on this button."
+msgstr ""
+"درصورتی که با رایانه های عمومی وارد حساب خود شده اید می‌توانید با کلیک بر "
+"روی این دکمه از آنها خارج شوید."
 
 #: pages/admin-tabs/tab_more_contact.php:9
 msgid ""
@@ -1633,35 +1862,40 @@ msgstr ""
 "درصورتی که به هرگونه راهنمایی مرتبط با افزونه نیاز دارید (لایسنس، ماژول ها، "
 "کد ها و...) می‌توانید با توسعه دهنده افزونه مستقیما ارتباط برقرار کنید."
 
-#: ext/_api/functions.php:185
+#: ext/_api/functions.php:211
 msgid "Image format is not allowed"
 msgstr "فرمت تصویر مجاز نیست"
 
-#: index.php:163
+#: index.php:166
 msgid "Import"
 msgstr "درون ریزی"
 
-#: core/AMD_DB/AMD_DB.php:300
+#: core/AMD_DB/AMD_DB.php:379
 msgid "Import method is not allowed"
 msgstr "روش درون ریزی مجاز نیست"
+
+#: dashboard/pages/page-login-reports.php:22
+#: dashboard/cards/acc_login_reports.php:27
+msgid "IP address"
+msgstr "آدرس IP"
 
 #: pages/admin-tabs/tab_registration.php:303
 msgid "IR, US, FR, CA, etc."
 msgstr "مثلا IR، US، FR و..."
 
-#: core/AMD_DB/AMD_DB.php:250
+#: core/AMD_DB/AMD_DB.php:329
 msgid "JSON data is invalid"
 msgstr "اطلاعات JSON ارسال شده معتبر نیست"
 
-#: ext/_app/index.php:414 ext/_app/index.php:472
+#: ext/_app/index.php:479 ext/_app/index.php:537
 msgid "Language"
 msgstr "زبان"
 
-#: dashboard/register.php:122 dashboard/cards/acc_personal.php:30
+#: dashboard/register.php:137 dashboard/cards/acc_personal.php:32
 msgid "Last name"
 msgstr "نام خانوادگی"
 
-#: core/AMDCore/AMDCore.php:1700
+#: core/AMDCore/AMDCore.php:1812
 msgid "Last seen"
 msgstr "آخرین بازدید"
 
@@ -1669,50 +1903,59 @@ msgstr "آخرین بازدید"
 msgid "Lastname"
 msgstr "نام خانوادگی"
 
-#: ext/_app/index.php:434 ext/_app/index.php:481
+#: ext/_app/index.php:499 ext/_app/index.php:546
 msgid "Light mode"
 msgstr "حالت روز"
+
+#: dashboard/pages/page-login-reports.php:31
+msgid "Load more"
+msgstr "بارگزاری بیشتر"
 
 #: dashboard/dashboard.php:100
 msgctxt "Loading text"
 msgid "Getting data"
 msgstr "درحال دریافت اطلاعات"
 
-#: index.php:199 core/AMDNetwork/AMDNetwork.php:156
+#: index.php:203 core/AMDNetwork/AMDNetwork.php:185
 msgid "Logging in"
 msgstr "درحال وارد شدن"
 
-#: index.php:143 dashboard/login.php:151
+#: index.php:146 dashboard/login.php:157 core/AMDCore/AMDCore.php:972
 msgid "Login"
 msgstr "ورود"
 
-#: index.php:280
+#: index.php:292
 msgid "Login page"
 msgstr "صفحه ورود"
 
-#: dashboard/login.php:32 ext/_app/index.php:891
+#: pages/admin-tabs/tab_login.php:62 dashboard/cards/acc_security.php:30
+#: dashboard/cards/acc_login_reports.php:17
+msgid "Login reports"
+msgstr "گزارشات ورود"
+
+#: dashboard/login.php:38 ext/_app/index.php:956
 msgctxt "Login title"
 msgid "Login to your account"
 msgstr "به حساب کاربری خود وارد شوید"
 
-#: dashboard/register.php:180 dashboard/auth.php:101 dashboard/action.php:100
-#: dashboard/reset-password.php:117
+#: dashboard/register.php:247 dashboard/auth.php:107 dashboard/action.php:116
+#: dashboard/reset-password.php:121
 msgid "Login to your account"
 msgstr "ورود به حساب کاربری"
 
-#: dashboard/login.php:155
+#: dashboard/login.php:161
 msgid "Login with email"
 msgstr "ورود با ایمیل"
 
-#: dashboard/login.php:157
+#: dashboard/login.php:163
 msgid "Login with phone"
 msgstr "ورود با شماره موبایل"
 
-#: index.php:200 ext/_app/index.php:458
+#: index.php:204 ext/_app/index.php:523
 msgid "Logout"
 msgstr "خروج"
 
-#: index.php:162
+#: index.php:165
 msgid ""
 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
 "tempor incididunt ut labore et dolore magna aliqua."
@@ -1720,12 +1963,16 @@ msgstr ""
 "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از "
 "طراحان گرافیک است."
 
-#: ext/todo/view/cards/todo_list.php:12
+#: functions.php:2410
+msgid "Making API page"
+msgstr "درحال ایجاد صفحه API"
+
+#: ext/woocommerce/index.php:91 ext/todo/view/cards/todo_list.php:18
 msgid "Manage"
 msgstr "مدیریت"
 
 #. Name of the plugin
-#: index.php:420 index.php:424
+#: index.php:434 index.php:438
 msgid "Material Dashboard"
 msgstr "داشبورد متریال"
 
@@ -1748,25 +1995,42 @@ msgstr ""
 "قالب ساده و کاربرپسند با طراحی متریال المان ها به همراه آیکن های متنوع. قابل "
 "شخصی سازی و رایگان!"
 
-#: index.php:156 core/AMDCore/AMDCore.php:1183 core/AMDCore/AMDCore.php:1183
-#: ext/_app/index.php:777 ext/edd/view/cards/edd_card_downloads.php:56
+#: index.php:159 core/AMDCore/AMDCore.php:1295 core/AMDCore/AMDCore.php:1295
+#: ext/_app/index.php:842 ext/edd/view/cards/edd_card_downloads.php:56
+#: ext/todo/view/cards/todo_list.php:31
 #: ext/woocommerce/view/cards/wc_card_purchases.php:57
 msgid "More"
 msgstr "بیشتر"
 
-#: pages/admin-tabs/tab_registration.php:322
+#: functions.php:4428 pages/admin-tabs/tab_registration.php:322
 msgid "More info"
 msgstr "اطلاعات بیشتر"
 
-#: ext/todo/view/page_todo.php:43
+#: index.php:229
+msgid "Move"
+msgstr "جابجا کردن"
+
+#: index.php:231
+msgid "Move down"
+msgstr "بالا"
+
+#: index.php:230
+msgid "Move up"
+msgstr "پایین"
+
+#: dashboard/cards/acc_personal.php:75
+msgid "National code"
+msgstr "کد ملی"
+
+#: ext/todo/view/page_todo.php:38
 msgid "New item"
 msgstr "مورد جدید"
 
-#: dashboard/reset-password.php:108 dashboard/cards/acc_change_password.php:4
+#: dashboard/reset-password.php:112 dashboard/cards/acc_change_password.php:4
 msgid "New password"
 msgstr "کلمه عبور جدید"
 
-#: dashboard/reset-password.php:116
+#: dashboard/reset-password.php:120
 msgid "Next"
 msgstr "بعدی"
 
@@ -1774,27 +2038,31 @@ msgstr "بعدی"
 msgid "Night mode"
 msgstr "حالت شب"
 
-#: index.php:139
+#: index.php:142
 msgid "No"
 msgstr "خیر"
 
-#: ext/_api/functions.php:142
+#: ext/_api/functions.php:168
 msgid "No email change request found"
 msgstr "هیچ درخواست تغییر ایمیلی یافت نشد"
 
-#: index.php:174
+#: index.php:177
 msgid "No file selected"
 msgstr "هیج فایلی انتخاب نشده است"
 
-#: index.php:46
+#: functions.php:1767
+msgid "No thanks"
+msgstr "نه ممنون"
+
+#: index.php:46 functions.php:2342 functions.php:2402
 msgid "Not now"
 msgstr "الان نه"
 
-#: index.php:134 core/AMDNetwork/AMDNetwork.php:815
+#: index.php:137 core/AMDNetwork/AMDNetwork.php:1122
 msgid "Not saved"
 msgstr "ذخیره نشد"
 
-#: index.php:181
+#: index.php:185
 msgid "Note "
 msgstr "توجه"
 
@@ -1808,7 +2076,7 @@ msgstr ""
 msgid "Notes"
 msgstr "یادداشت ها"
 
-#: index.php:190
+#: index.php:194
 msgid "Notice"
 msgstr "توجه"
 
@@ -1817,15 +2085,15 @@ msgstr "توجه"
 msgid "Number format"
 msgstr "قالب شماره"
 
-#: core/AMDCore/AMDCore.php:1667
+#: core/AMDCore/AMDCore.php:1779
 msgid "Offline"
 msgstr "آفلاین"
 
-#: index.php:137
+#: index.php:140 functions.php:2361 functions.php:2421
 msgid "Okay"
 msgstr "باشه"
 
-#: core/AMDCore/AMDCore.php:1667
+#: core/AMDCore/AMDCore.php:1779
 msgid "Online"
 msgstr "آنلاین"
 
@@ -1834,11 +2102,11 @@ msgstr "آنلاین"
 msgid "Open"
 msgstr "باز کردن"
 
-#: index.php:425 pages/admin-tabs/tab_more_contact.php:37
+#: index.php:439 pages/admin-tabs/tab_more_contact.php:37
 msgid "Open survey"
 msgstr "شرکت در نظرسنجی"
 
-#: ext/woocommerce/view/page_wc_purchases.php:63
+#: ext/woocommerce/view/page_wc_purchases.php:86
 #, php-format
 msgid "Order #%s"
 msgstr "سفارش #%s"
@@ -1859,7 +2127,7 @@ msgstr "وضعیت سفارش"
 msgid "Our email"
 msgstr "ایمیل ما"
 
-#: index.php:48
+#: index.php:48 functions.php:2268
 msgid "Page has been created"
 msgstr "صفحه مورد نظر ایجاد شد"
 
@@ -1868,94 +2136,191 @@ msgstr "صفحه مورد نظر ایجاد شد"
 msgid "Page not found"
 msgstr "صفحه مورد نظر پیدا نشد"
 
-#: index.php:50
+#: index.php:50 functions.php:2219
 msgid "Page was already exists and new page has replaced"
 msgstr "صفحه مورد نظر جایگزین شد"
 
-#: index.php:159
+#: index.php:162
 msgid "Pages"
 msgstr "صفحات"
 
-#: dashboard/register.php:150 dashboard/register.php:167
-#: dashboard/login.php:131
+#: dashboard/register.php:192 dashboard/register.php:209
+#: dashboard/login.php:137
 msgid "Password"
 msgstr "کلمه عبور"
 
-#: core/AMDSilu/AMDSilu.php:701
+#: core/AMDSilu/AMDSilu.php:754
 msgid "Password changed"
 msgstr "کلمه عبور تغییر کرد"
 
-#: dashboard/register.php:158 pages/admin-tabs/tab_registration.php:152
+#: dashboard/register.php:200 pages/admin-tabs/tab_registration.php:152
 msgid "Password confirmation"
 msgstr "تایید کلمه عبور"
 
-#: index.php:193
+#: index.php:197
 msgid "Password must be at least 8 characters"
 msgstr "کلمه عبور باید حداقل شامل ۸ حرف باشد"
 
-#: index.php:194
+#: index.php:198
 msgid "Password must be same as password confirm"
 msgstr "کلمه عبور باید با تایید آن یکی باشد"
 
-#: core/AMDNetwork/AMDNetwork.php:115 core/AMDNetwork/AMDNetwork.php:282
-#: core/AMDSilu/AMDSilu.php:389 core/AMDSilu/AMDSilu.php:684
+#: core/AMDNetwork/AMDNetwork.php:117 core/AMDNetwork/AMDNetwork.php:328
+#: core/AMDSilu/AMDSilu.php:430 core/AMDSilu/AMDSilu.php:737
 msgid "Password must contain at least 8 characters"
 msgstr "کلمه عبور باید حداقل شامل 8 حرف باشد"
 
-#: dashboard/cards/acc_personal.php:81
+#: dashboard/cards/acc_personal.php:90
 msgid "Personal information"
 msgstr "اطلاعات شخصی"
 
+#: functions.php:4835 functions.php:4844 functions.php:4865
 #: pages/admin-tabs/tab_registration.php:169
 #: dashboard/cards/acc_change_phone.php:58
 #: dashboard/cards/acc_change_phone.php:67
-#: dashboard/cards/acc_change_phone.php:88 dashboard/cards/acc_personal.php:65
-#: core/AMDCore/AMDCore.php:1656
+#: dashboard/cards/acc_change_phone.php:88 dashboard/cards/acc_personal.php:67
+#: core/AMDCore/AMDCore.php:1768
 #| msgid "phone"
 msgid "Phone"
 msgstr "شماره موبایل"
 
-#: index.php:217
+#: functions.php:4401
+msgid ""
+"Phone numbers will be saved normally without any space and '-', for example "
+"if user phone number format is <code>XXX-XXX-XXXX</code> user saved phone "
+"number will be <code>+10123456789</code>."
+msgstr ""
+"شماره موبایل به صورت معمولی و بدون فاصله و - ذخیره خواهد شد، برای مثال اگر "
+"از قالب <code>XXX-XXX-XXXX</code> استفاده کنید شماره موبایل به صورت <code>"
+"+10123456789</code> ذخیره خواهد شد."
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:156
+msgctxt "Platforms"
+msgid "Android"
+msgstr "اندروید"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:179
+msgctxt "Platforms"
+msgid "Apple"
+msgstr "اپل"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:155
+msgctxt "Platforms"
+msgid "Chrome"
+msgstr "کروم"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:149
+msgctxt "Platforms"
+msgid "Firefox"
+msgstr "فایرفاکس"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:148
+msgctxt "Platforms"
+msgid "Internet Explorer"
+msgstr "اینترنت اکسپلورر"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:154
+msgctxt "Platforms"
+msgid "iPad"
+msgstr "آیپد"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:152
+msgctxt "Platforms"
+msgid "iPhone"
+msgstr "آیفون"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:153
+msgctxt "Platforms"
+msgid "iPod"
+msgstr "آیپاد"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:180
+msgctxt "Platforms"
+msgid "Linux"
+msgstr "لینوکس"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:150
+msgctxt "Platforms"
+msgid "Mozilla"
+msgstr "موزیلا"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:181
+msgctxt "Platforms"
+msgid "Nokia"
+msgstr "نوکیا"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:157
+#: core/AMDFirewall/AMDFirewallBrowser.php:158
+msgctxt "Platforms"
+msgid "Nokia Browser"
+msgstr "مرورگر نوکیا"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:146
+msgctxt "Platforms"
+msgid "Opera"
+msgstr "اوپرا"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:147
+msgctxt "Platforms"
+msgid "Opera Mini"
+msgstr "اوپرا مینی"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:151
+msgctxt "Platforms"
+msgid "Safari"
+msgstr "سافاری"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:177
+msgctxt "Platforms"
+msgid "Windows"
+msgstr "ویندوز"
+
+#: core/AMDFirewall/AMDFirewallBrowser.php:178
+msgctxt "Platforms"
+msgid "Windows CE"
+msgstr "ویندوز CE"
+
+#: index.php:221
 msgid "Please do not leave this page"
 msgstr "لطفا این صفحه را ترک نکنید"
 
-#: index.php:203
+#: index.php:207
 msgid "Please enter a valid email address"
 msgstr "لطفا ایمیل خود را به درستی وارد کنید"
 
-#: core/AMDNetwork/AMDNetwork.php:231
+#: core/AMDNetwork/AMDNetwork.php:269
 msgid "Please enter a valid username"
 msgstr "لطفا یک نام کاربری معتبر وارد کنید"
 
-#: core/AMDSilu/AMDSilu.php:365
+#: core/AMDSilu/AMDSilu.php:406
 msgid "Please enter email correctly"
 msgstr "لطفا ایمیل خود را به درستی وارد کنید"
 
-#: index.php:204
+#: index.php:208
 msgid "Please enter verification code correctly"
 msgstr "لطفا کد تایید را به درستی وارد کنید"
 
-#: core/AMDNetwork/AMDNetwork.php:188
+#: core/AMDNetwork/AMDNetwork.php:226
 msgid "Please enter you last name correctly"
 msgstr "لطفا نام خانوادگی خود را وارد کنید"
 
-#: core/AMDNetwork/AMDNetwork.php:293
+#: core/AMDNetwork/AMDNetwork.php:339
 msgid "Please enter your new password"
 msgstr "لطفا کلمه عبور جدید خود را وارد کنید"
 
-#: index.php:198 core/AMDNetwork/AMDNetwork.php:202 ext/_api/functions.php:288
+#: index.php:202 core/AMDNetwork/AMDNetwork.php:240 ext/_api/functions.php:314
 msgid "Please enter your phone number correctly"
 msgstr "لطفا شماره موبایل خود را به درستی وارد کنید"
 
-#: core/AMDNetwork/AMDNetwork.php:113
+#: core/AMDNetwork/AMDNetwork.php:115
 msgid "Please enter your username correctly"
 msgstr "لطفا نام کاربری خود را به درستی وارد کنید"
 
-#: index.php:197 ext/todo/functions.php:101
+#: index.php:201 ext/todo/functions.php:104
 msgid "Please fill out all fields correctly"
 msgstr "لطفا تمام فیلد ها را به درستی وارد کنید"
 
-#: index.php:423 pages/admin-tabs/tab_more_contact.php:40
+#: index.php:437 pages/admin-tabs/tab_more_contact.php:40
 #, php-format
 msgid ""
 "Please give us 1 minute of your time and participate in %sOur survey%s to "
@@ -1964,10 +2329,21 @@ msgstr ""
 "ممنون می‌شویم اگر 1 دقیقه از وقت خود را به ما بدهید و در %sنظرسنجی ما%s شرکت "
 "کنید تا و به بهبود عملکرد این افزونه کمک کنید"
 
-#: index.php:136 index.php:432 dashboard/register.php:205
-#: dashboard/login.php:186 dashboard/auth.php:117 dashboard/action.php:116
-#: dashboard/reset-password.php:130 ext/todo/view/page_todo.php:30
-#: ext/todo/view/cards/todo_list.php:20
+#: functions.php:4400
+msgid ""
+"Please note that country digit number will be added to the first of phone "
+"number automatically, for example by using <code>XXX-XXX-XXXX</code> format, "
+"your phone number will be something like this: <code>+1 012 345 6789</code>"
+msgstr ""
+"لطفا توجه داشته باشید که کد کشور به صورت خودکار به ابتدای آن اضافه خواهد شد، "
+"برای مثال با استفاده از قالب <code>XXX-XXX-XXXX</code>، شماره موبایل به صورت "
+"code>+1 012 345 6789</code> خواهد بود"
+
+#: index.php:139 index.php:446 functions.php:2319 functions.php:2349
+#: functions.php:2409 dashboard/register.php:272 dashboard/login.php:192
+#: dashboard/auth.php:123 dashboard/action.php:132
+#: dashboard/reset-password.php:134 core/AMDNetwork/AMDNetwork.php:168
+#: ext/todo/view/cards/todo_list.php:26
 msgid "Please wait"
 msgstr "لطفا صبر کنید"
 
@@ -1984,7 +2360,7 @@ msgid "Products"
 msgstr "محصولات"
 
 #: ext/edd/view/page_edd_downloads.php:34
-#: ext/woocommerce/view/page_wc_purchases.php:47
+#: ext/woocommerce/view/page_wc_purchases.php:70
 msgid "Purchase history"
 msgstr "تاریخچه خرید"
 
@@ -2013,35 +2389,39 @@ msgctxt "Purchase status"
 msgid "processing"
 msgstr "درحال انجام"
 
-#: core/AMDCore/AMDCore.php:1691 ext/woocommerce/index.php:51
-#: ext/woocommerce/index.php:60 ext/woocommerce/index.php:89
+#: core/AMDCore/AMDCore.php:1803 ext/woocommerce/index.php:51
+#: ext/woocommerce/index.php:60 ext/woocommerce/index.php:108
 #: ext/woocommerce/view/cards/wc_card_purchases.php:63
 msgid "Purchases"
 msgstr "خرید ها"
 
-#: index.php:148
+#: index.php:151
 msgid "Redirecting"
 msgstr "درحال انتقال"
 
-#: index.php:150 ext/todo/view/page_todo.php:24
-#: ext/todo/view/cards/todo_list.php:9
+#: index.php:153 dashboard/cards/acc_login_reports.php:18
+#: ext/todo/view/page_todo.php:28 ext/todo/view/cards/todo_list.php:15
 msgid "Refresh"
 msgstr "تازه سازی"
 
-#: index.php:147 dashboard/register.php:179
+#: index.php:150 dashboard/register.php:246
 #: pages/admin-tabs/tab_registration.php:27
 msgid "Register"
 msgstr "ثبت نام"
 
-#: core/AMDCore/AMDCore.php:1706
+#: core/AMDCore/AMDCore.php:1818
 msgid "Registration"
 msgstr "ثبت نام"
 
-#: index.php:149
+#: index.php:152
 msgid "Reload"
 msgstr "بارگزاری مجدد"
 
-#: dashboard/login.php:138
+#: index.php:232
+msgid "Reloading tasks"
+msgstr "درحال تازه سازی وظایف"
+
+#: dashboard/login.php:144
 msgid "Remember me"
 msgstr "مرا به خاطر بسپار"
 
@@ -2049,71 +2429,106 @@ msgstr "مرا به خاطر بسپار"
 msgid "Remove"
 msgstr "حذف"
 
-#: ext/_app/index.php:259
+#: ext/_app/index.php:288
 msgid "Requested email address is not valid or cannot be changed"
 msgstr "ایمیل درخواست شده معتبر و یا قابل تغییر نیست"
 
-#: dashboard/reset-password.php:104 dashboard/reset-password.php:261
-#: dashboard/reset-password.php:265
+#: dashboard/reset-password.php:108 dashboard/reset-password.php:265
+#: dashboard/reset-password.php:269 dashboard/pages/toolkit-2fa.php:24
 msgid "Resend code"
 msgstr "ارسال مجدد"
 
-#: index.php:195 dashboard/login.php:161 dashboard/reset-password.php:77
-#: core/AMDNetwork/AMDNetwork.php:305 core/AMDNetwork/AMDNetwork.php:335
+#: index.php:199 dashboard/login.php:167 dashboard/reset-password.php:81
+#: core/AMDNetwork/AMDNetwork.php:351 core/AMDNetwork/AMDNetwork.php:381
 msgid "Reset password"
 msgstr "بازیابی کلمه عبور"
 
-#: dashboard/reset-password.php:27
+#: dashboard/reset-password.php:31
 msgctxt "Reset password title"
 msgid "Reset your password"
 msgstr "بازیابی کلمه عبور"
 
-#: index.php:154
+#: index.php:157
 msgid "Retry"
 msgstr "تلاش مجدد"
 
-#: index.php:133 pages/admin-dashboard.php:105
-#: dashboard/cards/acc_change_phone.php:98 dashboard/cards/acc_personal.php:74
+#: index.php:136 pages/admin-dashboard.php:105
+#: dashboard/cards/acc_change_phone.php:98 dashboard/cards/acc_personal.php:83
 msgid "Save"
 msgstr "ذخیره"
 
-#: index.php:132 core/AMDNetwork/AMDNetwork.php:813
+#: index.php:135 core/AMDNetwork/AMDNetwork.php:1120
 msgid "Saved"
 msgstr "ذخیره شد"
 
-#: index.php:216
+#: index.php:220
 msgid "Saving"
 msgstr "درحال ذخیره سازی"
 
-#: index.php:207
+#: index.php:235
+msgid "Saving orders"
+msgstr "درحال ذخیره سازی ترتیب ها"
+
+#: index.php:211
 msgctxt "Search results"
 msgid "No results found"
 msgstr "نتیجه ای پیدا نشد"
 
-#: index.php:206
+#: index.php:210
 msgctxt "Search results"
 msgid "Results"
 msgstr "نتایج"
 
-#: index.php:202
+#: dashboard/cards/acc_security.php:55
+msgid "Security"
+msgstr "امنیت"
+
+#: dashboard/cards/acc_login_reports.php:36
+msgid "See more"
+msgstr "نمایش بیشتر"
+
+#: index.php:206
 msgid "Select file"
 msgstr "انتخاب فایل"
 
-#: index.php:166
+#: index.php:169
 msgid ""
 "Selected file has not a valid content or an error has occurred while reading "
 "it"
 msgstr "فایل انتخاب شده معتبر نیست و یا هنگام خواندن فایل خطایی رخ داده است"
 
-#: index.php:153
+#: index.php:156
 msgid "Sending"
 msgstr "درحال ارسال"
+
+#: dashboard/pages/page-login-reports.php:23
+msgid "Session status"
+msgstr "وضعیت نشست"
+
+#: core/AMDNetwork/AMDNetwork.php:670
+msgctxt "Session status"
+msgid "Active"
+msgstr "وارد شده"
+
+#: core/AMDNetwork/AMDNetwork.php:665
+msgctxt "Session status"
+msgid "Current session"
+msgstr "نشست فعلی (شما)"
+
+#: core/AMDNetwork/AMDNetwork.php:669 core/AMDNetwork/AMDNetwork.php:673
+msgctxt "Session status"
+msgid "Inactive"
+msgstr "خارج شده"
+
+#: dashboard/cards/acc_security.php:41
+msgid "Sessions"
+msgstr "نشست ها"
 
 #: pages/admin-dashboard.php:58 pages/admin-dashboard.php:75
 msgid "Set it now"
 msgstr "تنظیم کنید"
 
-#: index.php:135
+#: index.php:138
 msgid "Settings"
 msgstr "تنظیمات"
 
@@ -2121,51 +2536,55 @@ msgstr "تنظیمات"
 msgid "Sign in after registration"
 msgstr "ورود به حساب کاربری بعد از ثبت نام"
 
-#: dashboard/login.php:103
+#: dashboard/login.php:109
 msgid "Sign-in"
 msgstr "ورود"
 
-#: index.php:205 dashboard/register.php:99
+#: index.php:209 dashboard/register.php:105
 msgid "Sign-up"
 msgstr "ثبت نام"
 
-#: dashboard/register.php:38 ext/_app/index.php:911
+#: dashboard/register.php:44 ext/_app/index.php:976
 msgctxt "Sign-up title"
 msgid "Create new account"
 msgstr "یک حساب کاربری بسازید"
 
-#: index.php:167
+#: index.php:170
 msgid "Site options"
 msgstr "تنظیمات سایت"
 
-#: index.php:185
+#: index.php:189
 msgid "Something went wrong! please check console for more details"
 msgstr "متاسفانه خطایی رخ داده است! برای اطلاعات بیشتر کنسول را مشاهده کنید"
 
-#: index.php:173
+#: index.php:176
 msgid "Source"
 msgstr "منبع"
 
-#: core/AMDCore/AMDCore.php:1665
+#: core/AMDCore/AMDCore.php:1777
 msgid "Status"
 msgstr "وضعیت"
 
-#: index.php:146
+#: index.php:149 dashboard/pages/toolkit-2fa.php:28
 msgid "Submit"
 msgstr "ارسال"
 
-#: index.php:129 core/AMDNetwork/AMDNetwork.php:264
-#: core/AMDNetwork/AMDNetwork.php:426 core/AMDNetwork/AMDNetwork.php:437
-#: core/AMDNetwork/AMDNetwork.php:474 core/AMDNetwork/AMDNetwork.php:485
-#: core/AMDNetwork/AMDNetwork.php:510 core/AMDNetwork/AMDNetwork.php:554
-#: core/AMDNetwork/AMDNetwork.php:635 core/AMDNetwork/AMDNetwork.php:679
-#: core/AMDNetwork/AMDNetwork.php:707 core/AMDNetwork/AMDNetwork.php:715
-#: core/AMDNetwork/AMDNetwork.php:736 core/AMDNetwork/AMDNetwork.php:750
-#: core/AMDNetwork/AMDNetwork.php:764 core/AMDNetwork/AMDNetwork.php:775
-#: core/AMDNetwork/AMDNetwork.php:786 ext/todo/functions.php:108
-#: ext/todo/functions.php:134 ext/todo/functions.php:153
-#: ext/todo/functions.php:177 ext/_api/functions.php:115
-#: ext/_api/functions.php:162 ext/_api/functions.php:295
+#: index.php:132 core/AMDNetwork/AMDNetwork.php:310
+#: core/AMDNetwork/AMDNetwork.php:429 core/AMDNetwork/AMDNetwork.php:534
+#: core/AMDNetwork/AMDNetwork.php:555 core/AMDNetwork/AMDNetwork.php:687
+#: core/AMDNetwork/AMDNetwork.php:690 core/AMDNetwork/AMDNetwork.php:712
+#: core/AMDNetwork/AMDNetwork.php:725 core/AMDNetwork/AMDNetwork.php:736
+#: core/AMDNetwork/AMDNetwork.php:781 core/AMDNetwork/AMDNetwork.php:792
+#: core/AMDNetwork/AMDNetwork.php:817 core/AMDNetwork/AMDNetwork.php:861
+#: core/AMDNetwork/AMDNetwork.php:942 core/AMDNetwork/AMDNetwork.php:986
+#: core/AMDNetwork/AMDNetwork.php:1014 core/AMDNetwork/AMDNetwork.php:1022
+#: core/AMDNetwork/AMDNetwork.php:1043 core/AMDNetwork/AMDNetwork.php:1057
+#: core/AMDNetwork/AMDNetwork.php:1071 core/AMDNetwork/AMDNetwork.php:1082
+#: core/AMDNetwork/AMDNetwork.php:1093 ext/todo/functions.php:114
+#: ext/todo/functions.php:141 ext/todo/functions.php:160
+#: ext/todo/functions.php:192 ext/todo/functions.php:229
+#: ext/_api/functions.php:115 ext/_api/functions.php:144
+#: ext/_api/functions.php:188 ext/_api/functions.php:321
 msgid "Success"
 msgstr "عملیات انجام شد"
 
@@ -2177,7 +2596,7 @@ msgstr "پیشنهاد بهبود و نظرات"
 msgid "Support"
 msgstr "پشتیبانی"
 
-#: index.php:183
+#: index.php:187
 msgid "SVG icon"
 msgstr "آیکن SVG"
 
@@ -2185,16 +2604,12 @@ msgstr "آیکن SVG"
 msgid "Tasks"
 msgstr "وظایف"
 
-#: index.php:169
+#: index.php:172
 msgid "Temporarily data"
 msgstr "اطلاعات موقت"
 
-#: ext/todo/view/page_todo.php:12
-msgid "Text"
-msgstr "متن"
-
-#: dashboard/auth.php:54 dashboard/action.php:53 ext/_app/index.php:237
-#: ext/_app/index.php:284
+#: dashboard/auth.php:60 dashboard/action.php:59 ext/_app/index.php:266
+#: ext/_app/index.php:316 ext/_app/index.php:349
 msgid "The address you are looking for is not valid or has been expired"
 msgstr "آدرسی که به دنبال آن هستید معتبر نیست و یا منقضی شده است"
 
@@ -2210,7 +2625,7 @@ msgstr ""
 msgid "The page you are looking for doesn't exists or it's removed"
 msgstr "صفحه ای که به دنبال آن هستید وجود ندارد و یا حذف شده است"
 
-#: core/AMDNetwork/AMDNetwork.php:531
+#: core/AMDNetwork/AMDNetwork.php:838
 msgid ""
 "The uploaded file exceeds the 'upload_max_filesize' directive in 'php.ini'"
 msgstr ""
@@ -2227,29 +2642,30 @@ msgstr ""
 "هیچ قالبی برای این صفحه یافت نشد، ممکن است فایل های قالب شما تغییر و یا آسیب "
 "دیده باشند. لطفا برای تغییر قالب به %sتنظیمات%s بروید"
 
-#: ext/todo/view/page_todo.php:32 ext/todo/view/cards/todo_list.php:22
+#: dashboard/cards/acc_login_reports.php:33 ext/todo/view/page_todo.php:54
+#: ext/todo/view/cards/todo_list.php:28
 msgid "There is no item to show"
 msgstr "هیچ موردی برای نمایش وجود ندارد"
 
-#: ext/_api/functions.php:237
+#: ext/_api/functions.php:263
 msgid "This avatar is not available or something went wrong"
 msgstr "این آواتار در دسترس نیست و یا خطایی رخ داده است"
 
-#: index.php:189
+#: index.php:193
 msgid "This country code already exists"
 msgstr "کد کشور وارد شده از قبل ثبت شده است"
 
-#: core/AMDSilu/AMDSilu.php:397 ext/_api/functions.php:82
+#: core/AMDSilu/AMDSilu.php:438 ext/_api/functions.php:82
 msgid "This email is already in use"
 msgstr "ایمیل وارد شده از قبل ثبت شده است"
 
-#: ext/_app/index.php:391
+#: ext/_app/index.php:456
 msgid "This item is only visible for admins and normal users won't see it"
 msgstr ""
 "این مورد فقط برای مدیران سایت قابل مشاهده خواهد بود و کاربران به آن دسترسی "
 "نخواهند داشت"
 
-#: index.php:191
+#: index.php:195
 msgid ""
 "This operation will reload this page after saving, please save them first if "
 "you have unsaved changes."
@@ -2262,7 +2678,7 @@ msgstr ""
 msgid "This order is not available"
 msgstr "سفارش مورد نظر در دسترس نیست"
 
-#: index.php:49
+#: index.php:49 functions.php:2233
 msgid "This page already registered, do you want to make another page?"
 msgstr "صفحه مورد نظر از قبل وجود دارد، آیا مایل به ایجاد یک صفحه دیگر هستید؟"
 
@@ -2275,24 +2691,23 @@ msgid "This page is unavailable or your internet connection interrupted."
 msgstr ""
 "صفحه مورد نظر در دسترس نیست یا مشکلی با اتصال شما به سرور به وجود آمده است."
 
-#: core/AMDNetwork/AMDNetwork.php:218 ext/_api/functions.php:285
+#: core/AMDNetwork/AMDNetwork.php:256 ext/_api/functions.php:311
 msgid "This phone number is already in use"
 msgstr "شماره موبایل وارد شده از قبل استفاده شده است"
 
-#: core/AMDSilu/AMDSilu.php:405
+#: core/AMDSilu/AMDSilu.php:446
 msgid "This username already taken"
 msgstr "نام کاربری مورد نظر از قبل استفاده شده است"
 
-#: core/AMDSilu/AMDSilu.php:381
+#: core/AMDSilu/AMDSilu.php:422
 msgid "This username is not allowed to take"
 msgstr "نام کاربری مورد نظر قابل استفاده نیست"
 
-#: core/AMDSilu/AMDUser.php:210
+#: functions.php:3630 core/AMDSilu/AMDUser.php:210
 msgid "Today"
 msgstr "امروز"
 
 #: ext/todo/index.php:44
-#, php-format
 msgctxt "todo"
 msgid "%d task"
 msgid_plural "%d tasks"
@@ -2300,7 +2715,6 @@ msgstr[0] "%d کار"
 msgstr[1] "%d کار"
 
 #: ext/todo/index.php:45
-#, php-format
 msgctxt "todo"
 msgid "%d undone task"
 msgid_plural "%d undone tasks"
@@ -2317,30 +2731,60 @@ msgctxt "todo"
 msgid "Amatris"
 msgstr "آماتریس"
 
+#: ext/todo/view/page_todo.php:12
+msgctxt "todo"
+msgid "Priority"
+msgstr "اولویت"
+
 #: ext/todo/index.php:16 ext/todo/index.php:33 ext/todo/index.php:71
-#: ext/todo/index.php:90 ext/todo/view/cards/todo_list.php:8
+#: ext/todo/index.php:90
 msgctxt "todo"
 msgid "Todo list"
 msgstr "لیست وظایف"
+
+#: ext/todo/view/cards/todo_list.php:14
+msgctxt "todo"
+msgid "Todo list (news)"
+msgstr "لیست وظایف (تازه ها)"
 
 #: ext/todo/index.php:151
 msgctxt "todo"
 msgid "Todo lists successfully imported"
 msgstr "لیست وظایف با موفقیت درون ریزی شد"
 
-#: index.php:215 ext/todo/view/page_todo.php:23
+#: index.php:219 ext/todo/view/page_todo.php:27 ext/todo/view/page_todo.php:49
 msgid "Todo list"
 msgstr "لیست وظایف"
 
-#: ext/_app/index.php:406
+#: ext/todo/view/page_todo.php:111
+msgctxt "todo priority"
+msgid "Default"
+msgstr "پیشفرص"
+
+#: ext/todo/view/page_todo.php:117
+msgctxt "todo priority"
+msgid "High"
+msgstr "زیاد"
+
+#: ext/todo/view/page_todo.php:113
+msgctxt "todo priority"
+msgid "Low"
+msgstr "کم"
+
+#: ext/todo/view/page_todo.php:115
+msgctxt "todo priority"
+msgid "Medium"
+msgstr "متوسط"
+
+#: ext/_app/index.php:471
 msgid "Toggle sidebar"
 msgstr "منو"
 
-#: ext/_app/index.php:303
+#: ext/_app/index.php:368
 msgid "Too many attempts"
 msgstr "تلاش بیش از حد"
 
-#: core/AMDNetwork/AMDNetwork.php:93
+#: core/AMDNetwork/AMDNetwork.php:95
 msgid "Too many attempts, please try again later"
 msgstr "تلاش بیش از حد، لطفا بعدا دوباره امتحان کنید"
 
@@ -2357,16 +2801,27 @@ msgstr "قیمت مجموع"
 msgid "try again"
 msgstr "تلاش مجدد"
 
-#: core/AMDNetwork/AMDNetwork.php:347
+#: core/AMDNetwork/AMDNetwork.php:393
 msgid "Try again in another minute"
 msgstr "لطفا یک دقیقه دیگر مجددا تلاش کنید"
+
+#: pages/admin-tabs/tab_login.php:16 ext/_app/index.php:212
+msgid "Two factor authentication"
+msgstr "ورود دو مرحله‌ای"
 
 #: core/AMDDashboard/AMDDashboard.php:467
 #: core/AMDDashboard/AMDDashboard.php:548
 msgid "Unavailable"
 msgstr "در دسترس نیست"
 
-#: index.php:47
+#: dashboard/pages/page-login-reports.php:11 core/AMDNetwork/AMDNetwork.php:586
+#: core/AMDFirewall/AMDFirewallBrowser.php:141
+#: core/AMDFirewall/AMDFirewallBrowser.php:142
+#: core/AMDFirewall/AMDFirewallBrowser.php:143
+msgid "Unknown"
+msgstr "نامشخص"
+
+#: index.php:47 functions.php:2350
 msgid "Updating database"
 msgstr "درحال بروزرسانی پایگاه داده"
 
@@ -2375,21 +2830,21 @@ msgstr "درحال بروزرسانی پایگاه داده"
 msgid "Uploaded file is too large. Max size is %s"
 msgstr "حجم فایل بارگزاری شده بیشتر از حد مجاز است. حداکثر حجم مجاز %s است"
 
-#: ext/_api/functions.php:192
+#: ext/_api/functions.php:218
 #, php-format
 msgid "Uploaded image is too large. Max size is %s"
 msgstr "تصویر بارگزاری شده بیش از حد بزرگ است. حداکثر حجم بارگزاری %s است"
 
-#: index.php:212
+#: index.php:216
 msgid "Uploading"
 msgstr "درحال بارگزاری"
 
-#: dashboard/register.php:137 pages/admin-tabs/tab_registration.php:135
-#: dashboard/cards/acc_personal.php:59
+#: dashboard/register.php:161 pages/admin-tabs/tab_registration.php:135
+#: dashboard/cards/acc_personal.php:61
 msgid "Username"
 msgstr "نام کاربری"
 
-#: core/AMDSilu/AMDSilu.php:373
+#: core/AMDSilu/AMDSilu.php:414
 msgid ""
 "Username must be between 5 to 20 characters (including a to z, underscore, "
 "dot and numbers)"
@@ -2397,32 +2852,40 @@ msgstr ""
 "نام کاربری باید بین ۵ تا ۲۰ کاراکتر و شامل حروف a تا z، خط تیره (_) و نقطع (."
 ") باشد"
 
-#: dashboard/login.php:125
+#: dashboard/login.php:131
 msgid "Username or email"
 msgstr "نام کاربری یا ایمیل"
 
-#: index.php:168
+#: index.php:171
 msgid "Users meta"
 msgstr "اطلاعات کاربران"
 
-#: dashboard/reset-password.php:101
+#: dashboard/reset-password.php:105 dashboard/pages/toolkit-2fa.php:22
 msgid "Verification code"
 msgstr "کد تایید"
 
-#: core/AMDNetwork/AMDNetwork.php:310 core/AMDNetwork/AMDNetwork.php:358
+#: core/AMDNetwork/AMDNetwork.php:356 core/AMDNetwork/AMDNetwork.php:404
 msgid "Verification code has been sent to your email"
 msgstr "کد تایید برای ایمیل شما ارسال شده است"
 
-#: index.php:172
+#: dashboard/pages/toolkit-2fa.php:19 core/AMDNetwork/AMDNetwork.php:474
+msgid "Verification code has been sent to your email and/or phone number"
+msgstr "کد تایید برای ایمیل و یا شماره موبایل شما ارسال شد"
+
+#: index.php:175
 msgid "Version"
 msgstr "نسخه"
 
 #: ext/todo/index.php:46 ext/edd/view/page_edd_downloads.php:62
-#: ext/woocommerce/view/page_wc_purchases.php:74
+#: ext/woocommerce/view/page_wc_purchases.php:97
 #: ext/edd/view/cards/edd_card_downloads.php:49
 #: ext/woocommerce/view/cards/wc_card_purchases.php:50
 msgid "View"
 msgstr "مشاهده"
+
+#: dashboard/cards/acc_security.php:33
+msgid "View reports"
+msgstr "مشاهده گزارشات"
 
 #: ext/woocommerce/index.php:17
 msgctxt "wc"
@@ -2453,7 +2916,7 @@ msgstr ""
 "ما تلاش خواهیم کرد تا بهترین امکانات و بهترین عملکرد را ارائه دهیم، بنابراین "
 "برای ارسال نظرات و پیشنهادات و یا دریافت راهنمایی با ما در ارتباط باشید."
 
-#: index.php:151 ext/_app/index.php:1073
+#: index.php:154 ext/_app/index.php:1143
 msgid "Welcome"
 msgstr "خوش آمدید"
 
@@ -2461,15 +2924,19 @@ msgstr "خوش آمدید"
 msgid "welcome"
 msgstr "خوش آمدید"
 
-#: ext/_app/index.php:390
+#: ext/_app/index.php:455
 msgid "WP admin"
 msgstr "پیشخوان وردپرس"
 
-#: index.php:138
+#: index.php:236
+msgid "Write anything"
+msgstr "متن خود را بنویسید"
+
+#: index.php:141 functions.php:2341 functions.php:2401
 msgid "Yes"
 msgstr "بله"
 
-#: index.php:155
+#: index.php:158
 msgid "You"
 msgstr "شما"
 
@@ -2488,13 +2955,22 @@ msgid "You can download product files in downloads section below"
 msgstr ""
 "میتوانید فایل های این محصول را در بخش دانلود ها در پایین صفحه دانلود کنید"
 
-#: ext/_app/index.php:321
-#, php-format
+#: functions.php:4396
+msgid ""
+"You can format how to validate and display numbers in registration form. You "
+"can enter number formats with letter <code>X</code> and <code>-</code> "
+"character for spaces, here some examples:"
+msgstr ""
+"شما می‌توانید قالب شماره موبایل خود را مشخص کنید تا به صورت خودکار نمایش و "
+"اعتبار سنجی انجام شود. به جای اعداد از حرف <code>X</code> و به جای فاصله از "
+"کاراکتر <code>-</code> استفاده کنید، در زیر چند نمونه را مشاهده می‌کنید."
+
+#: ext/_app/index.php:386
 #| msgid "You can login to your account again in %s"
 msgid "You can login to your account again in"
 msgstr "برای ورود به حساب کاربری خود صبر کنید"
 
-#: ext/_app/index.php:873 ext/_app/index.php:893 ext/_app/index.php:913
+#: ext/_app/index.php:938 ext/_app/index.php:958 ext/_app/index.php:978
 msgid ""
 "You can manage your account information, transactions, payments and "
 "purchases by logging in to your dashboard"
@@ -2507,13 +2983,13 @@ msgid "You can't change your email address"
 msgstr "امکان تغییر ایمیل وجود ندارد"
 
 #: ext/edd/view/page_edd_downloads.php:94
-#: ext/woocommerce/view/page_wc_purchases.php:105
+#: ext/woocommerce/view/page_wc_purchases.php:128
 #: ext/edd/view/cards/edd_card_downloads.php:18
 #: ext/woocommerce/view/cards/wc_card_purchases.php:25
 msgid "You don't have any purchase to see"
 msgstr "درحال حاضر هیچ خریدی توسط شما انجام نشده است"
 
-#: dashboard/cards/acc_personal.php:51
+#: dashboard/cards/acc_personal.php:53
 #, php-format
 #| msgid ""
 #| "You have a pending request for changing your email to: %s %scancel%s "
@@ -2525,15 +3001,15 @@ msgstr ""
 "شما یک درخواست درحال انجام برای تغییر ایمیل دارید که برای شما ارسال شده است. "
 "%s  %sلغو%s %sارسال مجدد%s"
 
-#: core/AMDNetwork/AMDNetwork.php:644
+#: core/AMDNetwork/AMDNetwork.php:951
 msgid "You have to select at least one variant for backup data"
 msgstr "برای پشتیبان گیری انتخاب حداقل یک مورد ضروری است"
 
-#: core/AMDNetwork/AMDNetwork.php:694
+#: core/AMDNetwork/AMDNetwork.php:1001
 msgid "You have to select at least one variant for cleanup data"
 msgstr "برای پاکسازی انتخاب حداقل یک مورد ضروری است"
 
-#: index.php:182
+#: index.php:186
 msgid "You must select at lease one item!"
 msgstr "انتخاب حداقل یک مورد ضروری است!"
 
@@ -2541,26 +3017,26 @@ msgstr "انتخاب حداقل یک مورد ضروری است!"
 msgid "Your cart is empty"
 msgstr "سبد خرید شما خالی است"
 
-#: ext/_app/index.php:273
+#: ext/_app/index.php:302
 msgid "Your email has been changed successfully"
 msgstr "ایمیل شما با موفقیت تغییر یافت"
 
-#: ext/_app/index.php:272
+#: ext/_app/index.php:301
 msgid "Your email has changed"
 msgstr "ایمیل تغییر یافت"
 
-#: core/AMDNetwork/AMDNetwork.php:145
+#: core/AMDNetwork/AMDNetwork.php:174
 msgid ""
 "Your login information is incorrect or an error has occurred. Please try "
 "again"
 msgstr ""
 "اطلاعات ورود شما نادرست است و یا خطایی رخ داده است. لطفا مجددا امتحان کنید"
 
-#: core/AMDNetwork/AMDNetwork.php:285
+#: core/AMDNetwork/AMDNetwork.php:331
 msgid "Your password has been changed"
 msgstr "کلمه عبور شما تغییر کرد"
 
-#: index.php:196 ext/_api/functions.php:256
+#: index.php:200 ext/_api/functions.php:282
 msgid "Your password has changed successfully"
 msgstr "کلمه عبور شما با موفقیت تغییر کرد"
 
@@ -2573,10 +3049,10 @@ msgstr ""
 "شماره موبایل شما ثبت نشده است و یا نامعتبر است، لطفا شماره موبایل خود را از "
 "طریق %s«تنظیمات حساب‌کاربری»%s خود ثبت کنید."
 
-#: core/AMDNetwork/AMDNetwork.php:135
+#: core/AMDNetwork/AMDNetwork.php:137
 msgid "Your phone number or password is incorrect"
 msgstr "شماره موبایل یا کلمه عبور شما اشتباه است"
 
-#: core/AMDNetwork/AMDNetwork.php:137
+#: core/AMDNetwork/AMDNetwork.php:139
 msgid "Your username or password is incorrect"
 msgstr "نام کاربری یا کلمه عبور شما اشتباه است"

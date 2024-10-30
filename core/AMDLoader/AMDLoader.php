@@ -901,6 +901,7 @@ class AMDLoader{
 				}
 			}
 		}
+
 		self::loadTemplate( "card_$type", $card );
 	}
 

@@ -1045,6 +1045,10 @@ body.ltr .hb-select-group > ._icon_ {
     color: var(--amd-primary);
     transition: all ease .3s
 }
+.ht-textarea > textarea:focus + span,
+.ht-textarea > textarea:not(:placeholder-shown) + span {
+    color: var(--amd-text-color);
+}
 
 .ht-textarea > ._icon_ {
     position: absolute;
@@ -1446,6 +1450,7 @@ body.ltr .tab-items > .item {
     margin: 0 8px;
     width: 50px;
     overflow: hidden;
+    background: var(--amd-primary);
 }
 .amd-message-box > .--item > .-image.--red { background: var(--amd-color-red) }
 .amd-message-box > .--item > .-image.--green { background: var(--amd-color-green) }

@@ -41,7 +41,9 @@ class AMDNetwork{
 
 		do_action( "amd_ajax_init", "public" );
 
+		# Request parameters
 		$r = amd_sanitize_post_fields( $_POST );
+		$unfilteredRequest = $_POST;
 
 		if( !empty( $r["_ajax_target"] ) ){
 
@@ -50,13 +52,13 @@ class AMDNetwork{
 
 			foreach( $callbacks as $callback ){
 				if( function_exists( $callback ) )
-					call_user_func( $callback, $r );
+					call_user_func( $callback, $r, $unfilteredRequest );
 
 			}
 			wp_send_json_error( [ "msg" => esc_html__( "An error has occurred", "material-dashboard" ), "_msg" => "400 Bad Request" ] );
 		}
 
-		$_get = !empty( $r["_get"] ) ? str_replace( "?", "", $r["_get"] ) : [];
+		$_get = !empty( $r["_get"] ) ? str_replace( "?", "", $r["_get"] ) : "";
 		$_get = explode( "&", $_get );
 		foreach( $_get as $value ){
 			$exp = explode( "=", $value );
@@ -139,6 +141,33 @@ class AMDNetwork{
 
 				do_action( "amd_login_after_authenticate", $r );
 
+                $use_2fa = amd_user_required_2f( $user->ID );
+                if( $use_2fa ){
+                    $token = amd_generate_string( 24 );
+
+                    /**
+	                 * 2-factor authentication code length
+                     * @since 1.0.5
+	                 */
+                    $code_len = apply_filters( "amd_2fa_code_length", 4 );
+                    $code = amd_generate_string( intval( $code_len ), "number" );
+
+                    amd_set_temp( "2fa_token_$token", $code . "," . $user->ID );
+
+                    $url = amd_make_action_url( "user_2fa", $token, $user->ID );
+
+                    if( !$url )
+	                    wp_send_json_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+
+	                /**
+	                 * Send 2FA code to user
+                     * @since 1.0.5
+	                 */
+                    do_action( "amd_send_2fa_code", $code, $user->ID );
+
+	                wp_send_json_success( [ "msg" => esc_html__( "Please wait", "material-dashboard" ), "url" => $url ] );
+                }
+
 				$login = $amdSilu->login( $user->username, $password, $remember );
 
 				if( is_wp_error( $login ) )
@@ -161,14 +190,23 @@ class AMDNetwork{
 
 				$data = $r["register"];
 
-				$firstname = sanitize_text_field( $data["firstname"] ?? "" );
-				$lastname = sanitize_text_field( $data["lastname"] ?? "" );
+				$firstname = $data["firstname"] ?? "";
+				$lastname = $data["lastname"] ?? "";
 				$email = sanitize_email( $data["email"] ?? "" );
-				$username = sanitize_text_field( $data["username"] ?? "" );
-				$password = sanitize_text_field( $data["password"] ?? "" );
-				$phone = sanitize_text_field( $data["phone"] ?? "" );
+				$username = $data["username"] ?? "";
+				$password = $data["password"] ?? "";
+				$phone = $data["phone"] ?? "";
 				$phone = amd_apply_phone_format( $phone );
 				$login_after_registration = (bool) ( $data["login_after_registration"] ?? false );
+
+				$custom_fields = $data["custom_fields"] ?? [];
+				$custom_fields = array_unique( $custom_fields );
+
+				/**
+				 * Validate fields before continue the registration
+                 * @since 1.1.1
+				 */
+                do_action( "amd_register_validate_custom_fields", $custom_fields );
 
 				global /** @var AMDSilu $amdSilu */
 				$amdSilu;
@@ -255,6 +293,14 @@ class AMDNetwork{
 				amd_set_user_meta( $uid, "registration", time() );
 				amd_set_user_meta( $uid, "_init", "*" );
 				amd_set_user_meta( $uid, "signup_method", "direct" );
+
+                if( !empty( $custom_fields ) ){
+	                /**
+	                 * Save user custom fields
+                     * @sicne 1.0.5
+	                 */
+                    do_action( "amd_save_user_custom_fields", $uid, $custom_fields );
+                }
 
 				if( apply_filters( "amd_welcome_message_enabled", true ) )
 					amd_set_user_meta( $uid, "welcome_pending", "true" );
@@ -358,6 +404,80 @@ class AMDNetwork{
 				wp_send_json_success( [ "msg" => esc_html__( "Verification code has been sent to your email", "material-dashboard" ), "resend_interval" => $resend_interval ] );
 
 			}
+            
+            else if( !empty( $r["2fa_submit"] ) ){
+                
+                $code = $r["2fa_submit"];
+                $token = $r["token"] ?? "";
+                
+                if( !empty( $code ) AND !empty( $token ) ){
+	                $temp = amd_get_temp( "2fa_token_$token" );
+                    $exp = explode( ",", $temp );
+                    if( $exp[0] == $code ){
+                        $u = amd_get_user_by( "id", $exp[1] ?? 0 );
+                        if( $u ){
+                            global $amdSilu;
+                            $success = $amdSilu->usl( $u );
+                            if( $success ){
+	                            $redirectURL = amd_get_dashboard_page();
+	                            if( !empty( $_SESSION["redirect_pending"] ) ){
+		                            $redirectURL = sanitize_url( $_SESSION["redirect_pending"] );
+		                            $_SESSION["redirect_pending"] = null;
+		                            unset( $_SESSION["redirect_pending"] );
+	                            }
+	                            wp_send_json_success( [
+		                            "msg" => esc_html__( "Success", "material-dashboard" ),
+		                            "url" => $redirectURL
+	                            ] );
+                            }
+                        }
+                    }
+                }
+
+	            wp_send_json_error( ["msg" => esc_html__( "Entered verification code is not correct or has been expired", "material-dashboard" )] );
+                
+            }
+
+            else if( !empty( $r["2fa_resend"] ) ){
+
+	            $token = $r["2fa_resend"];
+
+	            $temp = amd_get_temp( "2fa_token_$token" );
+	            $exp = explode( ",", $temp );
+	            $u = amd_get_user_by( "id", $exp[1] ?? 0 );
+
+                if( $u AND !empty( $token ) ){
+	                $temp = amd_get_temp( "2fa_token_{$token}_resend", false );
+	                $_expire = $temp->expire ?? 0;
+	                $expire = $_expire > 0 ? $_expire - time() : 0;
+
+                    if( $expire > 0 )
+	                    wp_send_json_success( ["msg" => esc_html__( "Failed", "material-dashboard" ), "resend_interval" => $expire] );
+
+	                /**
+	                 * 2-factor authentication code length
+	                 * @since 1.0.5
+	                 */
+	                $code_len = apply_filters( "amd_2fa_code_length", 4 );
+	                $code = amd_generate_string( intval( $code_len ), "number" );
+
+                    amd_set_temp( "2fa_token_$token", $code . "," . $u->ID );
+
+	                /**
+	                 * Send 2FA code to user
+	                 * @since 1.0.5
+	                 */
+	                do_action( "amd_send_2fa_code", $code, $u->ID );
+
+	                amd_set_temp( "2fa_token_{$token}_resend", "true", 120 );
+
+	                wp_send_json_success( ["msg" => esc_html__( "Verification code has been sent to your email and/or phone number", "material-dashboard" ), "resend_interval" => 120] );
+
+                }
+
+	            wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+
+            }
 
 		}
 
@@ -376,6 +496,7 @@ class AMDNetwork{
 
 		# Request parameters
 		$r = amd_sanitize_post_fields( $_POST );
+		$unfilteredRequest = $_POST;
 
 		if( !empty( $r["_ajax_target"] ) ){
 
@@ -384,7 +505,7 @@ class AMDNetwork{
 
 			foreach( $callbacks as $callback ){
 				if( function_exists( $callback ) )
-					call_user_func( $callback, $r );
+					call_user_func( $callback, $r, $unfilteredRequest );
 
 			}
 			wp_send_json_error( [ "msg" => esc_html__( "An error has occurred", "material-dashboard" ), "_msg" => "400 Bad Request" ] );
@@ -406,6 +527,170 @@ class AMDNetwork{
 			] );
 		}
 
+		else if( isset( $r["close_other_sessions"] ) ){
+
+			wp_destroy_other_sessions();
+
+			wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+
+		}
+
+		else if( !empty( $r["destroy_session_by_hash"] ) ){
+
+			$hash = $r["destroy_session_by_hash"];
+
+			$current_user = amd_get_current_user();
+
+			$token = amd_decrypt_aes( $hash, $current_user->secretKey );
+
+			if( class_exists( 'WP_Session_Tokens' ) ){
+
+				$session = WP_Session_Tokens::get_instance( $current_user->ID );
+
+				if( !$session->verify( $token ) )
+					wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+
+				$session->destroy( $token );
+
+				wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+
+			}
+
+			wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+
+		}
+
+		else if( !empty( $r["get_login_reports"] ) ){
+
+			$page = intval( $r["get_login_reports"] ) - 1;
+
+			$current_user = amd_get_current_user();
+
+			/**
+			 * Max items per page
+			 * @since 1.0.5
+			 */
+			$max_in_page = apply_filters( "amd_login_reports_max_items_per_page", $r["per_page"] ?? 10 );
+
+			$current_session = wp_get_session_token();
+
+			$get_html = boolval( $r["get_html"] ?? false );
+
+			global $amdDB;
+
+			$_reports = $amdDB->readReports( "login", $current_user->ID );
+
+			$chunks = array_chunk( $_reports, $max_in_page );
+			$reports = $chunks[$page] ?? [];
+
+			$unknown = esc_html__( "Unknown", "material-dashboard" );
+
+			$hasMore = count( $chunks ) > ( $page + 1 );
+
+			$data = [];
+			$counter = 0;
+			foreach( $reports as $report ){
+
+				if( $counter >= $max_in_page )
+					break;
+
+				$id = $report->id ?? null;
+				$value = $report->report_value ?? "null";
+				$user_id = $report->report_user ?? null;
+				$time = $report->report_time ?? null;
+
+				if( !$id OR !$value OR !$user_id )
+					continue;
+
+				$meta = unserialize( $report->meta ?? serialize( [] ) );
+				$ip = $meta["ip"] ?? $unknown;
+				$identity = $meta["identity"] ?? [];
+				$browser = $identity["browser"] ?? [];
+				$platform = $identity["platform"] ?? $unknown;
+
+				$data[] = array(
+					"id" => $id,
+					"value" => $value,
+					"user_id" => $user_id,
+					"time" => $time,
+					"ip" => $ip,
+					"browser" => $browser,
+					"platform" => $platform,
+					"jfy" => amd_true_date( "j F Y", $time ),
+					"hi" => amd_true_date( "H:i", $time ),
+				);
+
+				$counter++;
+
+			}
+
+			$row_number = $page * $max_in_page + 1;
+			if( $get_html ){
+				ob_start();
+
+				foreach( $data as $item ){
+
+					$id = $item["id"];
+					$value = $item["value"];
+					$user_id = $item["user_id"];
+					$time = $item["time"];
+					$ip = $item["ip"];
+					$browser = $item["browser"];
+					$platform = $item["platform"];
+
+					$token = $value == "null" ? null : amd_decrypt_aes( $value, $current_user->secretKey );
+					$session = WP_Session_Tokens::get_instance( $user_id );
+
+					?>
+					<tr data-login-report="<?php echo esc_attr( $id ); ?>">
+						<td><?php echo esc_attr( $row_number ); ?></td>
+						<td class="_row_date">
+							<span class="_item_date"><?php echo amd_true_date( "l j F Y", $time ); ?></span>
+							<br>
+							<span class="_item_time tiny-text color-low"><?php echo amd_true_date( "H:i", $time ); ?></span>
+						</td>
+						<td class="_row_platform"><?php echo esc_html( $platform ); ?></td>
+						<td class="_row_browser">
+							<span class="_item_browser_name"><?php echo esc_html( $browser["name"] ?? $unknown ); ?></span>
+							<?php if( $version = ( $browser["version"] ?? "" ) ): ?>
+								<br>
+								<span class="_item_browser_version tiny-text color-low" style="display:none"><?php echo esc_html( sprintf( esc_html__( "%s version", "material-dashboard" ), $version ) ); ?></span>
+							<?php endif; ?>
+						</td>
+						<td class="_row_ip">
+							<span class="_item_ip"><?php echo esc_html( $ip ?? $unknown ); ?></span>
+						</td>
+						<td class="_row_session">
+							<?php if( $token == $current_session ): ?>
+								<p class="_item_current_session font-title color-primary mbt-5"><?php echo esc_html_x( "Current session", "Session status", "material-dashboard" ); ?></p>
+							<?php else: ?>
+								<?php if( $token !== null ): ?>
+									<?php if( $session->verify( $token ) ): ?>
+										<p class="_item_session_inactive font-title color-red mbt-5" data-status="inactive" style="display:none"><?php echo esc_html_x( "Inactive", "Session status", "material-dashboard" ); ?></p>
+										<p class="_item_session_active font-title color-green mbt-5" data-status="active"><?php echo esc_html_x( "Active", "Session status", "material-dashboard" ); ?></p>
+										<button type="button" class="btn btn-sm btn-text --red --low" data-id="<?php echo esc_attr( $id ); ?>" data-destroy-session="<?php echo esc_attr( $value ); ?>"><?php esc_html_e( "Destroy session", "material-dashboard" ); ?></button>
+									<?php else: ?>
+										<p class="_item_session_inactive font-title color-red mbt-5"><?php echo esc_html_x( "Inactive", "Session status", "material-dashboard" ); ?></p>
+									<?php endif; ?>
+								<?php else: ?>
+									<p class="_item_session_unknown font-title mbt-5"><?php echo esc_html( $unknown ); ?></p>
+								<?php endif; ?>
+							<?php endif; ?>
+						</td>
+					</tr>
+					<?php
+					$row_number++;
+
+				}
+
+				$html = ob_get_clean();
+				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "html" => $html, "has_more" => $hasMore ] );
+			}
+
+			wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "results" => $data, "has_more" => $hasMore ] );
+
+		}
+
 		else if( isset( $r["_checkin"] ) ){
 
 			do_action( "amd_checkin", $r );
@@ -414,15 +699,37 @@ class AMDNetwork{
 
 		}
 
+		else if( isset( $r["switch_2fa"] ) ){
+
+			$use_login_2fa = amd_get_site_option( "use_login_2fa", "false" ) == "true";
+			$force_login_2fa = amd_get_site_option( "force_login_2fa", "false" ) == "true";
+
+			if( !$use_login_2fa OR $force_login_2fa )
+				wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+
+			amd_set_user_meta( get_current_user_id(), "use_2fa", $r["switch_2fa"] == "true" ? "true" : "false" );
+
+			wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+
+		}
+
 		if( $isAdmin ){
 
-			do_action( "amd_handle_admin_ajax", $r );
+			do_action( "amd_handle_admin_ajax", $r, $unfilteredRequest );
 
 			if( isset( $r["repair_db"] ) ){
 				global /** @var AMD_DB $amdDB */
 				$amdDB;
 				$amdDB->init( true );
+                $amdDB->repairTables();
 				$amdDB->repairData( amd_get_default_options() );
+
+				/**
+				 * On database repair
+                 * @since 1.0.5
+				 */
+                do_action( "amd_repair_database" );
+
 				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
 			}
 
@@ -452,6 +759,14 @@ class AMDNetwork{
 				do_action( "amd_on_options_save", $options, $allowedOptions );
 
 				foreach( $options as $key => $value ){
+
+					/**
+					 * Override site option save
+                     * @since 1.0.5
+					 */
+                    $ignore = apply_filters( "amd_save_site_option", true, $key, $value );
+                    if( $ignore === false )
+                        continue;
 
 					$action = null;
 					if( !empty( $allowedOptions[$key] ) )

@@ -7,6 +7,12 @@ if( is_user_logged_in() ){
 
 do_action( "amd_begin_dashboard" );
 
+/**
+ * Begin dashboard reset password hook
+ * @since 1.0.5
+ */
+do_action( "amd_begin_dashboard_reset_password" );
+
 if( amd_template_exists( "reset-password" ) ){
 	amd_load_template( "reset-password" );
 	return;

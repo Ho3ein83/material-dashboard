@@ -12,6 +12,12 @@ if( !amd_can_users_register() ){
 
 do_action( "amd_begin_dashboard" );
 
+/**
+ * Begin dashboard registration hook
+ * @since 1.0.5
+ */
+do_action( "amd_begin_dashboard_register" );
+
 if( amd_template_exists( "register" ) ){
 	amd_load_template( "register" );
 	return;
@@ -110,7 +116,16 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     <p id="register-log" class="amd-form-log _bg_"></p>
     <div class="h-10"></div>
     <div id="register-fields">
-		<?php if( $lastname_field ): ?>
+
+        <?php
+            /**
+             * Before registration fields
+             * @since 1.0.5
+             */
+            do_action( "amd_registration_fields_before" );
+        ?>
+
+        <?php if( $lastname_field ): ?>
             <div class="ht-input-row">
                 <label class="ht-input">
                     <input type="text" data-field="firstname" data-next="lastname" placeholder="" required>
@@ -131,18 +146,45 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
             </label>
             <input type="hidden" data-field="lastname" placeholder="">
 		<?php endif; ?>
-		<?php if( $username_field ): ?>
+
+	    <?php
+            /**
+             * After registration name fields
+             * @since 1.0.5
+             */
+            do_action( "amd_registration_fields_after_name" );
+	    ?>
+
+        <?php if( $username_field ): ?>
             <label class="ht-input">
                 <input type="text" data-field="username" data-pattern="%username%" data-next="phone|email" placeholder="" required>
                 <span><?php esc_html_e( "Username", "material-dashboard" ); ?></span>
 				<?php _amd_icon( "" ); ?>
             </label>
 		<?php endif; ?>
+
+	    <?php
+            /**
+             * After registration username field
+             * @since 1.0.5
+             */
+            do_action( "amd_registration_fields_after_username" );
+	    ?>
+
         <label class="ht-input">
             <input type="text" data-field="email" data-pattern="%email%" data-next="password" placeholder="" required>
             <span><?php esc_html_e( "Email", "material-dashboard" ); ?></span>
 			<?php _amd_icon( "email" ); ?>
         </label>
+
+	    <?php
+            /**
+             * After registration email field
+             * @since 1.0.5
+             */
+            do_action( "amd_registration_fields_after_email" );
+	    ?>
+
 		<?php if( $password_conf_field ): ?>
             <label class="ht-input">
                 <input type="password" data-field="password" minlength="8" data-next="password-conf" placeholder=""
@@ -171,10 +213,35 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 		<?php endif; ?>
     </div>
 
+	<?php
+        /**
+         * After registration password field
+         * @since 1.0.5
+         */
+        do_action( "amd_registration_fields_after_password" );
+	?>
+
     <!-- Phone number fields -->
-    <?php amd_phone_fields( true ); ?>
+    <?php amd_phone_fields(); ?>
+
+	<?php
+        /**
+         * After registration phone field
+         * @since 1.0.5
+         */
+        do_action( "amd_registration_fields_after_phone" );
+	?>
+
+	<?php
+        /**
+         * After registration fields
+         * @since 1.0.5
+         */
+        do_action( "amd_registration_fields_after" );
+	?>
 
     <div class="mt-20"></div>
+
     <div class="amd-lr-buttons">
         <button type="button" class="btn" id="btn-register" data-submit="register"><?php esc_html_e( "Register", "material-dashboard" ); ?></button>
         <button type="button" class="btn btn-text" data-auth="login"><?php esc_html_e( "Login to your account", "material-dashboard" ); ?></button>
@@ -236,157 +303,172 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     var $username = form.$getField("username");
     var $phone = form.$getField("phone_number");
 
-    form.on("before_submit", () => form.log(null));
-    form.on("submit", () => {
-        let data = form.getFieldsData();
-        let email = data.email.value;
-        let firstname = data.firstname.value;
-        let lastname = data.lastname.value;
-        let password = data.password.value;
-        let username = $username.length > 0 ? $username.val() : "";
-        let phone = (data.phone_number || {value: ""}).value || "";
-        login_after_registration = login_after_registration === "true";
-        network.clean();
-        network.put("register", {
-            firstname,
-            lastname,
-            username,
-            email,
-            password,
-            phone,
-            login_after_registration
-        });
-        network.on.start = () => {
-            dashboard.suspend();
+    (function(){
+
+        function exportCustomFields(){
+            let fields = {};
+            for(let [key, value] of Object.entries(form.getFieldsData())){
+                if(key.startsWith("Custom:"))
+                    fields[key.replaceAll("Custom:", "")] = value.value;
+            }
+            return fields;
         }
-        network.on.end = (resp, error) => {
-            if(!error) {
-                if(resp.success) {
-                    let url = resp.data.url || "";
-                    let query = resp.data.query || "";
-                    if(url) location.href = url;
-                    else if(query) $amd.openQuery(query);
-                    else $amd.openQuery("auth=login");
+
+        form.on("before_submit", () => form.log(null));
+        form.on("submit", () => {
+            let data = form.getFieldsData();
+            let email = data.email.value;
+            let firstname = data.firstname.value;
+            let lastname = data.lastname.value;
+            let password = data.password.value;
+            let username = $username.length > 0 ? $username.val() : "";
+            let phone = (data.phone_number || {value: ""}).value || "";
+            login_after_registration = login_after_registration === "true";
+            let custom_fields = exportCustomFields();
+            network.clean();
+            network.put("register", {
+                firstname,
+                lastname,
+                username,
+                email,
+                password,
+                phone,
+                custom_fields,
+                login_after_registration
+            });
+            network.on.start = () => {
+                dashboard.suspend();
+            }
+            network.on.end = (resp, error) => {
+                if(!error) {
+                    if(resp.success) {
+                        let url = resp.data.url || "";
+                        let query = resp.data.query || "";
+                        if(url) location.href = url;
+                        else if(query) $amd.openQuery(query);
+                        else $amd.openQuery("auth=login");
+                    }
+                    else {
+                        dashboard.resume();
+                        setTimeout(() => {
+                            let errors = resp.data.errors || [];
+                            for(let i = 0; i <= errors.length; i++) {
+                                let err = errors[i] || {};
+                                if(typeof err.error !== "undefined") dashboard.toast(err.error);
+                                if(typeof err.field !== "undefined") form.$getField(err.field).setInvalid(true, "invalid", true);
+                            }
+                        }, 300);
+                    }
                 }
                 else {
                     dashboard.resume();
-                    setTimeout(() => {
-                        let errors = resp.data.errors || [];
-                        for(let i = 0; i <= errors.length; i++) {
-                            let err = errors[i] || {};
-                            if(typeof err.error !== "undefined") dashboard.toast(err.error);
-                            if(typeof err.field !== "undefined") form.$getField(err.field).setInvalid(true, "invalid", true);
-                        }
-                    }, 300);
+                    setTimeout(() => $amd.alert(_t("sign_up"), _t("error")), 300);
                 }
             }
-            else {
-                dashboard.resume();
-                setTimeout(() => $amd.alert(_t("sign_up"), _t("error")), 300);
+            network.post();
+        });
+        form.on("invalid_code", data => {
+            let {field, code} = data;
+            let id = field.id || "";
+            if(id === "firstname") {
+                dashboard.toast(_t("control_fields"));
             }
-        }
-        network.post();
-    });
-    form.on("invalid_code", data => {
-        let {field, code} = data;
-        let id = field.id || "";
-        if(id === "firstname") {
-            dashboard.toast(_t("control_fields"));
-        }
-        else if(id === "email") {
-            dashboard.toast(_t("invalid_email"));
-        }
-        else if(id === "password") {
-            if(code === 4 || code === 1)
-                dashboard.toast(_t("password_8"));
-        }
-        else if(id === "password-conf") {
-            if(code === 2 || code === 1)
-                dashboard.toast(_t("password_match"));
-        }
-        else if(id === "phone_number") {
-            dashboard.toast(_t("phone_incorrect"));
-        }
-    });
-    let $country_code = form.$getField("country_code");
-    let $phone_number = form.$getField("phone_number");
-    let country_codes = {};
-    $country_code.parent().parent().find(".--options > span").each(function() {
-        let cc = $(this).hasAttr("data-value", true);
-        let format = $(this).hasAttr("data-format", true, "");
-        if(cc) {
-            country_codes[cc] = {
-                "$e": $(this),
-                "format": format.toUpperCase()
-            };
-        }
-    });
+            else if(id === "email") {
+                dashboard.toast(_t("invalid_email"));
+            }
+            else if(id === "password") {
+                if(code === 4 || code === 1)
+                    dashboard.toast(_t("password_8"));
+            }
+            else if(id === "password-conf") {
+                if(code === 2 || code === 1)
+                    dashboard.toast(_t("password_match"));
+            }
+            else if(id === "phone_number") {
+                dashboard.toast(_t("phone_incorrect"));
+            }
+        });
+        let $country_code = form.$getField("country_code");
+        let $phone_number = form.$getField("phone_number");
+        let country_codes = {};
+        $country_code.parent().parent().find(".--options > span").each(function() {
+            let cc = $(this).hasAttr("data-value", true);
+            let format = $(this).hasAttr("data-format", true, "");
+            if(cc) {
+                country_codes[cc] = {
+                    "$e": $(this),
+                    "format": format.toUpperCase()
+                };
+            }
+        });
 
-    var getSelectedCC = () => {
-        return $country_code.hasAttr("data-value", true, "");
-    }
-    $country_code.on("change", function() {
-        let cc = getSelectedCC();
-        if(cc) {
-            $phone_number.blur();
-            $phone_number.focus();
-            $phone_number.val("+" + cc);
+        var getSelectedCC = () => {
+            return $country_code.hasAttr("data-value", true, "");
         }
-    });
-    var formatPhoneNumber = (number, format, clean = true) => {
-        let cc = getSelectedCC();
-        let num = number;
-        num.replaceAll(" ", "");
-        num = num.replaceAll("+" + cc, "");
-        num = num.replaceAll("+", "");
-        num = num.replace(cc, "");
-        let out = format;
-        for(let i = 0; i < num.length; i++) {
-            let n = num[i] || "";
-            out = out.replace("X", n);
-        }
-        if(clean) {
-            out = out.replaceAll("X", "");
-            out = out.replaceAll("-", " ");
-        }
-        return "+" + cc + " " + out;
-    }
-    let formatted = "";
-    $phone_number.on("input", function(e) {
-        let key = e.key;
-        let $el = $(this);
-        let v = $el.val();
-        v = v.replaceAll("+", "");
-        v = v.replaceAll(" ", "");
-        if(v && !amd_conf.forms.isSpecialKey(key)) {
-            if(typeof country_codes[v] !== "undefined") {
-                $phone_number.val("+" + v);
-                $country_code.val(v);
-                $country_code.trigger("change");
+        $country_code.on("change", function() {
+            let cc = getSelectedCC();
+            if(cc) {
+                $phone_number.blur();
+                $phone_number.focus();
+                $phone_number.val("+" + cc);
             }
-            let _cc = getSelectedCC();
-            let ff = typeof country_codes[_cc] !== "undefined" ? (country_codes[_cc].format || "") : "";
-            if(ff) {
-                formatted = formatPhoneNumber(v, ff);
-                $phone_number.val(formatted.trimChar(" "));
+        });
+        var formatPhoneNumber = (number, format, clean = true) => {
+            let cc = getSelectedCC();
+            let num = number;
+            num.replaceAll(" ", "");
+            num = num.replaceAll("+" + cc, "");
+            num = num.replaceAll("+", "");
+            num = num.replace(cc, "");
+            let out = format;
+            for(let i = 0; i < num.length; i++) {
+                let n = num[i] || "";
+                out = out.replace("X", n);
             }
+            if(clean) {
+                out = out.replaceAll("X", "");
+                out = out.replaceAll("-", " ");
+            }
+            return "+" + cc + " " + out;
         }
-    });
-    $country_code.on("change", function() {
-        let cc = $(this).hasAttr("data-value", true, "");
-        let _format = (country_codes[cc] || {format: ""}).format || "";
-        if(_format) {
-            let _f = _format;
-            _f = _f.replaceAll("-", "\\s?");
-            _f = _f.replaceAll("X", "[0-9]");
-            $phone_number.attr("data-pattern", `^\\+${cc}\\s?${_f}$`);
-        }
-        let val = $country_code.val();
-        for(let i = 0; i < val.length; i++)
-            val = val.replaceAll("  ", " ");
-        $country_code.val(val.trimChar(" "));
-    });
-    $country_code.trigger("change");
+        let formatted = "";
+        $phone_number.on("input", function(e) {
+            let key = e.key;
+            let $el = $(this);
+            let v = $el.val();
+            v = v.replaceAll("+", "");
+            v = v.replaceAll(" ", "");
+            if(v && !amd_conf.forms.isSpecialKey(key)) {
+                if(typeof country_codes[v] !== "undefined") {
+                    $phone_number.val("+" + v);
+                    $country_code.val(v);
+                    $country_code.trigger("change");
+                }
+                let _cc = getSelectedCC();
+                let ff = typeof country_codes[_cc] !== "undefined" ? (country_codes[_cc].format || "") : "";
+                if(ff) {
+                    formatted = formatPhoneNumber(v, ff);
+                    $phone_number.val(formatted.trimChar(" "));
+                }
+            }
+        });
+        $country_code.on("change", function() {
+            let cc = $(this).hasAttr("data-value", true, "");
+            let _format = (country_codes[cc] || {format: ""}).format || "";
+            if(_format) {
+                let _f = _format;
+                _f = _f.replaceAll("-", "\\s?");
+                _f = _f.replaceAll("X", "[0-9]");
+                $phone_number.attr("data-pattern", `^\\+${cc}\\s?${_f}$`);
+            }
+            let val = $country_code.val();
+            for(let i = 0; i < val.length; i++)
+                val = val.replaceAll("  ", " ");
+            $country_code.val(val.trimChar(" "));
+        });
+        $country_code.trigger("change");
+
+    }());
 </script>
 <?php do_action( "amd_after_registration_page" ); ?>
 </body>

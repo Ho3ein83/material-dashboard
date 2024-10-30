@@ -921,6 +921,9 @@ function amd_generate_string( $len = 10, $key = -1 ){
 
 	$key = str_shuffle( str_shuffle( $key ) );
 
+    # Set random seed
+	srand( microtime( true ) * 1000000 );
+
 	for( $i = 0; $i < $len; $i++ )
 		$string .= $key[rand( 0, strlen( $key ) - 1 )];
 
@@ -1248,16 +1251,20 @@ function amd_delete_site_option( $name ){
  * Option name
  * @param string $default
  * Default value
+ * @param bool $ignoreCaches
+ * <code>[Since 1.0.5] </code>
+ * Whether to ignore caches and get site option directly from database or get it from system caches,<br>
+ * using caches can improve site performance but site options may be old
  *
  * @return string
  * @since 1.0.0
  */
-function amd_get_site_option( $name, $default = "" ){
+function amd_get_site_option( $name, $default = "", $ignoreCaches=false ){
 
 	global /** @var AMD_DB $amdDB */
 	$amdDB;
 
-	return $amdDB->getSiteOption( $name, $default );
+	return $amdDB->getSiteOption( $name, $default, $ignoreCaches );
 
 }
 
@@ -1726,7 +1733,7 @@ function amd_admin_head(){
 
 	$API_URL = amd_get_api_url();
 	$locale = get_locale();
-	$amdCache->addStyle( 'admin:fonts', amd_merge_url_query( $API_URL, "stylesheets=_fonts&locale=$locale&ver=1.0.0" ), null );
+	$amdCache->addStyle( 'admin:fonts', amd_merge_url_query( $API_URL, "stylesheets=_fonts&locale=$locale&screen=admin&ver=1.0.0" ), null );
 
 	$amdCache->dumpStyles( "admin" );
 	$amdCache->dumpScript( "admin" );
@@ -1735,7 +1742,9 @@ function amd_admin_head(){
 	$amdCache->dumpStyles( "global" );
 	$amdCache->dumpScript( "icon" );
 	$amdCache->dumpScript( "global" );
-	amd_main_header();
+
+    amd_main_header();
+
 	$wizard_dismissed = amd_get_site_option( "wizard_dismissed" ) == "true";
 	$auto_generated_pages = amd_get_site_option( "auto_generated_pages" ) == "true";
 
@@ -2271,7 +2280,8 @@ function amd_make_pages( $page, $confirm = false, $confirmReplace = false ){
  * @since 1.0.0
  */
 function amd_api_page_required( $autoGenerate = true ){
-	global /** @var AMD_DB $amdDB */
+
+    global /** @var AMD_DB $amdDB */
 	$amdDB;
 
 	$APIPage = intval( amd_get_site_option( "api_page" ) );
@@ -2948,12 +2958,18 @@ function amd_get_wp_allowed_extensions(){
  * <br>Available tags:
  * <ul>
  * <li>br</li>
+ * <li>p</li>
  * <li>span</li>
  * <li>p</li>
  * <li>div</li>
  * <li>img</li>
  * <li>i</li>
+ * <li>b</li>
+ * <li>strong</li>
  * <li>a</li>
+ * <li>u</li>
+ * <li>small</li>
+ * <li>em</li>
  * <li>button</li>
  * </ul>
  *
@@ -2963,6 +2979,16 @@ function amd_get_wp_allowed_extensions(){
  */
 function amd_allowed_tags_with_attr( $tags ){
 
+    $attr_style_data = ["color", "background-color"];
+
+    $default_attributes = array(
+	    "data-*" => true,
+	    "class" => true,
+	    "id" => true,
+	    "style" => $attr_style_data,
+	    "title" => true
+    );
+
     $tags_data = array(
 	    "br" => array(),
         "span" => array(
@@ -2970,7 +2996,7 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "class" => true,
 		    "id" => true,
 		    "dir" => true,
-		    "style" => true,
+		    "style" => $attr_style_data,
 		    "title" => true
 	    ),
         "p" => array(
@@ -2978,7 +3004,7 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "class" => true,
 		    "id" => true,
 		    "dir" => true,
-		    "style" => true,
+		    "style" => $attr_style_data,
 		    "title" => true
 	    ),
         "div" => array(
@@ -2986,7 +3012,7 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "class" => true,
 		    "id" => true,
 		    "dir" => true,
-		    "style" => true,
+		    "style" => $attr_style_data,
 		    "title" => true
 	    ),
         "img" => array(
@@ -2996,16 +3022,18 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "src" => true,
 		    "alt" => true,
 		    "loading" => true,
-		    "style" => true,
+		    "style" => $attr_style_data,
 		    "title" => true
 	    ),
-        "i" => array(
-		    "data-*" => true,
-		    "class" => true,
-		    "id" => true,
-		    "style" => true,
-		    "title" => true
-	    ),
+        "i" => $default_attributes,
+        "b" => $default_attributes,
+        "u" => $default_attributes,
+        "strong" => $default_attributes,
+        "small" => $default_attributes,
+        "ul" => $default_attributes,
+        "ol" => $default_attributes,
+        "li" => $default_attributes,
+        "em" => $default_attributes,
 	    "a" => array(
 		    "href" => true,
 		    "rel" => true,
@@ -3016,7 +3044,7 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "class" => true,
 		    "id" => true,
 		    "dir" => true,
-		    "style" => true,
+		    "style" => $attr_style_data,
 		    "title" => true
 	    ),
         "button" => array(
@@ -3024,7 +3052,7 @@ function amd_allowed_tags_with_attr( $tags ){
 		    "type" => true,
 		    "class" => true,
 		    "id" => true,
-		    "style" => true,
+		    "style" => $attr_style_data,
 		    "title" => true
 	    )
     );
@@ -3204,16 +3232,18 @@ function amd_delete_todo_list( $where ){
  * To-do ID
  * @param array $data
  * To-do data to update
+ * @param string $salt
+ * Salt for encryption
  *
  * @return bool
  * @since 1.0.0
  */
-function amd_edit_todo( $todo_id, $data ){
+function amd_edit_todo( $todo_id, $data, $salt="" ){
 
 	if( !amd_is_todo_for_user( $todo_id, get_current_user_id() ) )
 		return false;
 
-	return amd_update_todo( $data, [ "id" => $todo_id ] );
+	return amd_update_todo( $data, [ "id" => $todo_id ], $salt );
 
 }
 
@@ -3992,6 +4022,28 @@ function amd_sanitize_get_fields( $get ){
 }
 
 /**
+ * Sanitize array
+ * @param array $arr
+ * Input array
+ *
+ * @return array
+ * Sanitized array
+ * @since 1.0.5
+ */
+function amd_sanitize_array_fields( $arr ){
+
+	$data = [];
+
+    foreach( $arr as $key => $value ){
+        $safe_key = sanitize_text_field( $key );
+	    $data[$safe_key] = is_scalar( $value ) ? sanitize_text_field( $value ) : ( is_iterable( $value ) ? amd_sanitize_array_fields( $value ) : null );
+    }
+
+    return $data;
+
+}
+
+/**
  * Validate every $_POST parameters
  *
  * @param array $post
@@ -4237,7 +4289,10 @@ function amd_destroy_html_tag( $html, $tag_s ){
 function amd_head_jquery(){
 
     # Print jQuery core scripts
-    wp_print_scripts( ["jquery",] );
+    wp_print_scripts( ["jquery"] );
+
+	# Print jQuery-ui core scripts
+	wp_print_scripts( ["jquery-ui", "jquery-ui-core", "jquery-ui-draggable", "jquery-ui-droppable", "jquery-ui-resizable", "jquery-ui-sortable"] );
 
     # Ignore noConflict mode
 	echo '<script>var $ = jQuery;</script>';
@@ -4253,6 +4308,14 @@ add_action( "amd_wp_head_alternate", "amd_head_jquery" );
 function amd_enqueue_scripts(){
 
     wp_enqueue_script( "jquery" );
+
+	# jQuery UI components
+	wp_enqueue_stored_styles( "jquery-ui" );
+	wp_enqueue_script( "jquery-ui-core" );
+	wp_enqueue_script( "jquery-ui-draggable" );
+	wp_enqueue_script( "jquery-ui-droppable" );
+	wp_enqueue_script( "jquery-ui-resizable" );
+	wp_enqueue_script( "jquery-ui-sortable" );
 
 }
 add_action( "wp_enqueue_scripts", "amd_enqueue_scripts" );
@@ -4767,7 +4830,7 @@ function amd_phone_fields( $isForLogin=false ){
                 </div>
                 <label class="_phone_field_holder_ ht-input --ltr">
                     <input type="text" class="not-focus" data-field="phone_number" data-pattern="" data-keys="[+0-9]"
-                           data-next="<?php echo $isForLogin ? 'password' : 'submit'; ?>"
+                           data-next="<?php echo $isForLogin ? 'password' : ''; ?>"
                            placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
                     <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
 					<?php _amd_icon( "phone" ); ?>
@@ -4776,7 +4839,7 @@ function amd_phone_fields( $isForLogin=false ){
 				<?php if( $first_cc == "98" AND apply_filters( "amd_use_phone_simple_digit", false ) ): ?>
                     <label class="_phone_field_holder_ ht-input --ltr">
                         <input type="text" class="not-focus" data-field="phone_number" data-keys="[0-9]"
-                               data-pattern="[0-9]" data-next="submit" placeholder=""
+                               data-pattern="[0-9]" placeholder=""
 							<?php echo $phone_field_required ? "required" : ""; ?>>
                         <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
 						<?php _amd_icon( "phone" ); ?>
@@ -4797,7 +4860,7 @@ function amd_phone_fields( $isForLogin=false ){
                     </div>
                     <label class="_phone_field_holder_ ht-input --ltr">
                         <input type="text" class="not-focus" data-field="phone_number" data-pattern="[0-9]{11}"
-                               data-keys="[0-9]" data-next="submit"
+                               data-keys="[0-9]"
                                placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
                         <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
 						<?php _amd_icon( "phone" ); ?>
@@ -4826,6 +4889,27 @@ function amd_get_survey_url(){
 
     return $url;
 
+}
+
+/**
+ * Check if user account requires 2FA login or not
+ * @param int|null $uid
+ * User ID to check, pass null to use current user
+ *
+ * @return bool
+ * @since 1.0.5
+ */
+function amd_user_required_2f( $uid=null ){
+
+	$use_login_2fa = amd_get_site_option( "use_login_2fa", "false" ) == "true";
+	if( !$use_login_2fa )
+		return false;
+
+	$force_login_2fa = amd_get_site_option( "force_login_2fa", "false" ) == "true";
+	if( $force_login_2fa )
+		return true;
+
+	return amd_get_user_meta( $uid, "use_2fa", "false" ) == "true";
 }
 
 /**

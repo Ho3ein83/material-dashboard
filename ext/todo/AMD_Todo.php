@@ -45,6 +45,13 @@ class AMD_Todo {
 	public $status;
 
 	/**
+	 * To-do priority
+	 * @var int
+	 * @since 1.0.5
+	 */
+	public $priority;
+
+	/**
 	 * To-do meta-data
 	 * @var array
 	 * @since 1.0.0
@@ -74,6 +81,7 @@ class AMD_Todo {
 		$this->_text = "";
 		$this->text = "";
 		$this->status = "";
+		$this->priority = 0;
 		$this->meta = [];
 	}
 
@@ -91,6 +99,7 @@ class AMD_Todo {
 
 	/**
 	 * Set To-do data
+	 *
 	 * @param string $key
 	 * To-do key
 	 * @param string $_text
@@ -101,15 +110,18 @@ class AMD_Todo {
 	 * To-do status
 	 * @param array $meta
 	 * To-do meta-data
+	 * @param int $priority
+	 * To-do priority
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function set_data( $key, $_text, $text, $status, $meta ){
+	public function set_data( $key, $_text, $text, $status, $meta, $priority=0 ){
 		$this->key = $key;
 		$this->_text = $_text;
 		$this->text = $text;
 		$this->status = $status;
+		$this->priority = $priority;
 		$this->meta = $meta;
 	}
 
@@ -152,6 +164,8 @@ class AMD_Todo {
 
 		$list = amd_get_todo_list( ["todo_key" => $key] );
 
+		global $amdDB;
+
 		$lists = [];
 		if( count( $list ) ){
 			foreach( $list as $item ){
@@ -159,7 +173,15 @@ class AMD_Todo {
 				$id = $l->id;
 				$todo = new AMD_Todo();
 				if( empty( $salt ) ) $salt = $todo->salt;
-				$todo->set_data( $l->todo_key, $l->todo_value, amd_decrypt_aes( json_decode( $l->todo_value ), $salt ), $l->status, unserialize( $l->meta ) );
+				$priority = intval( $amdDB->getTodoMeta( $id, "priority", "0" ) );
+				$todo->set_data(
+					$l->todo_key,
+					$l->todo_value,
+					amd_decrypt_aes( json_decode( $l->todo_value ), $salt ),
+					$l->status,
+					unserialize( $l->meta ),
+					$priority
+				);
 				$lists[$id] = $todo;
 			}
 		}

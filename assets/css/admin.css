@@ -271,9 +271,7 @@ input[data-coloris] {
     justify-content: start;
 }
 
-.amd-admin-card .__option_grid {
-
-}
+.amd-admin-card .__option_grid {}
 
 .amd-admin-card .__option_grid > .-item {
     position: relative;
@@ -281,7 +279,7 @@ input[data-coloris] {
     padding: 16px 0;
 }
 
-.amd-admin-card .__option_grid > .-item:not(:last-child):after {
+.amd-admin-card .__option_grid > .-item:not(:last-child, .--exclude):after {
     content: ' ';
     position: absolute;
     display: block;
@@ -1033,6 +1031,24 @@ input[data-coloris] {
     padding: 4px 12px;
     margin: 4px;
     border-radius: 30px;
+}
+
+.amd-admin-badges > .--badge.--icon {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.amd-admin-badges > .--badge.--icon > .-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    width: 20px;
+    height: auto;
+    margin-inline-start: 8px;
 }
 
 .amd-admin-badges > .--badge.--red {

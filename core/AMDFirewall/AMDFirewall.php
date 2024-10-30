@@ -29,7 +29,18 @@ class AMDFirewall{
 	 * @since 1.0.0
 	 */
 	function __constructor(){
+
+		# Initialize hooks
+		self::initHooks();
+
 	}
+
+	/**
+	 * Initialize hooks
+	 * @return void
+	 * @since 1.0.5
+	 */
+	public function initHooks(){}
 
 	/**
 	 * Handle wp-login requests
@@ -678,6 +689,26 @@ class AMDFirewall{
 	public function setHandler( $handler ){
 
 		$this->api_handler = $handler;
+
+	}
+
+	/**
+	 * Parse user agent and determine user browser and device details
+	 * @param string $user_agent
+	 * User agent to parse, pass null to get current agent
+	 *
+	 * @return AMDFirewallBrowser
+	 * Firewall browser object
+	 * @sicne 1.0.5
+	 */
+	public function parseAgent( $user_agent=null ){
+
+		if( $user_agent == null )
+			$user_agent = sanitize_text_field( $_SERVER["HTTP_USER_AGENT"] ?? "" );
+
+		require_once( __DIR__ . "/AMDFirewallBrowser.php" );
+
+		return new AMDFirewallBrowser( $user_agent );
 
 	}
 
