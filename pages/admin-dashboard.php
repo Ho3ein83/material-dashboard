@@ -38,6 +38,14 @@ $online_users = amd_get_online_users();
         <h1><?php esc_html_e( "Amatris Material Dashboard", "material-dashboard" ); ?></h1>
         <div class="amd-card-columns c3">
 
+	        <?php
+                /**
+                 * Dashboard cards in admin panel
+                 * @since 1.0.7
+                 */
+                do_action( "amd_admin_dashboard_before" );
+	        ?>
+
             <!-- Quick links -->
             <div class="amd-admin-card">
                 <h3 class="--title"><?php echo esc_html_x( "Quick links", "Admin", "material-dashboard" ); ?></h3>
@@ -212,6 +220,15 @@ $online_users = amd_get_online_users();
                     </div>
                 </div>
             </div>
+
+            <?php
+                /**
+                 * Dashboard cards in admin panel
+                 * @since 1.0.7
+                 */
+                do_action( "amd_admin_dashboard_after" );
+            ?>
+
         </div>
     </div>
 </div>

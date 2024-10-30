@@ -3,7 +3,7 @@ Contributors: ho3einie,amatris
 Tags: dashboard, material dashboard, user profile, woocommerce, easy digital downloads
 Requires at least: 5.2
 Tested up to: 6.3
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 Requires PHP: 7.4.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -63,6 +63,9 @@ Currently, we do not collect any information without your explicit consent. If w
 You can create your own extensions and themes for your dashboard and publish it with your name if you want. You can get started by reading our [documentation](https://amatris.ir/amd/d).
 
 == Changelog ==
+
+= 1.0.7 =
+* Bugs fixed
 
 = 1.0.6 =
 * Database cache improved

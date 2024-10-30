@@ -686,6 +686,56 @@ function amd_user_has_meta( $uid, $mn ){
 }
 
 /**
+ * Push value into user meta
+ * @param int $uid
+ * User ID
+ * @param string $mn
+ * Meta name
+ * @param string $item
+ * Item to pull from meta
+ * @param bool $unique
+ * Whether to remove duplicated values, default is true
+ *
+ * @return bool
+ * True on success, false on failure
+ * @since 1.0.7
+ */
+function amd_push_user_meta( $uid, $mn, $item, $unique=true ){
+
+    $value = amd_get_user_meta( $uid, $mn );
+
+    $value = amd_push_value( $value, $item, ",", $unique );
+
+    return amd_set_user_meta( $uid, $mn, $value );
+
+}
+
+/**
+ * Pull item from user meta
+ * @param int $uid
+ * User ID
+ * @param string $mn
+ * Meta name
+ * @param string $item
+ * Item to pull from meta
+ * @param bool $unique
+ * Whether to remove duplicated values, default is true
+ *
+ * @return bool
+ * True on success, false on failure
+ * @since 1.0.7
+ */
+function amd_pull_user_meta( $uid, $mn, $item, $unique=true ){
+
+    $value = amd_get_user_meta( $uid, $mn );
+
+    $value = amd_pull_value( $value, $item, ",", $unique );
+
+    return amd_set_user_meta( $uid, $mn, $value );
+
+}
+
+/**
  * Set temporarily data in database
  *
  * @param string $name

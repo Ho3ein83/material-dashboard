@@ -1906,6 +1906,74 @@ class AMD_DB {
 	}
 
 	/**
+	 * Delete report
+	 * @param array $where
+	 * Where clauses
+	 *
+	 * @return bool
+	 * True on success, false on failure
+	 * @sonce 1.0.7
+	 */
+	public function deleteReport( $where ){
+
+		$table = $this->getTable( "reports" );
+
+		return (bool) $this->db->delete( $table, $where );
+
+	}
+
+	/**
+	 * Delete report
+	 * @param string $key
+	 * Report key
+	 * @param string $value
+	 * Report value
+	 * @param int|false $user
+	 * User ID or false to ignore user
+	 *
+	 * @return bool
+	 * True on success, false on failure
+	 * @sonce 1.0.7
+	 */
+	public function deleteReportClauses( $key, $value, $user=false ){
+
+		$where = array(
+			"report_key" => $key,
+			"report_value" => $value,
+		);
+
+		if( $user )
+			$where["report_user"] = $user;
+
+		return self::deleteReport( $where );
+
+	}
+
+	/**
+	 * Search inside reports with custom filter
+	 * @param array $filters
+	 * Filters array, see {@see AMD_DB::makeFilters()}
+	 *
+	 * @param array $orders
+	 * Orders array, see {@see AMD_DB::makeOrder())}
+	 *
+	 * @return array|object|stdClass|null
+	 * @since 1.0.7
+	 */
+	public function searchReports( $filters = [], $orders = [] ){
+
+		$filter = $this->makeFilters( $filters );
+		$order = $this->makeOrder( $orders );
+
+		$table = $this->getTable( "reports" );
+
+		$sql = $this->db->prepare( "SELECT * FROM %i " . $filter . " " . $order, $table );
+
+		return $this->safeQuery( $table, $sql );
+
+	}
+
+	/**
 	 * Insert new component in database
 	 * @param string $type
 	 * Component type (custom string)

@@ -629,6 +629,32 @@ class AMDSilu{
 	}
 
 	/**
+	 * Search users meta
+	 * @param array $filter
+	 * Filters array, see {@see AMD_DB::makeFilters()}
+	 * @param array $order
+	 * Order array, see {@see AMD_DB::makeOrder()}
+	 *
+	 * @return array|object|stdClass|null
+	 * @since 1.0.7
+	 */
+	public function searchUsersMeta( $filter=[], $order=[] ){
+
+		global /** @var AMD_DB $amdDB */
+		$amdDB;
+
+		$table = $amdDB->getTable( "users_meta" );
+
+		$filters = $amdDB->makeFilters( $filter );
+		$orders = $amdDB->makeFilters( $order );
+
+		$sql = $amdDB->db->prepare( "SELECT * FROM %i " . $filters . " " . $orders, $table );
+
+		return $amdDB->safeQuery( $table, $sql );
+
+	}
+
+	/**
 	 * Guess user automatically and get user data array
 	 *
 	 * @param int|string|WP_User $part

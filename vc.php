@@ -3,6 +3,13 @@
 # Version Control
 
 /**
+ * Plugin version 1.0.7 availability check
+ * @return void
+ * @since 1.0.7
+ */
+function amd_plugin_107(){}
+
+/**
  * Plugin version 1.0.6 availability check
  * @return void
  * @since 1.0.6
