@@ -143,9 +143,25 @@ class AMDCache{
 			foreach( $id_s as $id => $v )
 				self::setScopeGroup( $group, $id, $v );
 		}
-		else if( is_string( $id_s ) or is_numeric( $id_s ) ){
+		else if( is_scalar( $id_s ) ){
 			$this->SCOPE_GROUP[$group][$id_s] = $value;
 		}
+	}
+
+    /**
+	 * Replace group data
+	 *
+	 * @param string $group
+	 * Group ID
+	 * @param mixed $new_value
+     * New value to replace
+	 *
+	 * @return void
+	 * @sicne 1.0.3
+	 */
+	public function updateScopeGroup( $group, $new_value ){
+		if( isset( $this->SCOPE_GROUP[$group] ) )
+            $this->SCOPE_GROUP[$group] = $new_value;
 	}
 
 	/**
@@ -711,7 +727,7 @@ class AMDCache{
 	public function setLocale( $locale, $switch=true ){
 
         if( $switch )
-            switch_to_locale( $locale );
+            amd_switch_locale( $locale, false );
 
 		if( is_user_logged_in() )
 			update_user_meta( get_current_user_id(), "locale", $locale );

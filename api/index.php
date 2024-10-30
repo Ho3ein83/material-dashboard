@@ -80,9 +80,11 @@ if( !empty( $r["stylesheets"] ) ){
             if( empty( $themes ) ){
 
                 # Use minified code if exists, otherwise use normal (not minified) stylesheet
-                foreach( [AMD_ASSETS_PATH . "/css/vars" . ( $minify ? ".min" : ".css" ), AMD_ASSETS_PATH . "/css/vars.css"] as $v ){
-                    if( file_exists( $v ) )
+                foreach( [AMD_ASSETS_PATH . "/css/vars" . ( $minify ? ".min.css" : ".css" ), AMD_ASSETS_PATH . "/css/vars.css"] as $v ){
+                    if( file_exists( $v ) ){
 	                    echo file_get_contents( $v );
+						break;
+                    }
                 }
 
                 # Skip loop
@@ -289,7 +291,7 @@ else if( !empty( $r["_avatar"] ) ){
     $user = amd_get_user_by_meta( "secret", $avatar );
 
     # Placeholder avatar image
-	$ph_path = apply_filters( "amd_placeholder_avatar", AMD_ASSETS_PATH . "/images/avatars/placeholder.png" );
+	$ph_path = apply_filters( "amd_placeholder_avatar_path", AMD_ASSETS_PATH . "/images/avatars/placeholder.png" );
 
 	$avatar_file = "";
 

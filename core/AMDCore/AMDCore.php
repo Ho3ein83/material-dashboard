@@ -255,6 +255,19 @@ class AMDCore{
 
 		}, 10, 2 );
 
+		/**
+		 * Remove sign-in method
+         * @since 1.0.3
+		 */
+		add_action( "amd_remove_sign_in_method", function( $id ){
+
+            global /** @var AMDCore $amdCore */
+            $amdCore;
+
+            $amdCore->removeSignInMethod( $id );
+
+		} );
+
 		# Get sign-in methods
 		add_filter( "amd_sign_in_methods", function(){
 
@@ -719,7 +732,7 @@ class AMDCore{
 		                amd_set_site_option( $option_name, $option_value );
 		                $progress[$option_name] = true;
 	                }
-                    return [true, "", $progress, 0];
+                    return [true, esc_html_x( "Site settings imported", "Admin", "material-dashboard" ), $progress, 0];
 
                 }
 			),
@@ -755,7 +768,7 @@ class AMDCore{
 						$progress[$uid] = true;
 
 					}
-					return [true, "", $progress, $missed];
+					return [true, esc_html_x( "Users meta-data imported", "Admin", "material-dashboard" ), $progress, $missed];
 
 				}
 			),
@@ -788,7 +801,7 @@ class AMDCore{
 						$progress[$temp_key] = true;
 
 					}
-					return [true, "", $progress, $missed];
+					return [true, esc_html_x( "Temporarily data imported", "Admin", "material-dashboard" ), $progress, $missed];
 
 				}
 			),
@@ -1334,14 +1347,22 @@ class AMDCore{
 	 * @sicne 1.0.0
 	 */
 	public function getSignInMethods(){
+
+		/**
+		 * Validate sign-in methods or modify them before displaying
+         * @since 1.0.3
+		 */
+        do_action( "amd_before_modify_sign_in_methods" );
+
 		return $this->signMethods;
+
 	}
 
 	/**
 	 * Register new sign-in method
 	 *
 	 * @param string $id
-	 * Method ID. e.g: "Google"
+	 * Method ID. e.g: "google"
 	 * @param array $data
 	 * Method data
 	 *
@@ -1354,6 +1375,25 @@ class AMDCore{
 			return;
 
 		$this->signMethods[$id] = $data;
+
+	}
+
+    /**
+	 * Remove registered sign-in method
+	 *
+	 * @param string $id
+	 * Method ID. e.g: "google"
+	 *
+	 * @return void
+	 * @sicne 1.0.3
+	 */
+	public function removeSignInMethod( $id ){
+
+		if( !self::signMethodExists( $id ) )
+			return;
+
+		$this->signMethods[$id] = null;
+		unset( $this->signMethods[$id] );
 
 	}
 
@@ -1601,8 +1641,9 @@ class AMDCore{
 		if( !current_user_can( "edit_user", $user->ID ) )
 			return;
 
+        $is_me = $user->ID == get_current_user_id();
 		$phone_field = amd_get_site_option( "phone_field" ) == "true";
-		$isOnline = $user->isOnline();
+		$isOnline = $is_me ? true : $user->isOnline();
 		$lastSeen = $user->getLastSeen();
 		?>
         <br>
@@ -1623,7 +1664,7 @@ class AMDCore{
             <tr class="user-first-name-wrap">
                 <th><?php esc_html_e( "Status", "material-dashboard" ); ?></th>
                 <td>
-                    <p style="<?php echo esc_attr( "color:" . ( $isOnline ? "green" : "red" ) ); ?>"><?php echo $isOnline ? esc_html__( "Online", "material-dashboard" ) : esc_html__( "Offline", "material-dashboard" ); ?></p>
+                    <p style="width:max-content;color:#fff;padding:6px 12px;border-radius:6px;<?php echo esc_attr( "background:" . ( $isOnline ? "#3dda84" : "#f55753" ) ); ?>"><?php echo $isOnline ? esc_html__( "Online", "material-dashboard" ) : esc_html__( "Offline", "material-dashboard" ); ?></p>
                 </td>
             </tr>
 
@@ -1649,7 +1690,7 @@ class AMDCore{
                 <tr class="user-first-name-wrap">
                     <th><?php esc_html_e( "Purchases", "material-dashboard" ); ?></th>
                     <td>
-                        <p><?php echo esc_html( sprintf( _n( "%d purchase", "%d purchases", $purchases_count, "material-dashboard" ) ), $purchases_count ) . " ($amount)"; ?></p>
+                        <p><?php echo esc_html( sprintf( _n( "%d purchase", "%d purchases", $purchases_count, "material-dashboard" ), $purchases_count ) ) . " ($amount)"; ?></p>
                     </td>
                 </tr>
 			<?php endif; ?>

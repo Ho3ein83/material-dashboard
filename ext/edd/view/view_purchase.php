@@ -29,10 +29,10 @@ $date = amd_true_date( amd_ext_edd_get_date_format(), $_time );
         <div class="amd-table" style="max-width:800px;min-width:300px;margin:auto">
             <table>
                 <tr>
-                    <th><?php _e( "Order ID", "material-dashboard" ); ?></th>
-                    <th><?php _e( "Order status", "material-dashboard" ); ?></th>
-                    <th><?php _e( "Date", "material-dashboard" ); ?></th>
-                    <th><?php _e( "Total price", "material-dashboard" ); ?></th>
+                    <th><?php esc_html_e( "Order ID", "material-dashboard" ); ?></th>
+                    <th><?php esc_html_e( "Order status", "material-dashboard" ); ?></th>
+                    <th><?php esc_html_e( "Date", "material-dashboard" ); ?></th>
+                    <th><?php esc_html_e( "Total price", "material-dashboard" ); ?></th>
                 </tr>
                 <tr>
                     <td><?php echo esc_html( $order->id ); ?></td>

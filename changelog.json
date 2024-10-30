@@ -17,5 +17,24 @@
     "version_name": "1.0.1",
     "version_code": 2,
     "last_change": "2023-05-10"
+  },
+  "1.0.2": {
+    "desc": "Bugs fixed",
+    "changes": [
+      "Bugs fixed"
+    ],
+    "version_name": "1.0.2",
+    "version_code": 3,
+    "last_change": "2023-06-08"
+  },
+  "1.0.3": {
+    "desc": "Bugs fixed, some functions changed",
+    "changes": [
+      "Bugs fixed",
+      "Some functions are changed"
+    ],
+    "version_name": "1.0.3",
+    "version_code": 4,
+    "last_change": "2023-07-24"
   }
 }

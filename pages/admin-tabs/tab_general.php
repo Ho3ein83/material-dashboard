@@ -66,7 +66,6 @@ $defaultSettings = array(
         </div>
     </div>
 </div>
-
 <!-- Force SSL -->
 <div class="amd-admin-card --setting-card">
     <h3 class="--title"><?php echo esc_html_x( "URL and addresses", "Admin", "material-dashboard" ); ?></h3>

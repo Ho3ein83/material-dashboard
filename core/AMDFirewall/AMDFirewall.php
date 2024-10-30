@@ -154,7 +154,7 @@ class AMDFirewall{
 	}
 
 	/**
-	 * Get client real IP address
+	 * Get client real IP address, you can add IP finder APIs to get the actual IP address in local machines
 	 * @return mixed
 	 * @since 1.0.0
 	 */

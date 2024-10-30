@@ -8,6 +8,24 @@ add_action( "init", function(){
 
 } );
 
+function adp_register_avatars(){
+
+    do_action( "amd_remove_avatar", "amd_default" );
+
+    do_action( "amd_add_avatar", [ "adp_default" => ADP_ASSETS_PATH . "/images/avatars/default" ] );
+
+	//file_put_contents( ABSPATH . 'log.txt', var_export( apply_filters( "amd_get_avatars", [] ), true ) );
+
+}
+add_action( "amd_api_init", "adp_register_avatars", 20 );
+add_action( "amd_dashboard_init", "adp_register_avatars", 20 );
+
+add_filter( "amd_placeholder_avatar_path", function(){
+
+    return ADP_ASSETS_PATH . "/images/avatars/default/_placeholder.svg";
+
+}, 9 );
+
 /**
  * Alternate for wp_head
  * @return void
@@ -1178,7 +1196,6 @@ function amd_get_default_options(){
 }
 
 /**
- * /**
  * Add/Update site option
  *
  * @param string $name
@@ -4452,3 +4469,81 @@ function amd_deregister_script_scope( $scope ){
 	$amdCache->removeScriptByScope( $scope );
 
 }
+
+/**
+ * Switch to another locale
+ * @param string $locale
+ * Locale code, e.g: "fa_IR", "en_US", "ar"
+ * @param bool $updateUserOrCookie
+ * Whether to update user meta (if logged in) or cookie (if user is not logged in)
+ *
+ * @return void
+ * @since 1.0.3
+ */
+function amd_switch_locale( $locale, $updateUserOrCookie=true ){
+
+    # Change WordPress global locale
+    switch_to_locale( $locale );
+
+    # Update locale for current user with meta or cookie
+    if( $updateUserOrCookie ){
+
+        global $amdCache;
+
+	    if( is_user_logged_in() )
+		    update_user_meta( get_current_user_id(), "locale", $locale );
+	    else
+		    $amdCache->setCookie( "locale", $locale, $amdCache::STAMPS["month"] );
+
+    }
+
+    global $amdCal;
+
+    # Change calendar date mode base on locale
+    if( $amdCal )
+	    $amdCal->setDateMode( $locale == "fa_IR" ? "j" : "g" );
+
+}
+
+/**
+ * Initialize locale from user meta or cookie
+ * @return void
+ * @since 1.0.3
+ */
+function amd_initialize_locale(){
+	global $amdCache;
+
+    # Get preferred locale from user meta (for logged-in users) and cookie (for logged-out users)
+    if( is_user_logged_in() )
+		$locale = get_user_meta( get_current_user_id(), "locale", true );
+	else
+        $locale = $amdCache->getCache( "locale", "cookie" );
+
+    # If locale is initialized with a value
+	if( $locale ){
+
+        # Change current language without setting cookie and updating meta
+		amd_switch_locale( $locale, false );
+
+        # Change locale for using ajax handler with user locale
+        add_filter( "locale", function() use ( $locale ){
+            return $locale;
+        }, 1 );
+
+	}
+}
+add_action( "init", "amd_initialize_locale" );
+add_action( "amd_dashboard_init", "amd_initialize_locale", 1 );
+
+/**
+ * Initialize ajax requests
+ * @return void
+ * @since 1.0.3
+ */
+function amd_ajax_initialize(){
+
+    # This is for changing user locale in ajax handler which already changed with `locale` filter
+    # amd_initialize_locale();
+
+}
+add_action( "amd_ajax_init", "amd_ajax_initialize" );

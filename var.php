@@ -1,6 +1,6 @@
 <?php
 
-# Stop it here if extension is not loaded from WordPress
+# Stop it here if plugin is not loaded from WordPress
 defined( 'ABSPATH' ) OR die();
 
 /*

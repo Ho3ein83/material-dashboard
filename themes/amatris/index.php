@@ -73,12 +73,12 @@ function amd_theme_amatris_init_themes(){
 	do_action( "amd_register_theme", "default", esc_html__( "Default", "material-dashboard" ), "dark", array(
 		'--amd-font-family' => '"shabnam", "roboto", sans-serief',
 		'--amd-title-font' => '"kalameh", "roboto", sans-serief',
-		'--amd-wrapper-bg' => '#181717',
-		'--amd-wrapper-bg-rgb' => '24, 23, 23',
-		'--amd-wrapper-fg' => '#121212',
-		'--amd-wrapper-fg-rgb' => '18, 18, 18',
-		'--amd-primary' => '#3d31bd',
-		'--amd-primary-rgb' => '61, 49, 189',
+		'--amd-wrapper-bg' => '#0a0a0a',
+		'--amd-wrapper-bg-rgb' => '10, 10, 10',
+		'--amd-wrapper-fg' => '#1e1e1e',
+		'--amd-wrapper-fg-rgb' => '30, 30, 30',
+		'--amd-primary' => '#645dbe',
+		'--amd-primary-rgb' => '100, 93, 190',
 		'--amd-primary-x-low' => '#323235',
 		'--amd-input-bg' => '#2f2f2f',
 		'--amd-input-bg-rgb' => '47, 47, 47',
@@ -90,16 +90,16 @@ function amd_theme_amatris_init_themes(){
 		'--amd-title-color-rgb' => '141, 128, 255',
 		'--amd-text-color' => '#eaeaea',
 		'--amd-text-color-rgb' => '234, 234, 234',
-		'--amd-color-blue' => '#2f82aa',
-		'--amd-color-blue-rgb' => '47, 130, 170',
+		'--amd-color-blue' => '#0474a9',
+		'--amd-color-blue-rgb' => '4, 116, 169',
 		'--amd-color-green' => '#19bd63',
 		'--amd-color-green-rgb' => '25, 189, 99',
 		'--amd-color-red' => '#f55753',
 		'--amd-color-red-rgb' => '245, 87, 83',
 		'--amd-color-orange' => '#f6a04d',
 		'--amd-color-orange-rgb' => '246, 160, 77',
-		'--amd-color-purple' => '#3d31bd',
-		'--amd-color-purple-rgb' => '61, 49, 189',
+		'--amd-color-purple' => '#645dbe',
+		'--amd-color-purple-rgb' => '100, 93, 190',
 		'--amd-shadow' => '0 1px 4px 0 #00000008',
 		'--amd-pointer' => 'pointer',
 	) );
@@ -117,6 +117,7 @@ add_action( "amd_api_admin_stylesheet", function(){
 .amd-table::-webkit-scrollbar{display:none}
 .amd-table>table{width:100%;border-collapse:collapse}
 .amd-table>table tr>th{font-family:var(--amd-title-font),sans-serif;background:rgba(var(--amd-primary-rgb),.7);color:var(--amd-wrapper-fg);text-align:start;font-size:var(--amd-size-lg);height:30px;padding:8px 16px}
+.amd-table>table tr>th{color:#fff}
 body.rtl .amd-table>table tr>th:first-child{border-top-right-radius:8px}
 body.rtl .amd-table>table tr>th:last-child{border-top-left-radius:8px}
 body.ltr .amd-table>table tr>th:first-child{border-top-left-radius:8px}

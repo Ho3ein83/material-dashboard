@@ -20,7 +20,7 @@ class AMD_DB {
 	public $wp_prefix;
 
 	/**
-	 * HBD database prefix
+	 * AMD database prefix
 	 * @var string
 	 * @since 1.0.0
 	 */
@@ -234,19 +234,24 @@ class AMD_DB {
 	 * Encoded JSON string
 	 * @param bool $overwrite
 	 * Replace existing items with new ones ($overwrite=true) or only add new items ($overwrite=false)
+	 * @param bool $listedMessages
+	 * Whether to get listed messages or not
 	 *
 	 * @return array
 	 * Array data. Template:
 	 * <br><code>array( "success" => [bool], "data" => [array] )</code>
 	 * @since 1.0.0
 	 */
-	public function importJSON( $mode, $json, $overwrite = true ){
+	public function importJSON( $mode, $json, $overwrite = true, $listedMessages=false ){
 
 		if( empty( $json ) )
 			return [
 				"success" => false,
-				"data" => [ "msg" => esc_html__( "JSON data is invalid", "material-dashboard" ) ]
+				"data" => [ "msg" => esc_html__( "JSON data is invalid", "material-dashboard" ) ],
+				"messages" => []
 			];
+
+		$messages = [];
 
 		if( $mode == "auto" ){
 
@@ -265,7 +270,9 @@ class AMD_DB {
 
 				$callable = $variant["import"] ?? null;
 				if( is_callable( $callable ) ){
-					list( , , $p, $m ) = call_user_func( $callable, $d, $overwrite );
+					list( , $msg, $p, $m ) = call_user_func( $callable, $d, $overwrite );
+					if( $listedMessages AND $msg )
+						$messages[] = $msg;
 					$missed += $m;
 					$progress[$id] = $p;
 				}
@@ -278,17 +285,20 @@ class AMD_DB {
 
 			return [
 				"success" => true,
-				"data" => [ "msg" => $msg, "missed" => $missed, "progress" => $progress ]
+				"data" => [ "msg" => $msg, "missed" => $missed, "progress" => $progress ],
+				"messages" => $messages
 			];
 
 		}
 		else{
 			do_action( "amd_handle_import_method_$mode", $json, $overwrite );
+			// TODO: take method response
 		}
 
 		return [
 			"success" => false,
-			"data" => [ "msg" => esc_html__( "Import method is not allowed", "material-dashboard" ) ]
+			"data" => [ "msg" => esc_html__( "Import method is not allowed", "material-dashboard" ) ],
+			"messages" => []
 		];
 
 	}
@@ -491,6 +501,7 @@ class AMD_DB {
 
 		$zip = new ZipArchive();
 		$avatars_dir = amd_get_avatars_path();
+
 		$zip_file = "$avatars_dir/backup_avatars_" . date( "Ymd" ) . ".zip";
 
 		global /** @var AMDExplorer $amdExp */
@@ -617,11 +628,31 @@ class AMD_DB {
 			$json_content = file_get_contents( "$path/$json" );
 			global /** @var AMD_DB $amdDB */
 			$amdDB;
-			$result = $amdDB->importJSON( "auto", $json_content, $overwrite );
-			if( $result["success"] ?? false )
-				$messages[] = [ "success" => true, "msg" => esc_html_x( "Site settings imported", "Admin", "material-dashboard" ) ];
-			else
-				$messages[] = [ "success" => false, "msg" => esc_html_x( "Site settings import failed", "Admin", "material-dashboard" ) ];
+			$result = $amdDB->importJSON( "auto", $json_content, $overwrite, true );
+			if( $result["success"] ?? false ){
+				if( is_array( $result["messages"] ?? false ) ){
+					foreach( $result["messages"] as $message ){
+						if( !$message )
+							continue;
+						$messages[] = [
+							"success" => true,
+							"msg" => $message
+						];
+					}
+				}
+				else{
+					$messages[] = [
+						"success" => true,
+						"msg" => esc_html_x( "Site settings imported", "Admin", "material-dashboard" )
+					];
+				}
+			}
+			else{
+				$messages[] = [
+					"success" => false,
+					"msg" => esc_html_x( "Site settings import failed", "Admin", "material-dashboard" )
+				];
+			}
 		}
 
 		foreach( $this->export_variants as $id => $variant ){

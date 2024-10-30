@@ -3,6 +3,7 @@
 $thisuser = amd_simple_user();
 
 $avatars = apply_filters( "amd_get_avatars", [] );
+
 $uploadAllowed = apply_filters( "amd_is_avatar_upload_allowed", true );
 $isCustomAvatar = $thisuser->profileKey == $thisuser->secretKey;
 
@@ -25,6 +26,8 @@ $hasCustomAvatar = file_exists( amd_get_avatars_path() . "/" . $thisuser->secret
 			$files = [ $avatar ];
 		foreach( $files as $file ){
 			$filename = pathinfo( $file, PATHINFO_BASENAME );
+            if( amd_starts_with( $filename, "_" ) )
+                continue;
 			$avatarKey = "$path_id:$filename";
 			$url = amd_get_api_url( "_avatar=$avatarKey" );
 			?>

@@ -73,8 +73,9 @@ class AMDCalendar{
 		if( empty( $time ) )
 			$time = time();
 
-		$locale = get_locale();
-		$mode = $locale == "fa_IR" ? "j" : "g";
+		# $locale = get_locale();
+		# $mode = $locale == "fa_IR" ? "j" : "g";
+		$mode = $this->dateMode;
 
 		if( $mode == "g" )
 			return $this->date( $format, $time );

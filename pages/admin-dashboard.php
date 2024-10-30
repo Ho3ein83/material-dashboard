@@ -261,7 +261,7 @@ $online_users = amd_get_online_users();
         $(document).on("click", "[data-copy]", function(e) {
             e.preventDefault();
             let str = $(this).attr("data-copy");
-            if(str) $amd.copy(str, true);
+            if(str) $amd.copy(str, false, true);
         });
 
         let $clocks = $("._live_clock_");

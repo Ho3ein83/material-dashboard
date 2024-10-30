@@ -21,7 +21,7 @@ function amd_ajax_target_ext_todo( $r ){
 	# Restrict access
 	$restricted = apply_filters( "amd_restrict_capability_todo", false );
 
-	if( $restricted OR !adp_has_access_to_page( "todo", $_current_user->ID ) )
+	if( $restricted AND !adp_has_access_to_page( "todo", $_current_user->ID ) )
 		amd_send_api_error( [ "msg" => esc_html__( "An error has occurred", "material-dashboard" ) ] );
 
 	if( amd_is_admin() AND !empty( $r["_user"] ) )

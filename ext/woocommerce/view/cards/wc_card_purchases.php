@@ -46,7 +46,7 @@ $orders = $chunk[0] ?? [];
                     </p>
                 </div>
                 <div class="-side">
-                    <button class="btn btn-text"
+                    <button class="btn btn-text --low"
                             data-wc-purchase="<?php echo esc_attr( $id ); ?>"><?php esc_html_e( "View", "material-dashboard" ); ?></button>
                 </div>
             </div>

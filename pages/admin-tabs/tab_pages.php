@@ -198,7 +198,7 @@ $apiPage_flag = false;
 <script>
     $(document).on("click", "[data-copy]", function() {
         let text = $(this).hasAttr("data-copy", true);
-        if(text) $amd.copy(text, true);
+        if(text) $amd.copy(text, false, true);
     });
     (function() {
         let $dashboardPage = $("#amd-dashboard-page"), $loginPage = $("#amd-login-page");

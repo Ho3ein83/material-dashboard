@@ -5,7 +5,7 @@
  * Description: The best material dashboard for WordPress! If you want to delete this plugin, delete its data from cleanup menu first.
  * Plugin URI: https://amatris.ir/amd
  * Author: Hossein
- * Version: 1.0.1
+ * Version: 1.0.3
  * Requires at least: 5.2
  * Requires PHP: 7.4.0
  * Tested up to: 6.2
@@ -188,7 +188,7 @@ add_action( "amd_init_translation", function(){
 		"cart" => esc_html__( "Cart", "material-dashboard" ),
 		"cart_empty_confirmation" => esc_html__( "Are you sure your want to remove all items in your cart?", "material-dashboard" ),
 		"account_info" => esc_html__( "Account information", "material-dashboard" ),
-		"change" => esc_html__( "Account information", "material-dashboard" ),
+		"change" => esc_html__( "Change", "material-dashboard" ),
 		"uploading" => esc_html__( "Uploading", "material-dashboard" ),
 		"avatar_changed" => esc_html__( "Avatar image changed", "material-dashboard" ),
 		"change_password" => esc_html__( "Change password", "material-dashboard" ),
@@ -318,7 +318,7 @@ add_action( "init", function(){
 	$locales = apply_filters( "amd_override_locales", amd_get_site_option( "locales" ) );
 	$locales_exp = explode( ",", $locales );
 	if( count( $locales_exp ) == 1 ){
-		$locale = $locales;
+		$locale = $locales[0] ?? "";
 	}
 	else{
 		if( !empty( $_GET["lang"] ) )
@@ -334,6 +334,6 @@ add_action( "init", function(){
 	}
 
 	if( !empty( $locale ) )
-		switch_to_locale( $locale );
+		amd_switch_locale( $locale );
 
 } );

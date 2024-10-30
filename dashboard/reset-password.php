@@ -1,5 +1,7 @@
 <?php
 
+// TODO: add resend button to 'Password reset' page
+
 if( is_user_logged_in() ){
 	wp_safe_redirect( amd_get_dashboard_page() );
 	exit();
@@ -190,7 +192,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
                 $amd.alert(_t("reset_password"), _t("password_changed"), {
                     confirmButton: _t("ok"),
                     cancelButton: false,
-                    onConfirm: () => {
+                    onClose: () => {
                         dashboard.suspend();
                         $amd.openQuery("auth=login")
                     }

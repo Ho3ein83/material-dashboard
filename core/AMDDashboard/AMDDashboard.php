@@ -421,7 +421,7 @@ class AMDDashboard{
 			ob_start();
 
 			# Content actions
-			do_action( "amd_before_pages" );
+			do_action( "amd_before_pages", $void );
 			do_action( "amd_before_page_$void" );
 			do_action( "amd_before_lazy_page_$void" );
 			do_action( "amd_before_lazy_load", $extra );
@@ -431,7 +431,7 @@ class AMDDashboard{
 				self::requireOnce( $__page__ );
 
 			# Content actions
-			do_action( "amd_after_pages" );
+			do_action( "amd_after_pages", $void );
 			do_action( "amd_after_page_$void" );
 			do_action( "amd_after_lazy_page_$void" );
 			do_action( "amd_after_lazy_load", $extra );
@@ -443,7 +443,7 @@ class AMDDashboard{
 			ob_start();
 
 			# Content actions
-			do_action( "amd_before_pages" );
+			do_action( "amd_before_pages", $void );
 			do_action( "amd_before_pages_callback" );
 			do_action( "amd_before_page_$void" );
 			do_action( "amd_before_page_callback_$void" );
@@ -453,7 +453,7 @@ class AMDDashboard{
 			call_user_func( $__callable__, $void, $__resp__ );
 
 			# Content actions
-			do_action( "amd_after_pages" );
+			do_action( "amd_after_pages", $void );
 			do_action( "amd_after_pages_callback" );
 			do_action( "amd_after_page_$void" );
 			do_action( "amd_after_page_callback_$void" );

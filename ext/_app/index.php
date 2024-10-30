@@ -143,6 +143,7 @@ add_filter( "amd_get_dashboard_sidebar_menu", function( $void ){
 
 # Block users for a while after too many attempts for admin login
 add_filter( "amd_login_too_many_attempts_expire", function(){
+    // TODO: check if this value is came from site options
 	return intval( amd_get_site_option( "login_attempts_time", "10" ) );
 } );
 
@@ -325,7 +326,8 @@ add_action( "amd_action_content_too_many_attempts", function(){
             if(!isNaN(expire)) {
                 let $el = $("#many-attempts-timer");
                 let diff = expire;
-                let timer = setInterval(() => {
+                let timer;
+                let recheck = () => {
                     if(diff > 0){
                         let ss = diff % 60;
                         let mm = parseInt(diff / 60 % 60);
@@ -338,7 +340,9 @@ add_action( "amd_action_content_too_many_attempts", function(){
                         location.reload();
                     }
                     diff--;
-                }, 1000);
+                }
+                recheck();
+                timer = setInterval(() => recheck(), 1000);
             }
         </script>
     <?php
@@ -930,12 +934,17 @@ add_action( "amd_add_avatar", function( $path ){
 } );
 
 # Unregister new avatar
-add_action( "amd_remove_avatar", function( $path ){
+add_action( "amd_remove_avatar", function( $group_id ){
 
 	global /** @var AMDCache $amdCache */
 	$amdCache;
 
-	$amdCache->removeScopeGroup( "avatars", $path );
+    $avatars = $amdCache->getScopeGroup( "avatars" );
+
+    if( !empty( $avatars[$group_id] ) ){
+        unset( $avatars[$group_id] );
+        $amdCache->updateScopeGroup( "avatars", $avatars );
+    }
 
 } );
 

@@ -137,23 +137,22 @@ $only_downloadable = true;
 						<?php foreach( $order->get_order_item_totals() as $key => $total ): ?>
                             <div class="-item --center">
                                 <div class="-sub-item">
-                                    <h3 class="text-center color-primary"><?php echo esc_html( $total['label'] ); ?></h3>
+                                    <h3 class="color-primary"><?php echo esc_html( $total['label'] ); ?></h3>
                                 </div>
                                 <div class="-sub-item"><?php echo ( 'payment_method' === $key ) ? esc_html( $total['value'] ) : wp_kses_post( $total['value'] ); ?></div>
                             </div>
 						<?php endforeach; ?>
                         <div class="-item --center">
                             <div class="-sub-item">
-                                <h3 class="text-center color-primary"><?php esc_html_e( 'Billing address', 'woocommerce' ); ?></h3>
+                                <h3 class="color-primary"><?php esc_html_e( 'Billing address', 'woocommerce' ); ?></h3>
                             </div>
                             <div class="-sub-item">
-                                <address><?php echo $order->get_formatted_billing_address( esc_html__( 'N/A', 'woocommerce' ) ); ?></address>
                                 <address><?php echo $order->get_formatted_billing_address( esc_html__( 'N/A', 'woocommerce' ) ); ?></address>
                             </div>
                         </div>
                         <div class="-item --center">
                             <div class="-sub-item">
-                                <h3 class="text-center color-primary"><?php esc_html_e( 'Shipping address', 'woocommerce' ); ?></h3>
+                                <h3 class="color-primary"><?php esc_html_e( 'Shipping address', 'woocommerce' ); ?></h3>
                             </div>
                             <div class="-sub-item">
                                 <address><?php echo $order->get_formatted_shipping_address( esc_html__( 'N/A', 'woocommerce' ) ); ?></address>

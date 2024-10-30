@@ -39,6 +39,8 @@ class AMDNetwork{
 
 		do_action( "amd_dashboard_init" );
 
+		do_action( "amd_ajax_init", "public" );
+
 		$r = amd_sanitize_post_fields( $_POST );
 
 		if( !empty( $r["_ajax_target"] ) ){
@@ -314,6 +316,8 @@ class AMDNetwork{
 	 */
 	public function ajaxHandler(){
 
+		do_action( "amd_ajax_init", "private" );
+
 		# Request parameters
 		$r = amd_sanitize_post_fields( $_POST );
 
@@ -526,7 +530,7 @@ class AMDNetwork{
 				# Extract uploaded zip file to 'contents' directory
 				$zip->extractTo( $target_dir );
 
-				# Check if 'bundle.backup' file exists, this is the signature of backup file contains backup UTC timestamp
+				# Check if 'bundle.backup' file exists, this is the signature of backup file containing backup UTC timestamp
 				if( !file_exists( "$target_dir/bundle.backup" ) ){
 
 					# Remove 'temp' directory with its content
@@ -617,7 +621,7 @@ class AMDNetwork{
 						"size" => size_format( $size )
 					] );
 
-				wp_send_json_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+				wp_send_json_error( [ "msg" => esc_html__( "Export data is empty or permission to save files is not granted, please check your WordPress uploads directory permission.", "material-dashboard" ) ] );
 
 			}
 
@@ -763,6 +767,8 @@ class AMDNetwork{
 	 * @since 1.0.0
 	 */
 	public function dashAjaxHandler(){
+
+		do_action( "amd_ajax_init", "dashboard" );
 
 		$r = !empty( $_POST ) ? amd_sanitize_post_fields( $_POST ) : [];
 

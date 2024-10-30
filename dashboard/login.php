@@ -102,7 +102,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     <div id="login-fields">
 	    <?php do_action( "amd_before_login_form" ); ?>
         <label class="ht-input">
-            <input type="text" data-field="user" data-next="password" placeholder="" required>
+                <input type="text" data-field="user" data-next="password" placeholder="" required>
             <span><?php esc_html_e( "Username or email", "material-dashboard" ); ?></span>
 			<?php _amd_icon( "person" ); ?>
         </label>
