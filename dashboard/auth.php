@@ -95,7 +95,7 @@ $blog_name = get_bloginfo( "name" );
 				<?php if( is_user_logged_in() ): ?>
                     <button type="button" class="btn" data-auth="login"><?php _e( "Back to dashboard", "material-dashboard" ); ?></button>
 				<?php else: ?>
-                    <button type="button" class="btn" data-auth="dashboard"><?php _e( "Login to your account", "material-dashboard" ); ?></button>
+                    <button type="button" class="btn" data-auth="login"><?php _e( "Login to your account", "material-dashboard" ); ?></button>
 				<?php endif; ?>
 			<?php endif; ?>
         </div>

@@ -185,7 +185,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
                             <span data-value="<?php echo esc_attr( $region['digit'] ?? '' ); ?>"
                                   data-format="<?php echo esc_attr( $region['format'] ?? '' ); ?>"
                                   data-keyword="<?php echo esc_attr( $region['name'] ?? '' ); ?>">
-                                <?php echo esc_html( $region["name"] ?? "" ); ?></span>
+                                <?php echo apply_filters( "amd_phone_format_name", $region["name"] ?? "", $region["digit"] ?? "", $region["format"] ?? "" ); ?></span>
 	                    <?php endforeach; ?>
                     </div>
                     <div class="--search"></div>
@@ -210,7 +210,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
                     <div class="ht-magic-select" style="display:none">
                         <label>
                             <input type="text" class="--input" data-field="country_code" data-next="phone_number"
-                                   data-value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
+                                   data-value="<?php echo esc_attr( $first_cc ); ?>" value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
 								<?php echo $phone_field_required ? "required" : ""; ?>>
                             <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
                             <span class="--value" dir="auto"><?php echo esc_html( $first_cc ); ?></span>
@@ -438,6 +438,8 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
             _f = _f.replaceAll("X", "[0-9]");
             $phone_number.attr("data-pattern", `^\\+${cc}\\s?${_f}$`);
         }
+        let val = $country_code.val();
+        $country_code.val(val.trimChar(" "));
     });
     $country_code.trigger("change");
 </script>

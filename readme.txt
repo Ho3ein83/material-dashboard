@@ -1,9 +1,9 @@
 === Material Dashboard ===
-Contributors: ho3ein_ie
+Contributors: ho3einie,amatris
 Tags: dashboard, material dashboard, user profile, woocommerce, easy digital downloads
 Requires at least: 5.2
 Tested up to: 6.2
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 Requires PHP: 7.4.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -20,11 +20,11 @@ To install the plugin, you'll need to download the .zip file and upload it to yo
 Note that on enabling the plugin for the first time, everything sets up automatically, and you don't have to do anything. However, if the database and pages weren't created automatically, follow these steps:
 
 1. A new menu item named 'Dashboard' appears in the wp-admin page. Click on it and confirm the alert message to update the database.
-2. Go to the 'Settings' submenu and open the 'Pages' tab. Select the dashboard pages from your existing pages or click on 'Create Automatically' button if they don't exist.
+2. Go to 'Settings' submenu and open the 'Pages' tab. Select dashboard pages from your existing pages or click on 'Create Automatically' button if there is no published page.
 
 If you have decided to remove this plugin and we were unable to assist you in resolving your issue, it's important to clean up the plugin's data (including database tables and uploads) before deleting it. Follow these simple steps to do so:
 
-1. Click on the 'Manage Data' submenu and open the 'Cleanup' tab.
+1. Click on 'Manage Data' submenu and open the 'Cleanup' tab.
 2. Select the items you wish to delete permanently or choose 'Select All'.
 3. Click on the 'Cleanup' button and wait for the alert indicating whether the clean-up was successful or not.
 * IMPORTANT: Do not visit any other dashboard pages in admin as this may cause the database tables and other files to be re-created. Instead, open the 'Plugins' page directly and remove the plugin from there.
@@ -63,6 +63,12 @@ Currently, we do not collect any information without your explicit consent. If w
 You can create your own extensions and themes for your dashboard and publish it with your name if you want. You can get started by reading our [documentation](https://amatris.ir/amd/d).
 
 == Changelog ==
+
+= 1.0.1 =
+* Open graph meta tags added to headers
+* New icons added
+* 'Change Phone Number' card added
+* Bugs fixed
 
 = 1.0.0 =
 * First release

@@ -1,7 +1,7 @@
 <?php ob_start(); ?>
 <label class="ht-input">
     <input type="password" data-field="password" value="" placeholder="" required>
-    <span><?php _e( "New password", "material-dashboard" ); ?></span>
+    <span><?php esc_html_e( "New password", "material-dashboard" ); ?></span>
 	<?php _amd_icon( "show_password", null, [], [ "class" => "clickable -pt --hide-password" ] ); ?>
 	<?php _amd_icon( "hide_password", null, [], [ "class" => "clickable -pt --show-password" ] ); ?>
 </label>

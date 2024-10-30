@@ -11,6 +11,20 @@
   "icon_type": "font_icon",
   "html_template": "<span class=\"mi _icon_[CLASS]\"[STYLE]>{ICON}</span>",
   "icons": {
+    "_SINCE_1.0.1": null,
+    "bracket": "code",
+    "money": "payments",
+    "payment": "paid",
+    "add_file": "note_add",
+    "add_folder": "create_new_folder",
+    "add_group": "library_add",
+    "add_circle": "add_circle",
+    "dash_circle": "remove",
+    "edit": "edit",
+    "credit_card": "credit_card",
+    "check_circle": "check_circle",
+    "close_circle": "cancel",
+    "discount": "percent",
     "_SINCE_1.0.0": null,
     "home": "home",
     "check": "done",
@@ -107,7 +121,6 @@
     "sliders": "tune",
     "ticket": "local_activity",
     "back": "keyboard_backspace",
-    "delete": "delete",
-    "bracket": "code"
+    "delete": "delete"
   }
 }

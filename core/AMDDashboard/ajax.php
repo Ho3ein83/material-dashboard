@@ -39,6 +39,8 @@ function amd_hbdash_ajax_handler( $r ){
 		$void = !empty( $data["_void"] ) ? $data["_void"] : "home";
 		$params = !empty( $data["params"] ) ? $data["params"] : [];
 
+		do_action( "amd_lazy_init", $void, $params );
+
 		foreach( $params as $key => $value ){
             $safe_key = sanitize_key( $key );
 			$_GET[$safe_key] = sanitize_text_field( $value );
@@ -50,10 +52,14 @@ function amd_hbdash_ajax_handler( $r ){
 		$lazy = $amdDashboard->getLazyPage( $void, $data );
 		$title = $lazy["title"];
 		$html = $lazy["content"];
+		$redirect = $lazy["redirect"];
+
+        if( $redirect )
+            $html = "";
 
 		do_action( "amd_checkin", $r );
 
-		wp_send_json_success( [ "msg" => "", "html" => $html, "title" => $title, "void" => $void ] );
+		wp_send_json_success( [ "msg" => "", "html" => $html, "title" => $title, "void" => $void, "redirect" => $redirect ] );
 
 	}
 

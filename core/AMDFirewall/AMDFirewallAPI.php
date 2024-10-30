@@ -109,7 +109,7 @@ class AMDFirewallAPI {
 				$get = amd_sanitize_get_fields( $_GET );
 
 				# Sanitize $_POST object and store it into $r object
-				$post = sanitize_post( $_POST );
+				$post = amd_sanitize_post_fields( $_POST );
 
 				# Sanitize every $_FILES item
 				$files = amd_sanitize_files( $_FILES );

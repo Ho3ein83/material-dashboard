@@ -757,18 +757,22 @@ input[data-coloris] {
     max-height: 400px;
 }
 
+.amd-admin-select.invalid,
 .amd-admin-input.invalid {
     border-color: var(--amd-color-red) !important;
 }
 
+.amd-admin-select.valid,
 .amd-admin-input.valid {
     border-color: var(--amd-color-green) !important;
 }
 
+.amd-admin-select.info,
 .amd-admin-input.info {
     border-color: var(--amd-color-blue) !important;
 }
 
+.amd-admin-select.warning,
 .amd-admin-input.warning {
     border-color: var(--amd-color-orange) !important;
 }
@@ -971,6 +975,23 @@ input[data-coloris] {
     margin: 0 4px;
 }
 
+.amd-oc-card > .--thumb > .--badges > ._item.--fill {
+    background-color: var(--amd-primary);
+    color: #fff
+}
+
+.amd-oc-card > .--thumb > .--badges > ._item.--fill.--red {
+    background-color: var(--amd-color-red);
+}
+
+.amd-oc-card > .--thumb > .--badges > ._item.--fill.--blue {
+    background-color: var(--amd-color-blue);
+}
+
+.amd-oc-card > .--thumb > .--badges > ._item.--fill.--green {
+    background-color: var(--amd-color-green);
+}
+
 .amd-oc-card > .--thumb > .--badges > ._item svg._icon_ {
     height: 13px;
     width: auto;
@@ -1009,4 +1030,21 @@ input[data-coloris] {
     padding: 4px 12px;
     margin: 4px;
     border-radius: 30px;
+}
+
+.amd-admin-badges > .--badge.--red {
+    background: rgba(var(--amd-color-red-rgb), .2);
+    color: var(--amd-color-red);
+}
+.amd-admin-badges > .--badge.--green {
+    background: rgba(var(--amd-color-green-rgb), .2);
+    color: var(--amd-color-green);
+}
+.amd-admin-badges > .--badge.--blue {
+    background: rgba(var(--amd-color-blue-rgb), .2);
+    color: var(--amd-color-blue);
+}
+
+.amd-admin-hr {
+    border: 1px dashed rgba(var(--amd-primary-rgb), .2) !important;
 }

@@ -111,6 +111,8 @@ class AMDLoader{
 			if( !$amdLoader->canLoadTheme() )
 				amd_assert_error( "cannot_load_theme", sprintf( esc_html__( "There is no available theme for current page, your theme files may be removed or changed. Please check your theme in %ssettings%s to see what's wrong", "material-dashboard" ), "<a href=\"" . admin_url( "admin.php?page=amd-themes" ) . "\" target=\"_blank\">", "</a>" ) );
 
+			do_action( "amd_init_sidebar_items" );
+
 		} );
 
 	}

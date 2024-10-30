@@ -348,6 +348,12 @@ class AMDDashboard{
 	 */
 	public function lazyPage( $void ){
 
+		/**
+		 * Initialize getting page content
+		 * @since 1.0.1
+		 */
+		do_action( "amd_init_dashboard_page" );
+
 		do_action( "amd_dashboard_init" );
 
 		$title = esc_html__( "Dashboard", "material-dashboard" );
@@ -365,10 +371,14 @@ class AMDDashboard{
 			$path = amd_get_default( "dashboard_404" );
 		}
 
+		$redirect = apply_filters( "amd_page_redirect_$void", null );
+		$redirect = apply_filters( "amd_page_redirect", $redirect, $void );
+
 		return array(
 			"title" => $title,
 			"path" => $path,
-			"callable" => $callable
+			"callable" => $callable,
+			"redirect" => $redirect
 		);
 
 	}
@@ -405,6 +415,7 @@ class AMDDashboard{
 		$__title__ = $__resp__["title"];
 		$__page__ = $__resp__["path"];
 		$__callable__ = $__resp__["callable"];
+		$__redirect__ = $__resp__["redirect"] ?? null;
 
 		if( $__page__ AND file_exists( $__page__ ) ){
 			ob_start();
@@ -425,7 +436,7 @@ class AMDDashboard{
 			do_action( "amd_after_lazy_page_$void" );
 			do_action( "amd_after_lazy_load", $extra );
 
-			$__html__ = ob_get_clean();
+			$__html__ = apply_filters( "amd_override_page_{$void}_content", ob_get_clean() );
 		}
 		else if( is_callable( $__callable__ ) ){
 
@@ -449,7 +460,7 @@ class AMDDashboard{
 			do_action( "amd_after_lazy_page_$void" );
 			do_action( "amd_after_lazy_load", $extra );
 
-			$__html__ = ob_get_clean();
+			$__html__ = apply_filters( "amd_override_page_{$void}_content", ob_get_clean() );
 
 		}
 		else{
@@ -457,9 +468,15 @@ class AMDDashboard{
 			$__html__ = amd_hbdash_ajax_fail_message();
 		}
 
+		if( $__redirect__ ){
+			$title = apply_filters( "amd_redirected_page_title", esc_html__( "Dashboard", "material-dashboard" ) );
+			$html = "";
+		}
+
 		return array(
 			"title" => $__title__,
-			"content" => $__html__
+			"content" => $__html__,
+			"redirect" => $__redirect__
 		);
 
 	}
@@ -479,6 +496,7 @@ class AMDDashboard{
 		$title = $resp["title"];
 		$page = $resp["path"];
 		$callable = $resp["callable"];
+		$redirect = $resp["redirect"] ?? null;
 
 		$html = "";
 		if( file_exists( $page ) ){
@@ -498,7 +516,7 @@ class AMDDashboard{
 			do_action( "amd_after_page_$void" );
 			do_action( "amd_after_page_content_$void" );
 
-			$html = ob_get_clean();
+			$html = apply_filters( "amd_override_page_{$void}_content", ob_get_clean() );
 		}
 		else if( is_callable( $callable ) ){
 
@@ -518,7 +536,7 @@ class AMDDashboard{
 			do_action( "amd_after_page_$void" );
 			do_action( "amd_after_page_callback_$void" );
 
-			$html = ob_get_clean();
+			$html = apply_filters( "amd_override_page_{$void}_content", ob_get_clean() );
 
 		}
 		else{
@@ -526,9 +544,15 @@ class AMDDashboard{
 			$html = amd_hbdash_ajax_fail_message();
 		}
 
+		if( $redirect ){
+			$title = apply_filters( "amd_redirected_page_title", esc_html__( "Dashboard", "material-dashboard" ) );
+			$html = "";
+		}
+
 		return array(
 			"title" => $title,
-			"content" => $html
+			"content" => $html,
+			"redirect" => $redirect
 		);
 
 	}

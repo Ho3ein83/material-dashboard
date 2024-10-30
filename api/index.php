@@ -21,7 +21,7 @@ if( !empty( $_GET["_accept_upload"] ) ){
 $get = amd_sanitize_get_fields( $_GET );
 
 # Sanitized $_POST values
-$post = sanitize_post( $_POST );
+$post = amd_sanitize_post_fields( $_POST );
 
 # Accept request with either $_GET and $_POST methods
 $r = array_merge( $get, $post );

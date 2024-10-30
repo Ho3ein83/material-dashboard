@@ -1,3 +1,10 @@
+<?php
+
+global $amdCore;
+
+$variants = apply_filters( "amd_cleanup_variants", $amdCore->getCleanupVariants() );
+
+?>
 <!-- Cleanup -->
 <div class="amd-admin-card text-center --setting-card" id="card-cleanup">
 	<h3 class="--title"><?php echo esc_html_x( "Cleanup", "Admin", "material-dashboard" ); ?></h3>
@@ -21,35 +28,32 @@
 					</label>
 				</div>
 			</div>
+            <?php foreach( $variants as $variant ): ?>
+            <?php
+                $id = $variant["id"] ?? null;
+                $title = $variant["title"] ?? null;
+                $auto_generates = $variant["auto_generates"] ?? false;
+                if( !$id OR !$title )
+                    continue;
+            ?>
 			<div class="-item">
 				<div class="-sub-item">
-					<label for="opt-database">
-						<?php echo esc_html_x( "Database", "Admin", "material-dashboard" ); ?>
-                        <span class="color-red">*</span>
+					<label for="<?php echo esc_attr( "opt-$id" ); ?>">
+						<?php echo esc_html( $title ); ?>
+                        <?php if( $auto_generates ): ?>
+                            <span class="color-red">*</span>
+                        <?php endif; ?>
 					</label>
 				</div>
 				<div class="-sub-item">
 					<label class="hb-switch">
-						<input type="checkbox" class="_opt_delete" role="switch" id="opt-database"
-						       name="database" value="true">
+						<input type="checkbox" class="_opt_delete" role="switch" id="<?php echo esc_attr( "opt-$id" ); ?>"
+						       name="<?php echo esc_attr( $id ); ?>" value="true">
 						<span></span>
 					</label>
 				</div>
 			</div>
-            <div class="-item">
-				<div class="-sub-item">
-					<label for="opt-files">
-						<?php echo esc_html_x( "Files", "Admin", "material-dashboard" ); ?>
-					</label>
-				</div>
-				<div class="-sub-item">
-					<label class="hb-switch">
-						<input type="checkbox" class="_opt_delete" role="switch" id="opt-files"
-						       name="files" value="true">
-						<span></span>
-					</label>
-				</div>
-			</div>
+            <?php endforeach; ?>
 		</div>
 		<button class="amd-admin-button --primary --text" id="cleanup"><?php echo esc_html_x( "Cleanup", "Admin", "material-dashboard" ); ?></button>
 	</div>

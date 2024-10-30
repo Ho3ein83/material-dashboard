@@ -39,6 +39,7 @@ class AMDIcon{
 
 		add_action( "amd_init_icons", function( $amdIcon ){
 
+			/** @var AMDIcon $amdIcon */
 			$amdIcon->registerPack( $amdIcon->pack_path );
 
 		} );

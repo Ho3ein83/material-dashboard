@@ -73,6 +73,7 @@ var AMDDashboard = (function() {
             defaultCookieExpire: "1 month",
             default_indicator: "indicator-1",
             lazy_load: true,
+            is_broken: false,
             sidebar_items: {},
             navbar_items: {},
             quick_options: {},
@@ -80,7 +81,7 @@ var AMDDashboard = (function() {
             user: {}
         }, c);
 
-        var $sidebar = null, $navbar = null, $loader = null, $wrapper = null, $content;
+        var $sidebar = null, $navbar = null, $loader = null, $wrapper = null, $content, $after_content = null, $before_content = null;
         var thisuser = null, _api_engine = null;
         var actions = {}, keymap = {}, keymap_lower = {}, keyEvents = [], keyEvents2 = {};
         var _floating_buttons = {}, _checkin_interval;
@@ -452,6 +453,9 @@ var AMDDashboard = (function() {
             if(conf.wrapper_id)
                 $wrapper = $("#" + conf.wrapper_id);
 
+            $before_content = $("#before-content");
+            $after_content = $("#after-content");
+
             this.setLoader(false);
 
             if(typeof AMDNetwork === "undefined" || !conf.network instanceof AMDNetwork) {
@@ -518,6 +522,7 @@ var AMDDashboard = (function() {
             });
 
             $(document).on("click", "[data-turtle]", function(e) {
+                e.preventDefault();
 
                 var $el = $(this), turtle = $el.attr("data-turtle");
                 var href = $el.hasAttr("href", true, "void(0)");
@@ -654,8 +659,11 @@ var AMDDashboard = (function() {
                 this.removeQueryParam("lang", true);
             }
             else {
-                _this.lazyReload(false);
+                if(!conf.is_broken)
+                    _this.lazyReload(false);
             }
+            if(conf.is_broken)
+                conf.lazy_load = false;
 
             if(!_this.isMultiLingual())
                 $("[data-change-locale]").remove();
@@ -813,6 +821,10 @@ var AMDDashboard = (function() {
         this.lazyStart = data => {
             if(!$content || !conf.lazy_load) return false;
             $content.html("");
+            if($after_content.length)
+                $after_content.html("");
+            if($before_content.length)
+                $before_content.html("");
             this.setLoader();
 
             $amd.doEvent("_lazy_start", data);
@@ -835,6 +847,11 @@ var AMDDashboard = (function() {
                     done(resp.data.html);
                     let title = resp.data.title || null;
                     if(title) _this.setTitle(title);
+                    let redirect = resp.data.redirect || null;
+                    if(redirect){
+                        _this.setLoader(true);
+                        location.href = redirect;
+                    }
                     $amd.doEvent("_lazy_success", resp);
                     dispatchLazyEvent("success", resp);
                 }

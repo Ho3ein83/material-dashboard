@@ -379,14 +379,15 @@ var $amd = {
      */
     applyInputsDefault: def => {
         for(let [key, value] of Object.entries(def)) {
-            let $hidden = $(`input[type="hidden"][name="${key}"]`);
-            if($hidden.length > 0){
-                $hidden.val(value);
-                break;
+            let $input = $(`input[type="hidden"][name="${key}"]`);
+            if($input.length > 0){
+                $input.val(value);
+                continue;
             }
             $(`input[type="radio"][name="${key}"][value="${value}"]`).prop("checked", true);
             $(`input[type="checkbox"][name="${key}"][value="${value}"]`).prop("checked", true);
             $(`input[type="text"][name="${key}"]`).val(value);
+            $(`input[type="number"][name="${key}"]`).val(value);
             $(`select[name="${key}"]`).val(value);
             $(`textarea[name="${key}"]`).val(value);
         }

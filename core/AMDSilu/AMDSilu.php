@@ -329,8 +329,11 @@ class AMDSilu{
 	 */
 	public function validateMeta( $uid ){
 
-		if( !self::userMetaExists( $uid, "locale" ) )
-			self::setUserMeta( $uid, "locale", amd_get_default_locale() );
+		/**
+		 * Update missing user meta-data
+		 * @since 1.0.0
+		 */
+		do_action( "amd_validate_user_meta", $uid );
 
 	}
 

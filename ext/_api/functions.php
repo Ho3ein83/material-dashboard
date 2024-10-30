@@ -259,6 +259,33 @@ function amd_ext__api_handler_all( $r ){
 
 		}
 
+		else if( !empty( $r["change_phone"] ) ){
+
+			$phone = $r["change_phone"];
+
+			$phone_field = amd_get_site_option( "phone_field" ) == "true";
+			$single_phone = amd_get_site_option( "single_phone" ) == "true";
+
+			if( !$phone_field OR empty( $phone ) )
+				wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+
+			$formatted_phone = amd_apply_phone_format( $phone );
+
+			if( $single_phone AND amd_phone_exists( $formatted_phone ) )
+				wp_send_json_error( [ "msg" => esc_html__( "This phone number is already in use", "material-dashboard" )] );
+
+			if( !amd_validate_phone_number( $phone ) )
+				wp_send_json_error( [ "msg" => esc_html__( "Please enter your phone number correctly", "material-dashboard" )] );
+
+			$success = amd_set_user_meta( null, "phone", $formatted_phone );
+
+			if( $success )
+				do_action( "on_phone_number_updated", $formatted_phone );
+
+			wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+
+		}
+
 	}
 
 }

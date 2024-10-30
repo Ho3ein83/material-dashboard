@@ -39,7 +39,7 @@ class AMDNetwork{
 
 		do_action( "amd_dashboard_init" );
 
-		$r = sanitize_post( $_POST );
+		$r = amd_sanitize_post_fields( $_POST );
 
 		if( !empty( $r["_ajax_target"] ) ){
 
@@ -153,7 +153,7 @@ class AMDNetwork{
 				$username = sanitize_text_field( $data["username"] ?? "" );
 				$password = sanitize_text_field( $data["password"] ?? "" );
 				$phone = sanitize_text_field( $data["phone"] ?? "" );
-				$phone = str_replace( " ", "", $phone );
+				$phone = amd_apply_phone_format( $phone );
 				$login_after_registration = (bool) ( $data["login_after_registration"] ?? false );
 
 				global /** @var AMDSilu $amdSilu */
@@ -238,7 +238,6 @@ class AMDNetwork{
 				// Set user meta (AMD plugin meta)
 				if( $phone_field )
 					amd_set_user_meta( $uid, "phone", $phone );
-				amd_set_user_meta( $uid, "locale", $locale );
 				amd_set_user_meta( $uid, "registration", time() );
 				amd_set_user_meta( $uid, "_init", "*" );
 				amd_set_user_meta( $uid, "signup_method", "direct" );
@@ -316,7 +315,7 @@ class AMDNetwork{
 	public function ajaxHandler(){
 
 		# Request parameters
-		$r = sanitize_post( $_POST );
+		$r = amd_sanitize_post_fields( $_POST );
 
 		if( !empty( $r["_ajax_target"] ) ){
 
@@ -387,18 +386,19 @@ class AMDNetwork{
 			else if( !empty( $r["save_options"] ) ){
 
 				$options = $r['save_options'];
+
 				$allowedOptions = apply_filters( "amd_get_allowed_options", [] );
 
 				do_action( "amd_on_options_save", $options, $allowedOptions );
 
 				foreach( $options as $key => $value ){
-					if( !empty( $allowedOptions[$key] ) ){
+
+					$action = null;
+					if( !empty( $allowedOptions[$key] ) )
 						$action = $allowedOptions[$key];
-						$allowed = false;
-						if( is_string( $action ) ){
-							$allowed = amd_compile_data_type( $action, $value );
-						}
-						else if( is_array( $action ) ){
+					if( amd_is_option_allowed( $key, $value ) ){
+						$allowed = true;
+						if( is_array( $action ) ){
 							$type = $action["type"] ?? null;
 							$filter = $action["filter"] ?? null;
 							if( !empty( $filter ) and is_callable( $filter ) )
@@ -408,6 +408,7 @@ class AMDNetwork{
 						if( $allowed )
 							amd_set_site_option( $key, $value );
 					}
+
 				}
 
 				wp_send_json_success( [ 'msg' => esc_html__( 'Success', "material-dashboard" ) ] );
@@ -467,8 +468,26 @@ class AMDNetwork{
 						wp_send_json_error( [ "msg" => esc_html__( "An error has occurred while uploading", "material-dashboard" ) ] );
 				}
 
-				if( !in_array( $file_type, [ "application/zip" ] ) )
+				if( !in_array( $file_type, [ "application/zip", "application/json" ] ) )
 					wp_send_json_error( [ "msg" => esc_html__( "File format is not allowed", "material-dashboard" ) ] );
+
+				if( $file_type == "application/json" ){
+
+					$json = file_get_contents( $file["tmp_name"] );
+
+					global /** @var AMD_DB $amdDB */
+					$amdDB;
+
+					$result = $amdDB->importJSON( "auto", $json, $overwrite );
+
+					$success = $result["success"] ?? false;
+					$data = $result["data"] ?? null;
+
+					if( !$success )
+						wp_send_json_error( !empty( $data ) ? $data : [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+
+					wp_send_json_success( !empty( $data ) ? $data : [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+				}
 
 				# Get current mask for umask rollback
 				$old_mask = umask( 0 );
@@ -745,7 +764,7 @@ class AMDNetwork{
 	 */
 	public function dashAjaxHandler(){
 
-		$r = !empty( $_POST ) ? sanitize_post( $_POST ) : [];
+		$r = !empty( $_POST ) ? amd_sanitize_post_fields( $_POST ) : [];
 
 		global /** @var AMDDashboard $amdDashboard */
 		$amdDashboard;

@@ -18,6 +18,12 @@ function amd_ajax_target_ext_todo( $r ){
 	# Current user. Note: this object can be changed by admins by passing user ID with '_user' parameter!
 	$_thisuser = $_current_user;
 
+	# Restrict access
+	$restricted = apply_filters( "amd_restrict_capability_todo", false );
+
+	if( $restricted OR !adp_has_access_to_page( "todo", $_current_user->ID ) )
+		amd_send_api_error( [ "msg" => esc_html__( "An error has occurred", "material-dashboard" ) ] );
+
 	if( amd_is_admin() AND !empty( $r["_user"] ) )
 		$_thisuser = amd_get_user_by( "ID|email|login", $r["_user"] );
 

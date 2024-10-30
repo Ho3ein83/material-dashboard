@@ -11,8 +11,22 @@
   "icon_type": "font_icon",
   "html_template": "<i class=\"bi bi-{ICON} _icon_[CLASS]\"[STYLE]></i>",
   "icons": {
+    "_SINCE:1.0.1": null,
+    "bracket": "braces",
+    "money": "cash",
+    "payment": "currency-dollar",
+    "add_file": "file-earmark-plus",
+    "add_folder": "folder-plus",
+    "add_group": "plus-square",
+    "add_circle": "plus-circle",
+    "dash_circle": "dash-circle",
+    "edit": "pencil",
+    "credit_card": "credit-card",
+    "check_circle": "check-circle",
+    "close_circle": "x-circle",
     "_SINCE:1.0.0": null,
     "home": "house",
+    "discount": "percent",
     "check": "check",
     "check_all": "check-all",
     "arrow_toggle": "arrow-left-right",
@@ -107,7 +121,6 @@
     "sliders": "sliders",
     "ticket": "ticket",
     "back": "arrow-left",
-    "delete": "trash3",
-    "bracket": "braces"
+    "delete": "trash3"
   }
 }

@@ -32,44 +32,56 @@ function amd_ext_wc_ready(){
 # Initialize registered hooks
 add_action( "amd_dashboard_init", function(){
 
+	# Restrict access
+	$restricted = apply_filters( "amd_restrict_capability_edd_downloads", false );
+
+	if( $restricted AND apply_filters( "amd_deep_restriction", false ) )
+		return;
+
 	if( !amd_ext_wc_ready() )
 		return;
 
 	# Default date format
 	amd_set_default( "ext_wc_date_format", "j F Y" );
 
-	# Register lazy-loading pages
-	amd_register_lazy_page( "wc_cart", esc_html__( "Cart", "material-dashboard" ), AMD_EXT_WC_VIEW . '/page_wc_cart.php', "cart" );
-	amd_register_lazy_page( "wc_purchases", esc_html__( "Purchases", "material-dashboard" ), AMD_EXT_WC_VIEW . '/page_wc_purchases.php', "products" );
+	if( !$restricted AND is_user_logged_in() ){
 
-	if( !is_user_logged_in() )
-		return;
+		# Register lazy-loading pages
+		amd_register_lazy_page( "wc_cart", esc_html__( "Cart", "material-dashboard" ), AMD_EXT_WC_VIEW . '/page_wc_cart.php', "cart" );
+		amd_register_lazy_page( "wc_purchases", esc_html__( "Purchases", "material-dashboard" ), AMD_EXT_WC_VIEW . '/page_wc_purchases.php', "products" );
 
-	$thisuser = amd_get_current_user();
+		$thisuser = amd_get_current_user();
 
-	# Add dashboard cards (icon cards)
-	$purchases_count = count( amd_ext_wc_get_orders_for_uid( $thisuser->ID ) );
-	do_action( "amd_add_dashboard_card", array(
-		"ic_wc" => array(
-			"type" => "icon_card",
-			"title" => esc_html__( "Purchases", "material-dashboard" ),
-			"text" => sprintf( _n( "%d purchase", "%d purchases", $purchases_count, "material-dashboard" ), $purchases_count ),
-			"subtext" => '&#160;',
-			"footer" => amd_ext_wc_get_purchases_amount( $thisuser->ID ),
-			"icon" => "products",
-			"color" => "purple",
-			"priority" => 9
-		)
-	) );
+		# Add dashboard cards (icon cards)
+		$purchases_count = count( amd_ext_wc_get_orders_for_uid( $thisuser->ID ) );
+		do_action( "amd_add_dashboard_card", array(
+			"ic_wc" => array(
+				"type" => "icon_card",
+				"title" => esc_html__( "Purchases", "material-dashboard" ),
+				"text" => sprintf( _n( "%d purchase", "%d purchases", $purchases_count, "material-dashboard" ), $purchases_count ),
+				"subtext" => '&#160;',
+				"footer" => amd_ext_wc_get_purchases_amount( $thisuser->ID ),
+				"icon" => "products",
+				"color" => "purple",
+				"priority" => 9
+			)
+		) );
 
-	# Add dashboard cards (content cards)
-	do_action( "amd_add_dashboard_card", array(
-		"wc_purchases" => array(
-			"type" => "content_card",
-			"page" => AMD_EXT_WC_VIEW . "/cards/wc_card_purchases.php",
-			"priority" => 9
-		)
-	) );
+		# Add dashboard cards (content cards)
+		do_action( "amd_add_dashboard_card", array(
+			"wc_purchases" => array(
+				"type" => "content_card",
+				"page" => AMD_EXT_WC_VIEW . "/cards/wc_card_purchases.php",
+				"priority" => 9
+			)
+		) );
+
+
+	}
+
+} );
+
+add_action( "amd_init_sidebar_items", function(){
 
 	# Add menu item
 	do_action( "amd_add_dashboard_sidebar_menu", array(
@@ -82,7 +94,7 @@ add_action( "amd_dashboard_init", function(){
 		)
 	) );
 
-	// If cart is not empty
+	# If cart is not empty
 	if( !empty( amd_ext_wc_get_cart() ) ){
 
 		# Add dashboard quick options

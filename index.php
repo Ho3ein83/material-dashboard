@@ -5,7 +5,7 @@
  * Description: The best material dashboard for WordPress! If you want to delete this plugin, delete its data from cleanup menu first.
  * Plugin URI: https://amatris.ir/amd
  * Author: Hossein
- * Version: 1.0.0
+ * Version: 1.0.1
  * Requires at least: 5.2
  * Requires PHP: 7.4.0
  * Tested up to: 6.2
@@ -199,7 +199,9 @@ add_action( "amd_init_translation", function(){
 		"browse" => esc_html_x( "Browse", "Admin", "material-dashboard" ),
 		"single:n_files" => _nx( "%s file", "%s files", 1, "Admin", "material-dashboard" ),
 		"plural:n_files" => _nx( "%s file", "%s files", 2, "Admin", "material-dashboard" ),
-		"backup_includes" => esc_html__( "Backup includes", "material-dashboard" )
+		"single:n_days_ago" => _nx( "%s day ago", "%s days ago", 1, "Admin", "material-dashboard" ),
+		"plural:n_days_ago" => _nx( "%s day ago", "%s days ago", 2, "Admin", "material-dashboard" ),
+		"backup_includes" => esc_html__( "Backup includes", "material-dashboard" ),
 	) );
 
 } );
@@ -323,7 +325,7 @@ add_action( "init", function(){
 			$amdCache->setLocale( sanitize_text_field( $_GET["lang"] ) );
 
 		if( is_user_logged_in() )
-			$locale = amd_get_user_meta( null, "locale" );
+			$locale = get_user_meta( get_current_user_id(), "locale", true );
 		else
 			$locale = $amdCache->getCache( "locale" );
 

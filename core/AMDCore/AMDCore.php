@@ -21,6 +21,13 @@ class AMDCore{
 	protected $signMethods;
 
 	/**
+     * Cleanup variants
+	 * @var array
+     * @since 1.0.1
+	 */
+	protected $cleanup_variants;
+
+	/**
 	 * HBCore constructor
 	 */
 	public function __construct(){
@@ -28,6 +35,8 @@ class AMDCore{
 		$this->signMethods = [];
 
         $this->themes = [];
+
+        $this->cleanup_variants = [];
 
 		# Initialize shortcodes
 		self::initShortcodes();
@@ -560,9 +569,6 @@ class AMDCore{
             </script><?php
 		} );
 
-		# Edit user fields
-		add_action( "edit_user_profile", [ $this, "editUserFields" ] );
-
 		# Add custom class for dashboard elements
 		add_action( "amd_add_element_class", function( $element, $classes ){
 
@@ -606,6 +612,12 @@ class AMDCore{
 			return $amdCache->cacheExists( "element_class_$element", true, [] );
 
 		} );
+
+		/**
+		 * Register cleanup variants
+         * @since 1.0.1
+		 */
+        add_action( "amd_register_cleanup_variant", [$this, "registerCleanupVariant"], 10, 2 );
 
 	}
 
@@ -922,6 +934,49 @@ class AMDCore{
 
 		# Set allowed default pages
 		do_action( "amd_allowed_pages", [ "dashboard", "login", "api" ] );
+
+        # Register cleanup variants (database)
+        do_action( "amd_register_cleanup_variant", "database", array(
+	        "id" => "database",
+	        "title" => _x( "Database", "Admin", "material-dashboard" ),
+	        "auto_generates" => true,
+            "callback" => function(){
+	            global /** @var AMD_DB $amdDB */
+	            $amdDB;
+
+	            $amdDB->cleanup();
+
+                return [_x( "Database cleaned up", "Admin", "material-dashboard" )];
+            }
+        ) );
+
+        # Register cleanup variants (files)
+        do_action( "amd_register_cleanup_variant", "files", array(
+	        "id" => "files",
+	        "title" => _x( "Files", "Admin", "material-dashboard" ),
+	        "auto_generates" => false,
+            "callback" => function(){
+	            global /** @var AMDExplorer $amdExp */
+	            $amdExp;
+
+	            # Get plugin uploads path
+	            $path = $amdExp->getPath( "" );
+
+	            # Delete the whole plugin uploads directory
+	            amd_delete_directory( $path, true );
+
+	            # Remove plugin uploads directory itself (double-checking)
+	            rmdir( $path );
+
+	            return [_x( "Files cleaned up", "Admin", "material-dashboard" )];
+            }
+        ) );
+
+		/**
+		 * Initialize cleanup variants
+		 * @since 1.0.1
+		 */
+		do_action( "amd_init_cleanup_variants" );
 
 		# Set icon pack
 		$icon_pack = amd_get_site_option( "icon_pack", amd_get_default( "icon_pack" ) );
@@ -1303,6 +1358,39 @@ class AMDCore{
 	}
 
 	/**
+     * Register cleanup variant
+	 * @param int $id
+     * Variant ID
+	 * @param array $data
+     * Variant data array
+	 *
+	 * @return void
+     * @since 1.0.1
+	 */
+	public function registerCleanupVariant( $id, $data ){
+
+        $this->cleanup_variants[$id] = $data;
+
+    }
+
+	/**
+     * Get cleanup variants
+	 * @return array
+     * @since 1.0.1
+	 */
+	public function getCleanupVariants(){
+
+		/**
+         * Initialize cleanup variants
+		 * @since 1.0.1
+		 */
+        do_action( "amd_init_cleanup_variants" );
+
+        return $this->cleanup_variants;
+
+    }
+
+	/**
 	 * Get all of registered themes
 	 *
 	 * @param bool $override
@@ -1467,35 +1555,16 @@ class AMDCore{
 		$out = [];
 		foreach( $variants as $variant ){
 
-            # Cleanup database
-			if( $variant == "database" ){
+            if( !empty( $this->cleanup_variants[$variant] ) ){
 
-				global /** @var AMD_DB $amdDB */
-				$amdDB;
+                $v = $this->cleanup_variants[$variant];
 
-				$amdDB->cleanup();
+                $callback = $v["callback"] ?? null;
 
-				$out[] = esc_html_x( "Database cleaned up", "Admin", "material-dashboard" );
+                if( is_callable( $callback ) )
+	                $out = array_merge( $out, call_user_func( $callback ) );
 
-			}
-            # Cleanup files (uploaded files, avatars, etc.)
-			else if( $variant == "files" ){
-
-				global /** @var AMDExplorer $amdExp */
-				$amdExp;
-
-                # Get plugin uploads path
-				$path = $amdExp->getPath( "" );
-
-                # Delete the whole plugin uploads directory
-				amd_delete_directory( $path, true );
-
-                # Remove plugin uploads directory itself (double-checking)
-				rmdir( $path );
-
-				$out[] = esc_html_x( "Files cleaned up", "Admin", "material-dashboard" );
-
-			}
+            }
 
 		}
 
@@ -1522,11 +1591,14 @@ class AMDCore{
         else
             $uid = $u->ID;
 
-		if( !$uid OR ! is_numeric( $u ) )
+		if( !$uid OR !is_numeric( $uid ) )
 			return;
 
 		$user = amd_get_user_by( "ID", $uid );
 		if( !$user )
+			return;
+
+		if( !current_user_can( "edit_user", $user->ID ) )
 			return;
 
 		$phone_field = amd_get_site_option( "phone_field" ) == "true";
@@ -1540,10 +1612,10 @@ class AMDCore{
 			<?php if( $phone_field ): ?>
                 <tr class="amd-user-wrap">
                     <th>
-                        <label for="amd_phone"><?php _e( "Phone", "material-dashboard" ); ?></label>
+                        <label for="amd_phone"><?php esc_html_e( "Phone", "material-dashboard" ); ?></label>
                     </th>
                     <td>
-                        <input type="text" name="user_login" id="amd_phone" value="" disabled="" class="regular-text">
+                        <span dir="auto"><?php echo esc_html( $user->phone ); ?></span>
                     </td>
                 </tr>
 			<?php endif; ?>
@@ -1596,8 +1668,23 @@ class AMDCore{
                 </td>
             </tr>
 
+            <?php
+                /**
+                 * After edit profile table items
+                 * @since 1.0.1
+                 */
+                do_action( "amd_after_user_edit_profile_items" );
+            ?>
+
             </tbody>
         </table>
+		<?php
+		/**
+		 * After edit profile table
+		 * @since 1.0.1
+		 */
+		do_action( "amd_after_user_edit_profile_table" );
+		?>
         <br>
 		<?php
 

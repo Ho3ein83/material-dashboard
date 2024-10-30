@@ -1133,7 +1133,7 @@ function amd_get_user_by_meta( $by, $user, $single = true ){
 }
 
 /**
- * Get current user with simple user object (AMDUser)
+ * Get current user with simple user object {@see AMDUser}
  * @return false|AMDUser
  * AMDUser object on success, false on fail
  * @since 1.0.0
@@ -1290,26 +1290,59 @@ function amd_using_https(){
  *
  * @param string $option
  * Option name
+ * @param mixed|null $value
+ * Value to be checked, pass null to skip value check
  *
  * @return bool
  * @since 1.0.0
  */
-function amd_is_option_allowed( $option ){
+function amd_is_option_allowed( $option, $value=null ){
 
     if( apply_filters( "amd_is_option_allowed_$option", false ) )
         return true;
 
 	$allowedOptions = apply_filters( "amd_get_allowed_options", [] );
 
-	foreach( $allowedOptions as $key => $data ){
-		if( $key == $option ){
-            if( amd_starts_with( $key, "REGEX:" ) ){
-                $regex = str_replace( "REGEX:", "", $key );
-	            file_put_contents( ABSPATH . 'log.txt', var_export( $regex, true ) . "\n", FILE_APPEND );
-	            return amd_validate( $option, $regex );
+    foreach( $allowedOptions as $key => $data ){
+
+        if( strpos( $key, "[*]" ) !== false ){
+            $pattern = str_replace( "[*]", "(.*)", $key );
+            if( preg_match( "/^$pattern$/", $option ) ){
+                if( $value === null )
+                    return true;
+
+	            if( is_string( $data ) ){
+		            if( amd_compile_data_type( $data, $value ) )
+			            return true;
+	            }
+	            else if( is_array( $data ) ){
+		            $type = $data["type"] ?? null;
+		            $filter = $data["filter"] ?? null;
+		            if( !empty( $filter ) and is_callable( $filter ) )
+			            $value = call_user_func( $filter, $value );
+		            if( amd_compile_data_type( $type, $value ) )
+			            return true;
+	            }
+
             }
-			return true;
-		}
+        }
+        else if( $key == $option ){
+
+	        if( is_string( $data ) ){
+		        if( amd_compile_data_type( $data, $value ) )
+			        return true;
+	        }
+	        else if( is_array( $data ) ){
+		        $type = $data["type"] ?? null;
+		        $filter = $data["filter"] ?? null;
+		        if( !empty( $filter ) and is_callable( $filter ) )
+			        $value = call_user_func( $filter, $value );
+		        if( amd_compile_data_type( $type, $value ) )
+			        return true;
+	        }
+
+        }
+
 	}
 
 	return false;
@@ -1545,6 +1578,10 @@ function amd_generate_string_pattern( $code ){
 
 /**
  * Get avatars base URL
+ *
+ * @param string $id
+ * Image ID
+ *
  * @return string
  * @since 1.0.0
  */
@@ -1752,8 +1789,6 @@ function amd_admin_head(){
  * @since 1.0.0
  */
 function amd_compile_data_type( $action, $value ){
-	if( $action == null )
-		return false;
 	if( is_callable( $action ) ){
 		return call_user_func( $action, $value );
 	}
@@ -1810,9 +1845,10 @@ function amd_compile_data_type( $action, $value ){
 			}
 
 		}
-		else if( preg_match( "/(?!['\"])((INT)|(NUMBER)|(STRING)|(BOOL)|(ARRAY)|(CALLABLE)|(FUNCTION)|(NULL))(?!['\"])/", $action ) ){
+		else if( preg_match( "/^(['\"])?(INT|NUMBER|STRING|BOOL|ARRAY|CALLABLE|FUNCTION|NULL)(['\"])?$/", $action ) ){
 			foreach( explode( ",", $action ) as $item ){
 				$item = trim( $item );
+
 				if( amd_compile_data_type( "[$item]", $value ) )
 					return true;
 			}
@@ -2536,11 +2572,11 @@ function amd_get_dash_logo(){
 		$dashLogoVal = $dashLogoURL;
 	}
 
-	return array(
+	return apply_filters( "amd_dashboard_logo", array(
 		"url" => $dashLogoURL,
 		"id" => $dashLogoVal,
 		"logo" => $dashLogo
-	);
+	) );
 }
 
 /**
@@ -2644,7 +2680,7 @@ function amd_validate_phone_format( $phone, $cc, $format ){
  */
 function amd_validate_phone_number( $phone ){
 
-	$phoneRegions = apply_filters( "amd_country_codes", [] );
+	$phoneRegions = amd_get_regions()["regions"];
 
 	foreach( $phoneRegions as $cc => $data ){
 
@@ -2660,6 +2696,22 @@ function amd_validate_phone_number( $phone ){
 	}
 
 	return false;
+
+}
+
+/**
+ * Format phone number for saving
+ * @param string $phone
+ * Phone number
+ *
+ * @return string
+ * @since 1.0.1
+ */
+function amd_apply_phone_format( $phone ){
+
+    $phone = str_replace( " ", "", $phone );
+
+    return apply_filters( "amd_phone_format", $phone );
 
 }
 
@@ -2861,8 +2913,14 @@ function amd_get_wp_allowed_extensions(){
  * Needle tags. Separate with comma for multiple tags, e.g: "span,a"
  * <br>Available tags:
  * <ul>
+ * <li>br</li>
  * <li>span</li>
+ * <li>p</li>
+ * <li>div</li>
+ * <li>img</li>
+ * <li>i</li>
  * <li>a</li>
+ * <li>button</li>
  * </ul>
  *
  * @return array
@@ -2874,6 +2932,14 @@ function amd_allowed_tags_with_attr( $tags ){
     $tags_data = array(
 	    "br" => array(),
         "span" => array(
+		    "data-*" => true,
+		    "class" => true,
+		    "id" => true,
+		    "dir" => true,
+		    "style" => true,
+		    "title" => true
+	    ),
+        "p" => array(
 		    "data-*" => true,
 		    "class" => true,
 		    "id" => true,
@@ -3177,6 +3243,40 @@ function amd_decrypt_aes( $hash, $salt ){
 	$amdWall;
 
 	return $amdWall->decryptAES( $hash, $salt );
+
+}
+
+/**
+ * Serialize string
+ * @param string $string
+ * Input string
+ *
+ * @return string
+ * @since 1.0.1
+ */
+function amd_serialize( $string ){
+
+	global /** @var AMDFirewall $amdWall */
+	$amdWall;
+
+	return $amdWall->serialize( $string );
+
+}
+
+/**
+ * Deserialize string
+ * @param string $string
+ * Serialized string
+ *
+ * @return string
+ * @since 1.0.1
+ */
+function amd_deserialize( $string ){
+
+	global /** @var AMDFirewall $amdWall */
+	$amdWall;
+
+	return $amdWall->deserialize( $string );
 
 }
 
@@ -3683,6 +3783,7 @@ function amd_get_plugin_repo_url(){
 
 /**
  * Convert standard locale code (e.g: "en") to WordPress locale code (e.g: "en_US")
+ *
  * @param string $locale
  * @param string $default
  *
@@ -3826,6 +3927,26 @@ function amd_sanitize_get_fields( $get ){
     }
 
     return $data;
+
+}
+
+/**
+ * Validate every $_POST parameters
+ *
+ * @param array $post
+ * $_POST data array
+ *
+ * @return array
+ * @since 1.0.1
+ */
+function amd_sanitize_post_fields( $post ){
+
+    foreach( $post as $key => $value ){
+        $safe_key = sanitize_key( $key );
+	    $post[$safe_key] = is_array( $value ) ? amd_sanitize_post_fields( $value ) : sanitize_text_field( $value );
+    }
+
+    return $post;
 
 }
 
@@ -4114,6 +4235,23 @@ add_filter( "amd_reset_password_page_title", "amd_dashboard_pages_title" );
 add_filter( "amd_registration_page_title", "amd_dashboard_pages_title" );
 
 /**
+ * Edit user profile
+ * @param $u
+ *
+ * @return void
+ * @since 1.0.0
+ */
+function amd_edit_user_profile( $u ){
+
+	global $amdCore;
+
+	$amdCore->editUserFields( $u );
+
+}
+add_action( "edit_user_profile", "amd_edit_user_profile" );
+add_action( "show_user_profile", "amd_edit_user_profile" );
+
+/**
  * Check if SSL is forced or not
  * @return bool
  * @since 1.0.0
@@ -4163,7 +4301,7 @@ function amd_doc_url( $id, $html = false, $text = null, $blank = true ){
 
 	if( $html ){
 		if( empty( $text ) )
-			$text = " (" . esc_html__( "more info", "material-dashboard" ) . ")";
+			$text = " (" . esc_html__( "More info", "material-dashboard" ) . ")";
 		ob_start();
 		?>
         <a href="<?php echo esc_url( $base_url ); ?>"<?php echo $blank ? ' target="_blank"' : ''; ?>><?php echo $text; ?></a>
@@ -4206,5 +4344,111 @@ function amd_licence_template( $license ){
 function amd_error_code_track_url( $error_code ){
 
 	return amd_doc_url( "error_$error_code" );
+
+}
+
+/**
+ * Add CSS stylesheet
+ *
+ * @param string $id
+ * Stylesheet ID. You can specify stylesheet scope by adding ':' character to the beginning of ID. e.g: "dashboard:style_id"
+ * @param string $url
+ * Stylesheet URL
+ * @param string $ver
+ * Stylesheet version
+ *
+ * @return void
+ * @sicne 1.0.1
+ */
+function amd_register_style( $id, $url, $ver="unknown" ){
+
+    global $amdCache;
+
+    $amdCache->addStyle( $id, $url, $ver );
+
+}
+
+/**
+ * Remove stylesheet by ID
+ * @param string $id
+ * Stylesheet ID
+ *
+ * @return void
+ * @since 1.0.1
+ */
+function amd_deregister_style( $id ){
+
+    global $amdCache;
+
+    $amdCache->removeStyleById( $id );
+
+}
+
+/**
+ * Remove stylesheet by scope
+ * @param string $scope
+ * Scope name
+ *
+ * @return void
+ * @since 1.0.1
+ */
+function amd_deregister_style_scope( $scope ){
+
+    global $amdCache;
+
+    $amdCache->removeStyleByScope( $scope );
+
+}
+
+/**
+ * Add JS script
+ *
+ * @param string $id
+ * Script ID. You can specify script scope by adding ':' character to the beginning of ID. e.g: "dashboard:script_id"
+ * @param string $url
+ * Script URL
+ * @param string $ver
+ * Script version
+ *
+ * @return void
+ * @sicne 1.0.1
+ */
+function amd_register_script( $id, $url, $ver="unknown" ){
+
+    global $amdCache;
+
+    $amdCache->addScript( $id, $url, $ver );
+
+}
+
+/**
+ * Remove script by ID
+ * @param string $id
+ * Script ID
+ *
+ * @return void
+ * @since 1.0.1
+ */
+function amd_deregister_script( $id ){
+
+	global $amdCache;
+
+	$amdCache->removeScriptById( $id );
+
+}
+
+/**
+ * Remove script by scope
+ * @param string $scope
+ * Scope name
+ *
+ * @return void
+ * @since 1.0.1
+ */
+function amd_deregister_script_scope( $scope ){
+
+	global $amdCache;
+
+	$amdCache->removeScriptByScope( $scope );
 
 }

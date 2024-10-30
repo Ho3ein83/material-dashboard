@@ -61,7 +61,7 @@ if( is_countable( $temps ) AND count( $temps ) > 0 )
     </label>
 	<?php if( $phone_field ): ?>
         <label class="ht-input waiting">
-            <input type="text" value="<?php echo esc_attr( $thisuser->phone ); ?>" placeholder="">
+            <input type="text" value="<?php echo esc_attr( $thisuser->phone ); ?>" placeholder="" style="direction:ltr">
             <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
 			<?php _amd_icon( "phone" ); ?>
         </label>

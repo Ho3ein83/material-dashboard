@@ -808,6 +808,14 @@ svg.iconhub > polyline:not(.--exclude) {
     font-size: 15px !important;
 }
 
+.large-text {
+    font-size: 18px;
+}
+
+.large-text-im {
+    font-size: 18px !important;
+}
+
 .size-15px {
     font-size: 15px
 }
@@ -1081,6 +1089,27 @@ svg.iconhub > polyline:not(.--exclude) {
     cursor: var(--amd-pointer);
 }
 
+.badge.--text.bg-primary {
+    background: rgba(var(--amd-primary-rgb), .2);
+    color: var(--amd-primary);
+}
+.badge.--text.bg-red {
+    background: rgba(var(--amd-color-red-rgb), .2);
+    color: var(--amd-color-red);
+}
+.badge.--text.bg-green {
+    background: rgba(var(--amd-color-green-rgb), .2);
+    color: var(--amd-color-green);
+}
+.badge.--text.bg-blue {
+    background: rgba(var(--amd-color-blue-rgb), .2);
+    color: var(--amd-color-blue);
+}
+.badge.--text.bg-orange {
+    background: rgba(var(--amd-color-orange-rgb), .2);
+    color: var(--amd-color-orange);
+}
+
 .bg-red {
     background: var(--amd-color-red)
 }
@@ -1219,6 +1248,16 @@ svg.iconhub > polyline:not(.--exclude) {
     flex-wrap: nowrap;
     align-content: center;
     justify-content: center;
+}
+
+.inline-flex-center {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center
+}
+
+.inline-flex-center.spaced > * {
+    margin: 0 4px;
 }
 
 .flex-ratio-1 {

@@ -895,10 +895,7 @@ class AMD_DB {
 		$table = $this->getTable( "options" );
 
 		if( !self::siteOptionExists( $on ) ){
-			if( amd_is_option_allowed( $on ) )
-				return $this->db->insert( $table, [ 'option_name' => $on, 'option_value' => $ov ] );
-			else
-				return false;
+			return $this->db->insert( $table, [ 'option_name' => $on, 'option_value' => $ov ] );
 		}
 
 		return $this->db->update( $table, [ 'option_value' => $ov ], [ 'option_name' => $on ] );

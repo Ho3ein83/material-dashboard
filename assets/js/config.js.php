@@ -91,8 +91,9 @@ function _t(id) {
     return _hb_strings[id] + suffix;
 }
 
-function _n(id, number) {
-    return _t(number > 1 ? `plural:${id}` : `single:${id}`).replace("%s", number);
+function _n(id, number, format=false) {
+    var _format = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return _t(number > 1 ? `plural:${id}` : `single:${id}`).replace("%s", format ? _format(number) : number);
 }
 
 function _i(id) {
@@ -107,6 +108,8 @@ var amd_conf = {
         api: "_api_handler"
     },
     api_url: `<?php echo amd_get_api_url(); ?>`,
+    login_url: `<?php echo amd_get_login_page(); ?>`,
+    dashboard_url: `<?php echo amd_get_dashboard_page(); ?>`,
     title_separator: `<?php echo apply_filters( "amd_title_separator", "»" ); ?>`,
     forms: {
         special_keys: ["Control", "Shift", "Backspace", "CapsLock", "NumLock", "Tab", "Meta", "Escape", "Home", "End", "PageUp", "PageDown", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"],

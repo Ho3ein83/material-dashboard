@@ -10,11 +10,12 @@ do_action( "amd_begin_dashboard" );
 
 if( amd_template_exists( "dashboard" ) ){
 	amd_load_template( "dashboard" );
-
 	return;
 }
 
 do_action( "amd_dashboard_start" );
+
+$break = apply_filters( "amd_break_dashboard", false );
 
 global /** @var AMDCache $amdCache */
 $amdCache;
@@ -24,7 +25,7 @@ $_get = amd_sanitize_get_fields( $_GET );
 $void = !empty( $_get["void"] ) ? $_get["void"] : "home";
 $amdCache->setCache( "void", $void );
 
-$current_locale = get_locale();
+$current_locale = get_user_meta( get_current_user_id(), "locale", true ) ?? get_locale();
 $direction = is_rtl() ? "rtl" : "ltr";
 
 # $lazy_load = amd_get_site_option( "lazy_load", "true" );
@@ -107,7 +108,8 @@ if( !$lazy_load ){
                 "right": <?php echo json_encode( $navbarItems_right ); ?>
             },
             quick_options: <?php echo json_encode( $quickOptions ); ?>,
-            checkin_interval: <?php echo is_numeric( $checkin_interval ) ? $checkin_interval : "60000"; ?>
+            checkin_interval: <?php echo is_numeric( $checkin_interval ) ? $checkin_interval : "60000"; ?>,
+            is_broken: <?php echo $break ? 'true' : 'false'; ?>,
         });
     </script>
 </head>
@@ -128,9 +130,16 @@ if( !$lazy_load ){
     <div class="text-center _show_on_loader_">
         <h2 class="_loading_text_"></h2>
     </div>
-	<?php do_action( "amd_before_dashboard_content" ); ?>
-    <div id="content" class="<?php echo esc_attr( amd_element_classes( "content" ) ); ?>"><?php echo !$lazy_load ? $page_content : ""; ?></div>
-	<?php do_action( "amd_after_dashboard_content" ); ?>
+	<div id="before-content">
+		<?php do_action( "amd_before_dashboard_content" ); ?>
+    </div>
+    <div id="content" class="<?php echo esc_attr( amd_element_classes( "content" ) ); ?>">
+        <?php do_action( "amd_dashboard_hard_content" ); ?>
+        <?php echo !$lazy_load ? $page_content : ""; ?>
+    </div>
+	<div id="after-content">
+		<?php do_action( "amd_after_dashboard_content" ); ?>
+    </div>
 </div>
 <script>
     dashboard.setUser(amd_conf.getUser());

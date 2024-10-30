@@ -1,5 +1,8 @@
 <?php
 
+if( amd_validate_phone_number( amd_get_user_meta( null, "phone" ) ) )
+    return;
+
 $regions = amd_get_regions();
 $cc_count = $regions["count"];
 $first_cc = $regions["first"];
@@ -23,7 +26,7 @@ $phone_field_required = true;
                 <span data-value="<?php echo esc_attr( $region['digit'] ?? '' ); ?>"
                       data-format="<?php echo esc_attr( $region['format'] ?? '' ); ?>"
                       data-keyword="<?php echo esc_attr( $region['name'] ?? '' ); ?>">
-                                <?php echo esc_html( $region["name"] ?? "" ); ?></span>
+                                <?php echo apply_filters( "amd_phone_format_name", $region["name"] ?? "", $region["digit"] ?? "", $region["format"] ?? "" ); ?></span>
 			<?php endforeach; ?>
         </div>
         <div class="--search"></div>
@@ -48,7 +51,7 @@ $phone_field_required = true;
         <div class="ht-magic-select" style="display:none">
             <label>
                 <input type="text" class="--input" data-field="country_code" data-next="phone_number"
-                       data-value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
+                       data-value="<?php echo esc_attr( $first_cc ); ?>" value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
 					<?php echo $phone_field_required ? "required" : ""; ?>>
                 <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
                 <span class="--value" dir="auto"><?php echo esc_html( $first_cc ); ?></span>
@@ -87,6 +90,7 @@ $phone_field_required = true;
 <script>
     (function(){
         let form = new AMDForm("change-phone-card");
+        let $card = $("#change-phone-card");
 
         form.on("invalid_code", data => {
             let {field, code} = data;
@@ -94,7 +98,32 @@ $phone_field_required = true;
             if(id === "phone_number")
                 dashboard.toast(_t("phone_incorrect"));
         });
-        // TODO: continue phone register
+        form.on("submit", () => {
+            let data = form.getFieldsData();
+            let phone = data.phone_number.value;
+            let _n = dashboard.getApiEngine();
+            _n.clean();
+            _n.put("change_phone", phone);
+            _n.on.start = () => {
+                $card.cardLoader();
+            }
+            _n.on.end = (resp, error) => {
+                if(!error) {
+                    $amd.toast(resp.data.msg);
+                    if(resp.success){
+                        dashboard.lazyReload();
+                    }
+                    else{
+                        $card.cardLoader(false);
+                    }
+                }
+                else {
+                    $card.cardLoader(false);
+                    $amd.toast(_t("error"));
+                }
+            }
+            _n.post();
+        });
 
         let $country_code = form.$getField("country_code");
         let $phone_number = form.$getField("phone_number");
@@ -169,6 +198,8 @@ $phone_field_required = true;
                 _f = _f.replaceAll("X", "[0-9]");
                 $phone_number.attr("data-pattern", `^\\+${cc}\\s?${_f}$`);
             }
+            let val = $country_code.val();
+            $country_code.val(val.trimChar(" "));
         });
         $country_code.trigger("change");
     }());

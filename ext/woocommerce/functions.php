@@ -108,7 +108,7 @@ function amd_ext_wc_get_cart(){
 
 	global $woocommerce;
 
-	if( empty( $woocommerce ) )
+	if( empty( $woocommerce->cart ) )
 		return [];
 
 	return $woocommerce->cart->get_cart();

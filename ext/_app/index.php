@@ -157,7 +157,7 @@ add_filter( "amd_new_verification_code_message", function( $uid, $code ){
 	if( !$user )
 		return "";
 
-	return sprintf( esc_html__( "Dear %s, your verification code for password reset is: %s", "material-dashboard" ), $user->firstname, "\n$code" );
+	return sprintf( esc_html__( "Dear %s, your verification code for password reset is: %s", "material-dashboard" ), $user->firstname, "<br>$code" );
 }, 10, 2 );
 
 # "password changed" message
@@ -356,24 +356,13 @@ add_filter( "amd_ic_date_subtext", function(){
     return amd_true_date( "Y/m/d" );
 } );
 
-# Initialize registered hooks
-add_action( "amd_dashboard_init", function(){
+/**
+ * Initialize sidebar items
+ * @since 1.0.1
+ */
+add_action( "amd_init_sidebar_items", function(){
 
-	# Add dashboard cards (icon cards)
-	do_action( "amd_add_dashboard_card", array(
-		"ic_date" => array(
-			"type" => "icon_card",
-			"title" => esc_html__( "Date", "material-dashboard" ),
-			"text" => apply_filters( "amd_ic_date_text", "" ),
-			"subtext" => apply_filters( "amd_ic_date_subtext", "" ),
-			"footer" => '<span class="__live_clock"></span>',
-			"icon" => "calendar_1",
-			"color" => "red",
-			"priority" => 1
-		)
-	) );
-
-	# Add dashboard sidebar item
+    # Add dashboard sidebar item
 	do_action( "amd_add_dashboard_sidebar_menu", array(
 		"dashboard" => array(
 			"text" => esc_html__( "Dashboard", "material-dashboard" ),
@@ -391,7 +380,7 @@ add_action( "amd_dashboard_init", function(){
 		),
 	) );
 
-	# Add dashboard navbar item (Left side)
+    # Add dashboard navbar item (Left side)
 	do_action( "amd_add_dashboard_navbar_item", "left", array(
 		"toggle_sidebar" => array(
 			"icon" => "menu",
@@ -454,6 +443,49 @@ add_action( "amd_dashboard_init", function(){
 		)
 	) );
 
+    # Quick options in auth pages
+	add_action( "amd_auth_quick_option", function(){
+		?>
+		<a href="<?php echo esc_attr( get_site_url() ); ?>" data-tooltip="<?php printf( esc_html__( "Back to %s", "material-dashboard" ), get_bloginfo( 'name' ) ); ?>">
+			<?php _amd_icon( "home" ); ?>
+        </a>
+        <?php if( amd_is_multilingual( true ) ): ?>
+        <a href="javascript: void(0)" data-tooltip="<?php esc_attr_e( "Language", "material-dashboard" ); ?>" data-change-locale="">
+			<?php _amd_icon( "translate" ); ?>
+        </a>
+        <?php endif; ?>
+        <?php if( amd_theme_support( "night_mode" ) ): ?>
+        <a href="javascript: void(0)" class="no-dark" data-tooltip="<?php esc_attr_e( "Dark mode", "material-dashboard" ); ?>"
+           data-switch-theme="dark">
+			<?php _amd_icon( "dark_mode" ); ?>
+        </a>
+        <a href="javascript: void(0)" class="no-light" data-tooltip="<?php esc_attr_e( "Light mode", "material-dashboard" ); ?>"
+           data-switch-theme="light">
+			<?php _amd_icon( "light_mode" ); ?>
+        </a>
+        <?php endif; ?>
+		<?php
+	} );
+
+} );
+
+# Initialize registered hooks
+add_action( "amd_dashboard_init", function(){
+
+	# Add dashboard cards (icon cards)
+	do_action( "amd_add_dashboard_card", array(
+		"ic_date" => array(
+			"type" => "icon_card",
+			"title" => esc_html__( "Date", "material-dashboard" ),
+			"text" => apply_filters( "amd_ic_date_text", "" ),
+			"subtext" => apply_filters( "amd_ic_date_subtext", "" ),
+			"footer" => '<span class="__live_clock"></span>',
+			"icon" => "calendar_1",
+			"color" => "red",
+			"priority" => 1
+		)
+	) );
+
 	# Let users know when they passwords changes
 	add_filter( "amd_notify_password_change", "__return_true" );
 
@@ -510,29 +542,7 @@ add_action( "amd_dashboard_init", function(){
 		) );
 	}
 
-	# Quick options in auth pages
-	add_action( "amd_auth_quick_option", function(){
-		?>
-		<a href="javascript: void(0)" data-tooltip="<?php printf( esc_html__( "Back to %s", "material-dashboard" ), get_bloginfo( 'name' ) ); ?>" data-change-locale="">
-			<?php _amd_icon( "home" ); ?>
-        </a>
-        <?php if( amd_is_multilingual( true ) ): ?>
-        <a href="javascript: void(0)" data-tooltip="<?php esc_attr_e( "Language", "material-dashboard" ); ?>" data-change-locale="">
-			<?php _amd_icon( "translate" ); ?>
-        </a>
-        <?php endif; ?>
-        <?php if( amd_theme_support( "night_mode" ) ): ?>
-        <a href="javascript: void(0)" class="no-dark" data-tooltip="<?php esc_attr_e( "Dark mode", "material-dashboard" ); ?>"
-           data-switch-theme="dark">
-			<?php _amd_icon( "dark_mode" ); ?>
-        </a>
-        <a href="javascript: void(0)" class="no-light" data-tooltip="<?php esc_attr_e( "Light mode", "material-dashboard" ); ?>"
-           data-switch-theme="light">
-			<?php _amd_icon( "light_mode" ); ?>
-        </a>
-        <?php endif; ?>
-		<?php
-	} );
+
 
 } );
 
@@ -813,7 +823,10 @@ add_action( "amd_dashboard_header", function(){
                         if(url !== "#"){
                             if(typeof dashboard !== "undefined")
                                 dashboard.suspend();
-                            $amd.openQuery(url || ("auth=" + auth));
+                            if(url)
+                                location.href = url;
+                            else
+                                $amd.openQuery("auth=" + auth);
                         }
                     }
                 }
@@ -822,6 +835,64 @@ add_action( "amd_dashboard_header", function(){
         </script>
     <?php endif; ?>
 	<?php
+} );
+
+# Dashboard page open-graph meta tags
+add_action( "amd_dashboard_header_single", function(){
+
+
+    $dashboard_title = _x( "Dashboard", "material-dashboard" );
+    $content = __( "You can manage your account information, transactions, payments and purchases by logging in to your dashboard", "material-dashboard" );
+
+    $dash = amd_get_dash_logo();
+    $dashLogoURL = $dash["url"];
+
+    ?>
+    <meta name="og:title" content="<?php echo esc_html( apply_filters( "amd_dashboard_og_title", "$dashboard_title - " . get_bloginfo( 'name' ) ) ); ?>">
+    <meta name="og:content" content="<?php echo esc_html( apply_filters( "amd_dashboard_og_content", $content ) ); ?>">
+    <meta name="og:image" content="<?php echo esc_url( apply_filters( "amd_dashboard_og_image", $dashLogoURL ) ) ?>">
+    <?php
+
+} );
+
+# Login page open-graph meta tags
+add_action( "amd_login_header", function(){
+
+    $login_title = amd_get_site_option( "login_page_title" );
+    if( empty( $login_title ) )
+	    $login_title = _x( "Login to your account", "Login title", "material-dashboard" );
+
+    $content = __( "You can manage your account information, transactions, payments and purchases by logging in to your dashboard", "material-dashboard" );
+
+    $dash = amd_get_dash_logo();
+    $dashLogoURL = $dash["url"];
+
+    ?>
+    <meta name="og:title" content="<?php echo esc_html( apply_filters( "amd_login_og_title", "$login_title - " . get_bloginfo( 'name' ) ) ); ?>">
+    <meta name="og:content" content="<?php echo esc_html( apply_filters( "amd_login_og_content", $content ) ); ?>">
+    <meta name="og:image" content="<?php echo esc_url( apply_filters( "amd_login_og_image", $dashLogoURL ) ) ?>">
+    <?php
+
+} );
+
+# Registration page open-graph meta tags
+add_action( "amd_registration_header", function(){
+
+    $register_title = amd_get_site_option( "register_page_title" );
+    if( empty( $register_title ) )
+	    $register_title = _x( "Create new account", "Sign-up title", "material-dashboard" );
+
+    $content = __( "You can manage your account information, transactions, payments and purchases by logging in to your dashboard", "material-dashboard" );
+
+    $dash = amd_get_dash_logo();
+    $dashLogoURL = $dash["url"];
+
+    ?>
+    <meta name="og:title" content="<?php echo esc_html( apply_filters( "amd_registration_og_title", "$register_title - " . get_bloginfo( 'name' ) ) ); ?>">
+    <meta name="og:content" content="<?php echo esc_html( apply_filters( "amd_registration_og_content", $content ) ); ?>">
+    <meta name="og:image" content="<?php echo esc_url( apply_filters( "amd_registration_og_image", $dashLogoURL ) ) ?>">
+    <?php
+
 } );
 
 # Firewall AES encryption nonce
@@ -888,7 +959,7 @@ add_filter( "amd_is_admin", function(){
 
 } );
 
-# Replace user avatar picture with dashboard default
+# Change admin panel avatar image
 add_filter( "get_avatar", function( $avatar, $id_or_email, $size, $default, $alt ) {
 
     $change = apply_filters( "amd_change_admin_panel_avatar", true );
@@ -896,11 +967,30 @@ add_filter( "get_avatar", function( $avatar, $id_or_email, $size, $default, $alt
     if( !$change )
         return $avatar;
 
-    $user = amd_get_user_by( "ID|email", $id_or_email );
+    $user = null;
 
-	return $user ? "<img class=\"avatar avatar-$size\" src=\"$user->profile\" width=\"$size\" height=\"$size\" alt=\"$alt\"/>" : $avatar;
+    if ( !is_numeric( $id_or_email ) AND is_email( $id_or_email->comment_author_email ?? "" ) ) {
+        $user = get_user_by( "email", $id_or_email );
+        if ( $user )
+            $id_or_email = $user->ID;
+    }
 
-}, 2, 5 );
+    if( !is_numeric( $id_or_email ) )
+        return $avatar;
+
+    $attachment_id  = get_user_meta( $id_or_email, "image", true );
+
+    if ( !empty( $attachment_id  ) )
+        return wp_get_attachment_image( $attachment_id, [ $size, $size ], false, ["alt" => $alt] );
+
+    if( !$user )
+        return $avatar;
+
+    $user_profile = amd_get_user_by( "ID", $user->ID );
+
+    return "<img class=\"avatar avatar-$size\" src=\"$user_profile\" width=\"$size\" height=\"$size\" alt=\"$alt\"/>";
+
+}, 10, 5 );
 
 # Check if custom avatar upload is allowed
 add_filter( "amd_is_avatar_upload_allowed", function(){

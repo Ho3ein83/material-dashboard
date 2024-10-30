@@ -477,7 +477,7 @@ class AMDCache{
 	 * @return void
 	 * @sicne 1.0.0
 	 */
-	public function addStyle( $id, $url, $ver = "default" ){
+	public function addStyle( $id, $url, $ver = "unknown" ){
 
 		$this->css[$id] = array(
 			'id' => $id,
@@ -698,19 +698,23 @@ class AMDCache{
 	}
 
 	/**
-     * Set locale with adding user meta and cookie
+	 * Set locale with adding user meta and cookie
+	 *
 	 * @param string $locale
-     * Locale code
+	 * Locale code
+	 * @param bool $switch
+     * Whether to switch locale
 	 *
 	 * @return void
 	 * @sicne 1.0.0
 	 */
-	public function setLocale( $locale ){
+	public function setLocale( $locale, $switch=true ){
 
-		switch_to_locale( $locale );
+        if( $switch )
+            switch_to_locale( $locale );
 
 		if( is_user_logged_in() )
-			amd_set_user_meta( null, "locale", $locale );
+			update_user_meta( get_current_user_id(), "locale", $locale );
 		else
 			self::setCookie( "locale", $locale, self::STAMPS["month"] );
 
