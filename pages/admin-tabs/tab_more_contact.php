@@ -13,8 +13,8 @@ const business_email = "contact@amatris.ir", developer_email = "ho3ein.b.83@gmai
 					<span><?php esc_html_e( "Our email", "material-dashboard" ); ?></span>
 				</div>
 				<div class="-sub-item">
-					<a href="mailto:<?php echo business_email; ?>" class="amd-admin-button --sm --primary --text"><?php echo business_email; ?></a>
-                    <button data-copy="<?php echo business_email; ?>" class="amd-admin-button --sm --primary"><?php _e( "Copy", "material-dashboard" ); ?></button>
+					<a href="mailto:<?php echo business_email; ?>" class="amd-admin-button --sm --primary --text"><?php echo esc_html( business_email ); ?></a>
+                    <button data-copy="<?php echo business_email; ?>" class="amd-admin-button --sm --primary"><?php esc_html_e( "Copy", "material-dashboard" ); ?></button>
 				</div>
 			</div>
 			<div class="-item">
@@ -22,8 +22,8 @@ const business_email = "contact@amatris.ir", developer_email = "ho3ein.b.83@gmai
 					<span><?php esc_html_e( "Developer email", "material-dashboard" ); ?></span>
 				</div>
 				<div class="-sub-item">
-					<a href="mailto:<?php echo developer_email; ?>" class="amd-admin-button --sm --primary --text"><?php echo developer_email; ?></a>
-					<button data-copy="<?php echo developer_email; ?>" class="amd-admin-button --sm --primary"><?php _e( "Copy", "material-dashboard" ); ?></button>
+					<a href="<?php echo esc_attr( 'mailto:' . developer_email ); ?>" class="amd-admin-button --sm --primary --text"><?php echo esc_html( developer_email ); ?></a>
+					<button data-copy="<?php echo esc_attr( developer_email ); ?>" class="amd-admin-button --sm --primary"><?php esc_html_e( "Copy", "material-dashboard" ); ?></button>
 				</div>
 				<div class="-sub-item --full">
 					<p class="color-blue text-center"><?php esc_html_e( "If you need help with anything related to plugin (like license, modules, codes, etc.) you can contact the plugin developer to get help directly.", "material-dashboard" ); ?></p>

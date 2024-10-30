@@ -5,7 +5,7 @@
  * Description: The best material dashboard for WordPress! If you want to delete this plugin, delete its data from cleanup menu first.
  * Plugin URI: https://amatris.ir/amd
  * Author: Hossein
- * Version: 1.0.7
+ * Version: 1.0.8
  * Requires at least: 5.2
  * Requires PHP: 7.4.0
  * Tested up to: 6.3
@@ -58,6 +58,9 @@ require_once( AMD_CORE . '/init.php' );
 
 # Load hooks
 require_once( AMD_INCLUDES . "/hooks.php" );
+
+# Load templates hooks
+require_once( AMD_INCLUDES . "/template-hooks.php" );
 
 # Require functions
 require_once( __DIR__ . "/functions.php" );
@@ -234,6 +237,7 @@ add_action( "amd_init_translation", function(){
 		"todo_enter_to_save" => esc_html__( "Hit enter or double click on outside the text to save", "material-dashboard" ),
 		"saving_orders" => esc_html__( "Saving orders", "material-dashboard" ),
 		"write_a_text" => esc_html__( "Write anything", "material-dashboard" ),
+		"hint" => esc_html__( "Hint", "material-dashboard" ),
 	) );
 
 } );

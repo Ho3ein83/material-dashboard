@@ -1,6 +1,6 @@
 <div class="text-center" id="cart-is-empty" style="display:none">
     <h3 class="margin-0 mt-10"><?php esc_html_e( "Your cart is empty", "material-dashboard" ); ?></h3>
-    <a href="?void=home" data-turtle="lazy" class="btn btn-text mt-5"><?php _e( "Back", "material-dashboard" ); ?></a>
+    <a href="?void=home" data-turtle="lazy" class="btn btn-text mt-5"><?php esc_html_e( "Back", "material-dashboard" ); ?></a>
 </div>
 <?php
 

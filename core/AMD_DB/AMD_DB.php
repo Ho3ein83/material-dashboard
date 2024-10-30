@@ -59,7 +59,7 @@ class AMD_DB {
 	 * @var int
 	 * @since 1.0.5
 	 */
-	const db_version = 2;
+	const db_version = 3;
 
 	/**
 	 * Tables SQL structure
@@ -117,7 +117,7 @@ class AMD_DB {
 
 			}
 
-		} );
+		}, 99 );
 
 	}
 
@@ -991,7 +991,7 @@ class AMD_DB {
 
 		$filter = "";
 
-		if( !empty( $filters ) ){
+		if( !empty( $filters ) AND is_iterable( $filters ) ){
 
 			$filter = " WHERE ";
 
@@ -1024,7 +1024,7 @@ class AMD_DB {
 
 		$order = "";
 
-		if( !empty( $orders ) ){
+		if( !empty( $orders ) AND is_iterable( $orders ) ){
 
 			foreach( $orders as $key => $value )
 				$order = " ORDER BY `$key` $value";
@@ -1071,7 +1071,7 @@ class AMD_DB {
 		if( !self::siteOptionExists( $on ) )
 			$complete = $this->db->insert( $table, [ 'option_name' => $on, 'option_value' => $ov ] );
 		else
-			$complete = $this->db->update( $table, [ 'option_value' => $ov ], [ 'option_name' => $on ] );
+			$complete = $this->db->update( $table, [ 'option_value' => $ov ], [ 'option_name' => $on ] ) !== false;
 
 		if( !$ignoreCaches AND $complete )
 			$amdCache->setCache( $cache_key, $ov );
@@ -1345,7 +1345,7 @@ class AMD_DB {
 		$table = $this->getTable( "temp" );
 
 		if( $this->tempExists( $name ) )
-			return $this->db->update( $table, [ 'temp_value' => $value ], [ 'temp_key' => $name ] );
+			return $this->db->update( $table, [ 'temp_value' => $value ], [ 'temp_key' => $name ] ) !== false;
 		else
 			return $this->db->insert( $table, [ 'temp_key' => $name, 'temp_value' => $value, 'expire' => $expire ] );
 
@@ -1616,7 +1616,7 @@ class AMD_DB {
 
 		$table = $this->getTable( "todo" );
 
-		return (bool) $this->db->update( $table, $data, $where );
+		return $this->db->update( $table, $data, $where ) !== false;
 
 	}
 
@@ -1901,7 +1901,7 @@ class AMD_DB {
 
 		$table = $this->getTable( "reports" );
 
-		return (bool) $this->db->update( $table, $data, ["id" => $id] );
+		return $this->db->update( $table, $data, ["id" => $id] ) !== false;
 
 	}
 
@@ -2043,8 +2043,8 @@ class AMD_DB {
 
 	/**
 	 * Check if component exist
-	 * @param string $value
-	 * Value to search inside components, default is component ID
+	 * @param string|array $field
+	 * Value to search inside components or filter array to use custom filter, default is component ID
 	 * @param string $by
 	 * Field to search into, default is "id"
 	 *
@@ -2052,19 +2052,44 @@ class AMD_DB {
 	 * True or first result ID if component(s) does exist, otherwise false
 	 * @since 1.0.5
 	 */
-	public function componentExist( $value, $by="id" ){
-
-		$by = strtolower( $by );
-		$by = str_replace( "type", "component_type", $by );
-		$by = str_replace( "key", "component_key", $by );
+	public function componentExist( $field, $by="id" ){
 
 		$table = $this->getTable( "components" );
 
-		$sql = $this->db->prepare( "SELECT * FROM %i WHERE %i=%s", $table, $by, $value );
+		if( is_array( $field ) ){
+			$filter = self::makeFilters( $field );
+			$sql = $this->db->prepare( "SELECT * FROM %i " . $filter, $table );
+		}
+		else{
+			$by = strtolower( $by );
+			$by = str_replace( "type", "component_type", $by );
+			$by = str_replace( "key", "component_key", $by );
+
+			$sql = $this->db->prepare( "SELECT * FROM %i WHERE %i=%s", $table, $by, $field );
+		}
 
 		$res = $this->safeQuery( $table, $sql );
 
-		return !empty( $res ) ? ( $res[0]->id ?? true ) : false;
+		return !empty( $res ) ? $res[0]->id : false;
+
+	}
+
+	/**
+	 * Update component using where clauses
+	 * @param array $data
+	 * Data to update
+	 * @param array $where
+	 * A named array of WHERE clauses
+	 * @return bool
+	 * True on success, false on failure
+	 * @since 1.0.5
+	 * @see wpdb::update()
+	 */
+	public function updateComponentWhere( $data, $where ){
+
+		$table = $this->getTable( "components" );
+
+		return $this->db->update( $table, $data, $where ) !== false;
 
 	}
 
@@ -2081,9 +2106,7 @@ class AMD_DB {
 	 */
 	public function updateComponent( $id, $data ){
 
-		$table = $this->getTable( "components" );
-
-		return (bool) $this->db->update( $table, $data, ["id" => $id] );
+		return self::updateComponentWhere( $data, ["id" => $id] );
 
 	}
 
@@ -2137,6 +2160,39 @@ class AMD_DB {
 		$table = $this->getTable( "components" );
 
 		return (bool) $this->db->delete( $table, $where );
+
+	}
+
+	/**
+	 * Get components using custom filter and order
+	 * @param array $filters
+	 * Filters array, see {@see AMD_DB::makeFilters()}
+	 * @param array $orders
+	 * Orders array, see {@see AMD_DB::makeOrder()}
+	 * @param bool $make
+	 * Whether to make object for results or not
+	 * @param bool $single
+	 * Whether to return first result or full results
+	 *
+	 * @return AMDComponent|array|mixed|object|stdClass|null
+	 * {@see AMDComponent} object if you need to make object, otherwise {@see wpdb::query()} results
+	 * @since 1.0.8
+	 */
+	public function filterComponents( $filters=[], $orders=[], $make=false, $single=false ){
+
+		$filter = self::makeFilters( $filters );
+		$order = self::makeOrder( $orders );
+
+		$table = $this->getTable( "components" );
+
+		$sql = $this->db->prepare( "SELECT * FROM %i $filter $order", $table );
+
+		$res = $this->safeQuery( $table, $sql );
+
+		if( $make )
+			return self::makeComponents( $res, $single );
+
+		return $single ? ( $res[0] ?? [] ) : $res;
 
 	}
 

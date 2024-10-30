@@ -145,7 +145,7 @@ define( 'AMD_UPLOAD_PATH', $_upload_base_dir . DIRECTORY_SEPARATOR . AMD_DIRECTO
  * Plugin current version
  * @since 1.0.4
  */
-define( 'AMD_VER', '1.0.7' );
+define( 'AMD_VER', '1.0.8' );
 
 /**
  * Version codes
@@ -156,6 +156,6 @@ const AMD_VERSION_CODES = array(
 	'structure' => AMD_VER,
 	'admin' => AMD_VER,
 	'vars' => AMD_VER,
-	'hello-pop' => "2.2.3",
+	'hello-pop' => "2.2.4",
 	'mi' => '4.0.0',
 );

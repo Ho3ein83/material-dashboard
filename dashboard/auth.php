@@ -102,9 +102,9 @@ $blog_name = get_bloginfo( "name" );
                 <a class="btn" href="<?php echo esc_url( $btn_url ); ?>"><?php echo esc_html( $btn_text ); ?></a>
 			<?php else: ?>
 				<?php if( is_user_logged_in() ): ?>
-                    <button type="button" class="btn" data-auth="login"><?php _e( "Back to dashboard", "material-dashboard" ); ?></button>
+                    <button type="button" class="btn" data-auth="login"><?php esc_html_e( "Back to dashboard", "material-dashboard" ); ?></button>
 				<?php else: ?>
-                    <button type="button" class="btn" data-auth="login"><?php _e( "Login to your account", "material-dashboard" ); ?></button>
+                    <button type="button" class="btn" data-auth="login"><?php esc_html_e( "Login to your account", "material-dashboard" ); ?></button>
 				<?php endif; ?>
 			<?php endif; ?>
         </div>
@@ -120,7 +120,7 @@ $blog_name = get_bloginfo( "name" );
         loader_id: "",
         api_url: amd_conf.api_url,
         mode: "form",
-        loading_text: `<?php _e( "Please wait", "material-dashboard" ); ?><span class="_loader_dots_"></span>`,
+        loading_text: `<?php esc_html_e( "Please wait", "material-dashboard" ); ?><span class="_loader_dots_"></span>`,
         languages: JSON.parse(`<?php echo $json_locales; ?>`),
         network: network,
         translate: {

@@ -253,17 +253,41 @@ class AMDWarner{
     }
 
 	/**
-     * Send message to
+	 * Send message to
+	 *
 	 * @param array $data
-     * Message data
+	 * Message data
 	 * @param string $methods
-     * Message sending method(s) (e.g: "email", "sms", "email,sms")
+	 * Message sending method(s) (e.g: "email", "sms", "email,sms")
+	 * @param false|int $schedule
+     * Pass a number to schedule message to send it, or pass false to send it immediately.
+     * <br>The number is the number of seconds that you want to wait until sending message, e.g: 3600 equals to 1 hour
 	 *
 	 * @return bool
-     * True on success, false on failure
-     * @since 1.0.5
+	 * True on success, false on failure
+	 * @since 1.0.5
 	 */
-	public function sendMessage( $data, $methods="email,sms" ){
+	public function sendMessage( $data, $methods="email,sms", $schedule=false ){
+
+        if( $schedule === true ){
+
+            /**
+	         * Schedule time for messages
+             * @sicne 1.0.8
+	         */
+	        $schedule = apply_filters( "amd_message_schedule_time", 0 );
+
+        }
+
+        # Schedule messenger task to send message in background
+        if( $schedule !== false AND is_int( $schedule ) ){
+            $schedule_data = array(
+                "action" => "send_message",
+                "data" => $data,
+                "args" => [$methods]
+            );
+	        return amd_add_task( null, null, esc_html_x( "Send email and/or SMS to user", "Task title", "material-dashboard-pro" ), $schedule_data );
+        }
 
         if( strpos( $methods, "," ) !== false ){
             $success = false;
@@ -282,6 +306,11 @@ class AMDWarner{
 
             if( !$to OR !$subject OR !$message )
                 return false;
+
+            $bl = $data["emailBreakLine"] ?? false;
+
+            if( $bl )
+                $message = str_replace( "\n", "<br>", $message );
 
             $headers = $data["headers"] ?? "";
             $attachments = $data["attachments"] ?? [];

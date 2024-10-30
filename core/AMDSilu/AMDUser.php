@@ -316,4 +316,26 @@ class AMDUser{
 
 	}
 
+	/**
+	 * Get user role text
+	 * @param string|null $role
+	 * User role or pass null to use this user role
+	 *
+	 * @return string
+	 * Translated role name
+	 * @since 1.0.8
+	 */
+	public function getRoleName( $role=null ){
+
+		if( $role === null )
+			$role = $this->role;
+
+		$role = _x( ucfirst( $role ), "User role" );
+
+		$role = _x( ucfirst( $role ), "User role", "material-dashboard-pro" );
+
+		return $role;
+
+	}
+
 }

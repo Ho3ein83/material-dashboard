@@ -14,7 +14,7 @@ $doc_url = trim( amd_doc_url( "" ), "/" );
 				</div>
 				<div class="-sub-item">
 					<a href="<?php echo esc_url( $doc_url ); ?>" class="amd-admin-button --sm --primary --text" target="_blank"><?php echo esc_url( $doc_url ); ?></a>
-					<button data-copy="<?php echo esc_url( $doc_url ); ?>" class="amd-admin-button --sm --primary"><?php _e( "Copy", "material-dashboard" ); ?></button>
+					<button data-copy="<?php echo esc_url( $doc_url ); ?>" class="amd-admin-button --sm --primary"><?php esc_html_e( "Copy", "material-dashboard" ); ?></button>
 				</div>
 			</div>
 		</div>

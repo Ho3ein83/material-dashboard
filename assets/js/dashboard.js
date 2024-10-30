@@ -77,7 +77,7 @@ var AMDDashboard = (function() {
             sidebar_items: {},
             navbar_items: {},
             quick_options: {},
-            checkin_interval: 30000,
+            checkin_interval: 15000,
             user: {}
         }, c);
 
@@ -96,6 +96,8 @@ var AMDDashboard = (function() {
             error: [],
             end: []
         };
+
+        var _queue = [];
 
         var _error = (msg, type = null) => {
             if(type === "alert") {
@@ -149,6 +151,8 @@ var AMDDashboard = (function() {
                 callable(e);
             }
         }
+
+        this.started = false;
 
         this.setSidebarItemBadge = (item, badge, color = null) => {
             let $item = $(`[data-menu-item="${item}"]`);
@@ -666,8 +670,12 @@ var AMDDashboard = (function() {
                 if(!conf.is_broken)
                     _this.lazyReload(false);
             }
-            if(conf.is_broken)
+
+            if(conf.is_broken) {
                 conf.lazy_load = false;
+                _this.started = true;
+                _this.checkQueue();
+            }
 
             if(!_this.isMultiLingual())
                 $("[data-change-locale]").remove();
@@ -677,6 +685,10 @@ var AMDDashboard = (function() {
                     if(key.startsWith("_PAGE_"))
                         $amd.unbindEvent(key);
                 });
+                if(!_this.started) {
+                    _this.started = true;
+                    _this.checkQueue();
+                }
             });
 
         }
@@ -742,6 +754,7 @@ var AMDDashboard = (function() {
             if(b) $screen.fadeIn();
             else $screen.fadeOut();
             if(b && timeout > 0) setTimeout(() => _this.resume(), timeout);
+            if(!b) _this.checkQueue();
         }
 
         this.setSuspendText = text => {
@@ -760,6 +773,27 @@ var AMDDashboard = (function() {
         this.getSidebar = () => {
             if(!$sidebar) $sidebar = $("#" + conf.sidebar_id);
             return $sidebar;
+        }
+
+        this.checkQueue = () => {
+
+            if(_this.started && !_this.isSuspended()) {
+                setTimeout(() => {
+                    _queue.forEach(c => {
+                        if(typeof c === "function")
+                            c();
+                    });
+                }, 500);
+            }
+
+        }
+
+        this.queue = callable => {
+
+            _queue.push(callable);
+
+            _this.checkQueue();
+
         }
 
         this.expandSidebar = () => this.getSidebar().removeClass("collapse");

@@ -158,7 +158,11 @@ add_filter( "amd_new_verification_code_message", function( $uid, $code ){
 	if( !$user )
 		return "";
 
-	return sprintf( esc_html__( "Dear %s, your verification code for password reset is: %s", "material-dashboard" ), $user->firstname, "<br>$code" );
+    # [USER_TEMPLATE][MSG_TEMPLATE] - Password reset verification code
+    return amd_get_user_message_template( "password_reset_verification", $user, $code );
+
+	# return sprintf( esc_html__( "Dear %s, your verification code for password reset is: %s", "material-dashboard" ), $user->firstname, "<br>$code" );
+
 }, 10, 2 );
 
 # "password changed" message
@@ -167,7 +171,10 @@ add_filter( "amd_password_changed_message", function( $uid ){
 	if( !$user )
 		return "";
 
-	return sprintf( esc_html__( "Dear %s, your password has been changed at %s.\nPlease let us know if you didn't change it.", "material-dashboard" ), $user->firstname, amd_true_date( "Y/m/d H:i" ) );
+    # [USER_TEMPLATE][MSG_TEMPLATE] - Password changed
+    return amd_get_user_message_template( "password_changed", $user, time() );
+
+	# return sprintf( esc_html__( "Dear %s, your password has been changed at %s.\nPlease let us know if you didn't change it.", "material-dashboard" ), $user->firstname, amd_true_date( "Y/m/d H:i" ) );
 } );
 
 # "change email" message
@@ -175,8 +182,15 @@ add_filter( "amd_change_email_message", function( $uid, $new_email, $url ){
 	$user = amd_get_user( $uid );
 	if( !$user )
 		return "";
-    $a_tag = '<br><a class="link --fill" href="' . esc_url( $url ) . '">' . esc_html__( "Change email", "material-dashboard" ) . '</a>';
-	return sprintf( esc_html__( "Dear %s, you have requested for changing your email, if you want to change it to %s please click on the below link. %s", "material-dashboard" ), $user->firstname, "<p style='margin:8px' class='color-primary'>$new_email</p>", $a_tag );
+
+    # TODO
+    $a_tag = '<a class="link --fill" href="' . esc_url( $url ) . '">' . esc_html__( "Change email", "material-dashboard" ) . '</a>';
+
+    # [USER_TEMPLATE][MSG_TEMPLATE] - Confirm email change
+    return amd_get_user_message_template( "change_email_confirm", $user, $new_email, $url );
+
+    # return sprintf( esc_html__( "Dear %s, you have requested for changing your email, if you want to change it to %s please click on the below link. %s", "material-dashboard" ), $user->firstname, "<p style='margin:8px' class='color-primary'>$new_email</p>", $a_tag );
+
 }, 10, 3 );
 
 # "email changed" message
@@ -185,7 +199,10 @@ add_filter( "amd_email_changed_message", function( $uid, $new_email ){
 	if( !$user )
 		return "";
 
-	return sprintf( esc_html__( "Dear %s, your email address has been changed successfully", "material-dashboard" ), $user->firstname );
+    # [USER_TEMPLATE][MSG_TEMPLATE] - Email changed
+    return amd_get_user_message_template( "email_changed", $user, $new_email );
+
+	# return sprintf( esc_html__( "Dear %s, your email address has been changed successfully", "material-dashboard" ), $user->firstname );
 }, 10, 2 );
 
 /**
@@ -205,7 +222,10 @@ add_action( "amd_send_2fa_code", function( $code, $user_id ){
      */
     $method = apply_filters( "amd_2fa_code_send_method", "email,sms" );
 
-    $message = sprintf( esc_html__( "Dear %s, your 2FA code is: %s", "material-dashboard" ), $user->firstname, "\n$code" );
+    # [USER_TEMPLATE][MSG_TEMPLATE] - 2FA code
+    $message = amd_get_user_message_template( "2fa_code", $user, $code );
+    # $message = sprintf( esc_html__( "Dear %s, your 2FA code is: %s", "material-dashboard" ), $user->firstname, "\n$code" );
+
     $data = [
         "email" => $user->email,
         "phone" => $user->phone,
@@ -849,7 +869,7 @@ add_action( "amd_dashboard_header", function(){
         }
 
         .divider.--more:after {
-            content: '<?php _e( "More", "material-dashboard" );?>';
+            content: '<?php esc_html_e( "More", "material-dashboard" );?>';
             color: rgba(var(--amd-text-color-rgb), .8)
         }
 
@@ -1154,7 +1174,12 @@ add_filter( "amd_welcome_alert_title", function( $thisuser ){
 } );
 
 add_filter( "amd_welcome_alert_text", function( $thisuser ){
-    return sprintf( esc_html__( "Hello dear %s! Thanks for subscribing to our site, we hope you enjoy using it.", "material-dashboard" ), $thisuser->firstname );
+
+    # [USER_TEMPLATE][MSG_TEMPLATE] - Welcome notification
+	return amd_get_user_message_template( "welcome", $thisuser );
+
+    # return sprintf( esc_html__( "Hello dear %s! Thanks for subscribing to our site, we hope you enjoy using it.", "material-dashboard" ), $thisuser->firstname );
+
 } );
 
 # Before home page content
@@ -1165,7 +1190,7 @@ add_action( "amd_before_page_home", function(){
     # Show welcome message
     if( apply_filters( "amd_welcome_message_enabled", true ) AND amd_get_user_meta( $thisuser->ID, "welcome_pending" ) == "true" ){
         # @formatter off
-        ?><script>$amd.alert(`<?php echo apply_filters( "amd_welcome_alert_title", $thisuser ); ?>`, `<?php echo apply_filters( "amd_welcome_alert_text", $thisuser ) ?>`);</script><?php
+        ?><script>dashboard.queue(()=>$amd.alert(`<?php echo apply_filters( "amd_welcome_alert_title", $thisuser ); ?>`, `<?php echo apply_filters( "amd_welcome_alert_text", $thisuser ) ?>`));</script><?php
         # @formatter on
         amd_delete_user_meta( $thisuser->ID, "welcome_pending" );
     }

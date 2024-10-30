@@ -15,7 +15,7 @@ $orders = edd_get_orders( array(
 ?>
 <?php ob_start(); ?>
 <?php if( empty( $orders ) ): ?>
-    <h4 class="text-center"><?php _e( "You don't have any purchase to see", "material-dashboard" ); ?></h4>
+    <h4 class="text-center"><?php esc_html_e( "You don't have any purchase to see", "material-dashboard" ); ?></h4>
     <div style="margin:16px"></div>
 <?php else: ?>
     <div class="amd-card-list no-shadow">

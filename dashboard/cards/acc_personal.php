@@ -113,6 +113,9 @@ $ncode = amd_get_user_meta( $thisuser->ID, "ncode" );
                     $amd.alertQueue(_t("account_info"), resp.data.msg, {
                         icon: resp.success ? "success" : "error"
                     });
+                    if(resp.success){
+                        $("#sidebar").find(".--user-name").html((data.first_name || "") + " " + (data.last_name || ""));
+                    }
                     if(resp.data.toasts) {
                         for(let [key, conf] of Object.entries(resp.data.toasts)) dashboard.toast("", 3000, conf);
                     }

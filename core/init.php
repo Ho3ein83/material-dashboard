@@ -234,6 +234,25 @@ function amd_require_firewall(){
 }
 
 /**
+ * Load tasks core
+ * @return void
+ * @since 1.0.8
+ */
+function amd_require_tasks(){
+
+	require_once( 'AMDTasks/AMDTasks.php' );
+
+	global /** @var AMDTasks $amdTasks */
+	$amdTasks;
+
+	$amdTasks = new AMDTasks();
+
+	global $AMD_CORE_LOAD;
+	$AMD_CORE_LOAD["tasks"] = true;
+
+}
+
+/**
  * Check if core is loaded
  *
  * @param string $core
@@ -271,6 +290,8 @@ function amd_require_all(){
 	amd_require_network();
 
 	amd_require_silu();
+
+	amd_require_tasks();
 
 	amd_require_calendar();
 

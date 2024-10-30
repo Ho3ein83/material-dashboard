@@ -1,5 +1,5 @@
 /**
- * 2.2.2
+ * 2.2.4
  * Hello pop
  * ho3ein.b.83@gmail.com
  * License: ISC
@@ -9,8 +9,8 @@
 .hello-pop:not(.dark), body:not(.dark) .hello-pop {
     --hello-font: var(--amd-font-family);
     --hello-bg: var(--amd-wrapper-bg);
-    --hello-primary: #fff;
-    --hello-primary-rgb: 91, 70, 255;
+    --hello-primary: var(--amd-primary);
+    --hello-primary-rgb: var(--amd-primary-rgb);
     --hello-text-color: var(--amd-text-color);
     --hello-text-color-rgb: var(--amd-text-color-rgb);
     --hello-blue: #1bace1;

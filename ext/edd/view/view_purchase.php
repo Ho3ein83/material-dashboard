@@ -52,7 +52,7 @@ $date = amd_true_date( amd_ext_edd_get_date_format(), $_time );
         </div>
         <div class="h-20"></div>
         <div class="amd-card-list">
-            <h3 class="color-primary"><?php _e( "Files", "material-dashboard" ); ?></h3>
+            <h3 class="color-primary"><?php esc_html_e( "Files", "material-dashboard" ); ?></h3>
 			<?php foreach( $order_items as $key => $item ): ?>
 				<?php
 				if( !apply_filters( 'edd_user_can_view_receipt_item', true, $item ) )

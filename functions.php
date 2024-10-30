@@ -3084,6 +3084,7 @@ function amd_allowed_tags_with_attr( $tags ){
         "ol" => $default_attributes,
         "li" => $default_attributes,
         "em" => $default_attributes,
+        "var" => $default_attributes,
 	    "a" => array(
 		    "href" => true,
 		    "rel" => true,
@@ -4443,12 +4444,12 @@ function amd_is_ssl_forced(){
  */
 function amd_dump_number_format_guide(){
 	?>
-    <p><?php _e( "You can format how to validate and display numbers in registration form. You can enter number formats with letter <code>X</code> and <code>-</code> character for spaces, here some examples:", "material-dashboard" ); ?></p>
-    <p><?php _e( "<code>XXX-XXX-XXXX</code>: 012-345-6789", "material-dashboard" ); ?></p>
-    <p><?php _e( "<code>XXX-XXXX-XXX</code>: 012-3456-789", "material-dashboard" ); ?></p>
-    <p><?php _e( "<code>XXXXXXXXXX</code>: 0123456789", "material-dashboard" ); ?></p>
-    <p><?php _e( "Please note that country digit number will be added to the first of phone number automatically, for example by using <code>XXX-XXX-XXXX</code> format, your phone number will be something like this: <code>+1 012 345 6789</code>", "material-dashboard" ); ?></p>
-    <p><?php _e( "Phone numbers will be saved normally without any space and '-', for example if user phone number format is <code>XXX-XXX-XXXX</code> user saved phone number will be <code>+10123456789</code>.", "material-dashboard" ); ?></p>
+    <p><?php esc_html_e( "You can format how to validate and display numbers in registration form. You can enter number formats with letter <code>X</code> and <code>-</code> character for spaces, here some examples:", "material-dashboard" ); ?></p>
+    <p><?php esc_html_e( "<code>XXX-XXX-XXXX</code>: 012-345-6789", "material-dashboard" ); ?></p>
+    <p><?php esc_html_e( "<code>XXX-XXXX-XXX</code>: 012-3456-789", "material-dashboard" ); ?></p>
+    <p><?php esc_html_e( "<code>XXXXXXXXXX</code>: 0123456789", "material-dashboard" ); ?></p>
+    <p><?php esc_html_e( "Please note that country digit number will be added to the first of phone number automatically, for example by using <code>XXX-XXX-XXXX</code> format, your phone number will be something like this: <code>+1 012 345 6789</code>", "material-dashboard" ); ?></p>
+    <p><?php esc_html_e( "Phone numbers will be saved normally without any space and '-', for example if user phone number format is <code>XXX-XXX-XXXX</code> user saved phone number will be <code>+10123456789</code>.", "material-dashboard" ); ?></p>
     <p><a href="<?php echo esc_url( amd_doc_url( 'custom_country_code' ) ); ?>"
           target="_blank"><?php echo esc_html_x( "Learn how to use number formats", "Admin", "material-dashboard" ); ?></a></p>
 	<?php
@@ -4695,25 +4696,22 @@ function amd_log( $data, $append = false, $trace = false, $breakLine="\n" ){
 	$path = apply_filters( "amd_logs_path", ABSPATH . "amd_logs.txt" );
 
 	if( $data === true )
-		$data = "True";
+		$data = "[True]";
     else if( $data === false )
-		$data = "False";
+		$data = "[False]";
+    else if( $data === null )
+		$data = "[Null]";
+    else if( is_string( $data ) )
+		$data = empty( $data ) ? "[EmptyString]" : "$data";
+    else if( is_callable( $data ) )
+	    $data = "[Callable] " . var_export( $data, true );
     else
 	    $data = var_export( $data, true );
 
-    if( is_int( $data ) )
-		$content = "$data";
-	else if( is_string( $data ) )
-		$content = strlen( $data ) > 0 ? $data : "[EMPTY_STRING]";
-	else if( is_null( $data ) )
-		$content = "NULL";
-	else if( is_callable( $data ) )
-		$content = "CALLABLE";
-	else
-		$content = apply_filters( "amd_logs_control", var_export( $data, true ), $data );
+    $content = apply_filters( "amd_logs_control", $data, $data );
 
 	if( !is_string( $content ) )
-		$content = "[NOT_PRINTABLE]" . "[" . gettype( $content ) . "][EXPORTED] " . var_export( $content, true );
+		$content = "[NotPrintable]" . "[" . gettype( $content ) . "][Exported] " . var_export( $content, true );
 
 	$content = $trace ? "[" . date( apply_filters( "amd_logs_time_format", "Y-m-d H:i:s" ) ) . "]" . ( $pre ? " $pre" : "" ) . " $content" : $content;
 
@@ -4962,6 +4960,371 @@ function amd_user_required_2f( $uid=null ){
 		return true;
 
 	return amd_get_user_meta( $uid, "use_2fa", "false" ) == "true";
+}
+
+/**
+ * Get templates from template groups
+ * @param string|null $get_id
+ * Template ID to get, or pass null to get all templates
+ *
+ * @return array|mixed
+ * Templates array
+ * @sicne 1.0.8
+ */
+function amd_get_user_message_templates( $get_id=null ){
+
+	$templates = [];
+
+	/**
+	 * Get all groups
+	 * @since 1.2.1
+	 */
+	$groups = apply_filters( "amd_messages_templates_groups", [] );
+
+	foreach( $groups as $group ){
+		$list = $group["list"] ?? [];
+		foreach( $list as $id => $item ){
+            if( $get_id ){
+	            if( $get_id == $id )
+		            return $item;
+            }
+            else{
+	            $templates[$id] = $item;
+            }
+		}
+    }
+
+    return $templates;
+
+}
+
+/**
+ * Get message template for specific user
+ * @param string $message_id
+ * Message ID
+ * @param AMDUser $user
+ * User object
+ * @param mixed ...$args
+ * Arguments
+ *
+ * @return string
+ * Template text
+ * @sicne 1.0.8
+ */
+function amd_get_user_message_template( $message_id, $user, ...$args ){
+
+	/**
+	 * Get user message template text
+	 * @since 1.0.8
+	 */
+    $msg = apply_filters( "amd_user_message_template_text", "", $message_id );
+
+    return amd_apply_user_template( $msg, $user, $args );
+
+}
+
+/**
+ * Prepare content for saving message template into database
+ * @param string $id
+ * Template ID
+ * @param string $content
+ * Custom text to prepare
+ * @param array $scopes
+ * Template scopes
+ *
+ * @return string
+ * @since 1.0.8
+ */
+function amd_user_template_prepare_content( $id, $content, $scopes=[] ){
+
+	$variables = amd_get_template_allowed_variables( $id );
+
+    if( $variables ){
+	    # Keep allowed variables
+	    foreach( $variables as $variable ){
+		    $vid = $variable["id"] ?? "";
+		    if( !$vid )
+			    continue;
+		    $bbcode = $variable["bbcode"] ?? "Auto";
+		    if( $bbcode == "Auto" )
+			    $bbcode = "%" . strtoupper( $vid ) . "%";
+
+            # Reshape variables to prevent removing
+		    $content = preg_replace( "/$bbcode/", str_replace( "%", "~", $bbcode ), $content );
+        }
+    }
+
+    # Remove not allowed variables
+    $content = preg_replace( "/%([0-9a-zA-Z_\-]*?)%/", "", $content );
+
+	# Reshape variables
+	$content = preg_replace_callback( "/~([0-9a-zA-Z_\-]*?)~/", function( $a ){
+        return "%" . ( $a[1] ?? "" ) . "%";
+    }, $content );
+
+    # @since 1.0.8
+    # Remove HTML tags if this template has a non-HTML scope
+    foreach( apply_filters( "amd_user_message_templates_non_html_scopes", ["sms"] ) as $s ){
+        if( in_array( $s, $scopes ) ){
+            global $amdDB;
+            $content = adp_extract_text_from_html( $content, "br", true, null, 55, "", "</\$1><br>" );
+            $content = str_replace( "<br>", "\n", $content );
+            $content = $amdDB->formatHtml( $content, [] );
+            break;
+        }
+    }
+
+    # @since 1.0.8
+    return apply_filters( "amd_user_template_message_prepare_content", $content, $id, $scopes );
+
+}
+
+/**
+ * Replace variables with actual values inside template
+ * @param string $template
+ * Template text
+ * @param AMDUser $user
+ * User object
+ * @param array $args
+ * Arguments
+ *
+ * @return string
+ * Template content string
+ * @since 1.0.8
+ */
+function amd_apply_user_template( $template, $user, $args ){
+
+	/**
+	 * User message template variables
+	 * @since 1.0.8
+	 */
+    $variables = apply_filters( "amd_user_message_template_variables", [] );
+
+    $text = $template;
+    foreach( $variables as $variable ){
+	    $id = $variable["id"] ?? null;
+        if( !$id )
+            continue;
+
+        $bbcode = $variable["bbcode"] ?? "Auto";
+        if( $bbcode == "Auto" )
+	        $bbcode = "%" . strtoupper( $id ) . "%";
+
+        $callback = $variable["callback"] ?? null;
+        if( is_callable( $callback ) ){
+            $v = call_user_func( $callback, $user, $args );
+	        $text = str_replace( $bbcode, sanitize_text_field( $v ), $text );
+        }
+
+    }
+
+    return $text;
+}
+
+/**
+ * Get allowed variables for specific template
+ * @param string $template_id
+ * Template ID
+ *
+ * @return array
+ * Variables data
+ * @since 1.0.8
+ */
+function amd_get_template_allowed_variables( $template_id ){
+
+	$template = amd_get_user_message_templates( $template_id );
+
+	/**
+	 * User message template variables
+	 * @since 1.0.8
+	 */
+    $variables = apply_filters( "amd_user_message_template_variables", [] );
+
+    if( !$template )
+        return [];
+
+    $out = [];
+
+    $dependencies = $template["dependencies"] ?? [];
+
+    foreach( $variables as $variable ){
+	    $id = $variable["id"] ?? "";
+        if( $id ){
+	        $independent = $variable["independent"] ?? "";
+            $exp = explode( ",", $independent );
+            $mode = $exp[1] ?? "";
+            if( $mode == "*" || $mode == "~" ){
+	            $out[] = $variable;
+            }
+            else if( $mode == "?" AND in_array( $id, $dependencies ) ){
+	            $out[] = $variable;
+            }
+            else{
+	            foreach( $dependencies as $dependency ){
+                    if( is_string( $dependency ) AND preg_match( "/$dependency/", $id ) ){
+                        $out[] = $variable;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    return $out;
+
+}
+
+/**
+ * Get template variables used in a text
+ * @param string $template
+ * Template content
+ * @param bool $onlyNames
+ * Whether to only list variables name or list variables data
+ *
+ * @return array
+ * Variables list
+ * @sicne 1.0.8
+ */
+function amd_get_template_variables( $template, $onlyNames=false ){
+
+    if( !is_string( $template ) )
+        return [];
+
+    $variables = [];
+
+	/**
+	 * User message template variables
+	 * @since 1.0.8
+	 */
+	$_variables = apply_filters( "amd_user_message_template_variables", [] );
+
+    preg_match_all( "/%([0-9a-zA-Z_\-]*?)%/", $template, $matches );
+
+	foreach( $matches as $match ){
+        foreach( $match as $single_match ){
+	        if( !preg_match( "/%(.*)%/", $single_match ) ){
+		        $var_id = strtolower( $single_match );
+		        $v = $_variables[$var_id] ?? [];
+		        if( $v )
+			        $variables[] = $onlyNames ? ( $v["title"] ?? "" ) : $v;
+	        }
+        }
+    }
+
+    return $variables;
+
+}
+
+/**
+ * Insert new task into database
+ *
+ * @param int|null $user_id
+ * User ID or pass null to ignore
+ * @param string|null $key
+ * Task key or pass null to generate automatically
+ * @param string $title
+ * Task title for visual task manager
+ * @param mixed $data
+ * Task data, this data will be encoded with {@see json_encode} and it is up to you to handle it correctly
+ * @param int $repeat
+ * Times to repeat the task
+ * @param int $period
+ * Task execution period at each repeat, for running a task every hour for 3 times, you need to set `$repeat` to 3 and `$period` to 3600 (seconds)
+ * <br><b>Note: by setting period to 0, `$repeat` will change to 1 automatically to prevent executing task multiple times at once</b>
+ * @param array $meta
+ * Meta-data array
+ *
+ * @return false|int
+ * Inserted row ID on success, false on failure
+ * @see AMDTasks::addTask()
+ * @since 1.0.8
+ */
+function amd_add_task( $user_id, $key, $title, $data, $repeat=1, $period=0, $meta = [] ){
+
+    global $amdTasks;
+
+    return $amdTasks->addTask( $user_id, $key, $title, $data, $repeat, $period, $meta );
+
+}
+
+/**
+ * Get tasks from database
+ * @param array $filter
+ * Filters array, see {@see AMD_DB::makeFilters()}
+ * @param bool $make
+ * Whether to make object or return database results
+ * @param bool $single
+ * Whether to return single object or complete results
+ * @param array $order
+ * Order array, see {@see AMD_DB::makeOrder()}
+ *
+ * @return AMDTasks_Object|array|mixed|object|stdClass
+ * Empty array if there is no result, otherwise:
+ * <ul>
+ * <li>`$make=true` and `$single=true`: single {@see AMDTasks_Object} object</li>
+ * <li>`$make=true` and `$single=false`: listed {@see AMDTasks_Object} objects array</li>
+ * <li>`$make=false` and `$single=true`: Single database result from {@see wpdb::query()}</li>
+ * <li>`$make=false` and `$single=false`: Listed database results from {@see wpdb::query()}</li>
+ * </ul>
+ * @see AMDTasks::getTasks()
+ * @since 1.0.8
+ */
+function amd_get_tasks( $filter=[], $make=true, $single=false, $order=[] ){
+
+    global $amdTasks;
+
+    return $amdTasks->getTasks( $filter, $make, $single, $order );
+
+}
+
+/**
+ * Delete specific task(s) from database
+ * @param array $where
+ * Where clauses, see {@see wpdb::delete()}
+ *
+ * @return bool
+ * True on success, false on failure
+ * @see AMDTasks::deleteTasks()
+ * @sicne 1.0.8
+ */
+function amd_delete_tasks( $where ){
+
+    global $amdTasks;
+
+    return $amdTasks->deleteTasks( $where );
+
+}
+
+/**
+ * Update task item(s) from database
+ * @param array $data
+ * @param array $where
+ *
+ * @return bool
+ * True on success, false on failure
+ * @see AMDTasks::deleteTasks()
+ * @since 1.0.8
+ */
+function amd_update_tasks( $data, $where ){
+
+    global $amdTasks;
+
+    return $amdTasks->updateTasks( $data, $where );
+
+}
+
+/**
+ * Run all queued tasks
+ * @return void
+ * @see AMDTasks::runQueuedTasks()
+ * @sicne 1.0.8
+ */
+function amd_run_queued_tasks(){
+
+    global $amdTasks;
+
+    $amdTasks->runQueuedTasks();
+
 }
 
 /**

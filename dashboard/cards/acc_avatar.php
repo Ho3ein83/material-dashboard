@@ -66,8 +66,8 @@ $hasCustomAvatar = file_exists( amd_get_avatars_path() . "/" . $thisuser->secret
     <img src="" alt="" id="cropper-img">
 </div>
 <div class="force-center" id="cropper-footer" style="display:none">
-    <button type="button" class="btn" id="cropper-crop"><?php _e( "Crop", "material-dashboard" ); ?></button>
-    <button type="button" class="btn btn-text" id="cropper-dismiss"><?php _e( "Dismiss", "material-dashboard" ); ?></button>
+    <button type="button" class="btn" id="cropper-crop"><?php esc_html_e( "Crop", "material-dashboard" ); ?></button>
+    <button type="button" class="btn btn-text" id="cropper-dismiss"><?php esc_html_e( "Dismiss", "material-dashboard" ); ?></button>
 </div>
 <label style="display:none">
     <input type="file" id="custom-avatar" accept=".png,.svg,.jpg,.jpeg">
@@ -77,7 +77,8 @@ $hasCustomAvatar = file_exists( amd_get_avatars_path() . "/" . $thisuser->secret
 <?php ob_start(); ?>
 <?php if( $uploadAllowed ): ?>
     <div class="amd-drop-zone" style="display:none">
-        <div><h2><?php _e( "Drop files here", "material-dashboard" ); ?></h2>
+        <div>
+            <h2><?php esc_html_e( "Drop files here", "material-dashboard" ); ?></h2>
             <div><?php _amd_icon( "upload" ); ?></div>
         </div>
     </div>

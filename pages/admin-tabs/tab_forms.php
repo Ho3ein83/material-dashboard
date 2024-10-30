@@ -38,7 +38,7 @@ $defaultSettings = array(
                     </label>
                 </div>
                 <div class="-sub-item">
-                    <input type="text" id="form-title-login" class="amd-admin-input" name="login_page_title" placeholder="<?php _e( "default", "material-dashboard" ); ?>">
+                    <input type="text" id="form-title-login" class="amd-admin-input" name="login_page_title" placeholder="<?php esc_attr_e( "default", "material-dashboard" ); ?>">
                 </div>
             </div>
             <div class="-item">
@@ -48,7 +48,7 @@ $defaultSettings = array(
                     </label>
                 </div>
                 <div class="-sub-item">
-                    <input type="text" id="form-title-register" class="amd-admin-input" name="register_page_title" placeholder="<?php _e( "default", "material-dashboard" ); ?>">
+                    <input type="text" id="form-title-register" class="amd-admin-input" name="register_page_title" placeholder="<?php esc_attr_e( "default", "material-dashboard" ); ?>">
                 </div>
             </div>
             <div class="-item">
@@ -58,7 +58,7 @@ $defaultSettings = array(
                     </label>
                 </div>
                 <div class="-sub-item">
-                    <input type="text" id="form-title-fp" class="amd-admin-input" name="reset_password_page_title" placeholder="<?php _e( "default", "material-dashboard" ); ?>">
+                    <input type="text" id="form-title-fp" class="amd-admin-input" name="reset_password_page_title" placeholder="<?php esc_attr_e( "default", "material-dashboard" ); ?>">
                 </div>
             </div>
         </div>
@@ -83,7 +83,7 @@ $defaultSettings = array(
 					        data-link="dash-logo-img"><?php echo esc_html_x( "Browse", "Admin", "material-dashboard" ); ?></button>
 					<label>
 						<input type="text" id="custom-dash-logo" class="amd-admin-input"
-						       placeholder="<?php _e( "Custom URL", "material-dashboard" ); ?>">
+						       placeholder="<?php esc_attr_e( "Custom URL", "material-dashboard" ); ?>">
 					</label>
 				</div>
 				<div class="-sub-item">

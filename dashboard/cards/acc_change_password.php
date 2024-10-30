@@ -12,8 +12,8 @@
 
 <?php ob_start(); ?>
 <div class="plr-8">
-    <button type="button" class="btn" data-submit="change-password"><?php _e( "Change", "material-dashboard" ); ?></button>
-    <button type="button" class="btn btn-text" data-dismiss="change-password"><?php _e( "Dismiss", "material-dashboard" ); ?></button>
+    <button type="button" class="btn" data-submit="change-password"><?php esc_html_e( "Change", "material-dashboard" ); ?></button>
+    <button type="button" class="btn btn-text" data-dismiss="change-password"><?php esc_html_e( "Dismiss", "material-dashboard" ); ?></button>
 </div>
 <?php $change_password_footer = ob_get_clean(); ?>
 
