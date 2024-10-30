@@ -4,6 +4,7 @@ $amd_icon = 'amd_icon';
 $__ = '__';
 
 $primary_color = amd_ext_todo_get_primary_color();
+$todo_reminder = amd_get_site_option( "todo_reminder_enabled", "true" );
 
 ?>
 <?php ob_start(); ?>
@@ -16,11 +17,25 @@ $primary_color = amd_ext_todo_get_primary_color();
     </label>
     <span class="badge --sm" style="flex:0 0 85px;transition:all ease .3s" id="todo-priority-badge"></span>
 </div>
+<div id="todo-reminder-section" style="display:none">
+    <div class="h-10"></div>
+    <label class="ht-input">
+        <input type="text" class="" id="todo-reminder-date" placeholder="" readonly required/>
+        <span><?php echo esc_html_x( "Reminder", "Todo", "material-dashboard" ); ?></span>
+        <?php _amd_icon( "bell" ); ?>
+    </label>
+</div>
 <?php $todo_new_item_content = ob_get_clean(); ?>
 
 <?php ob_start(); ?>
-<button class="btn --<?php echo esc_attr( $primary_color ); ?>" id="btn-add-todo"><?php esc_html_e( "Add", "material-dashboard" ); ?></button>
-<button class="btn btn-text --<?php echo esc_attr( $primary_color ); ?>" id="btn-cancel-todo"><?php esc_html_e( "Cancel", "material-dashboard" ); ?></button>
+<div class="h-20"></div>
+<div class="flex-align" style="justify-content:space-between;flex-wrap:wrap">
+    <button class="btn --primary" id="btn-add-todo" style="flex:1"><?php esc_html_e( "Add", "material-dashboard" ); ?></button>
+    <?php if( amd_get_logical_value( $todo_reminder ) ): ?>
+    <button class="btn --green" id="btn-reminder" style="flex:1"><?php echo esc_html_x( "Reminder", "Todo", "material-dashboard" ); ?></button>
+    <?php endif; ?>
+    <button class="btn btn-text --red" id="btn-cancel-todo" style="flex:1"><?php esc_html_e( "Cancel", "material-dashboard" ); ?></button>
+</div>
 <?php $todo_new_item_footer = ob_get_clean(); ?>
 
 <?php ob_start(); ?>
@@ -35,7 +50,7 @@ $primary_color = amd_ext_todo_get_primary_color();
     <div class="col-lg-5">
 		<?php amd_dump_single_card( array(
 			"id" => "new-todo-card",
-			"title" => esc_html__( "New item", "material-dashboard" ),
+			"title" => __( "New item", "material-dashboard" ),
 			"content" => $todo_new_item_content,
 			"footer" => $todo_new_item_footer,
 			"color" => $primary_color,
@@ -51,18 +66,20 @@ $primary_color = amd_ext_todo_get_primary_color();
         <p class="margin-0 text-center tiny-text color-low" id="todo-caption"></p>
         <div class="h-10"></div>
         <div class="text-center">
-            <p class="badge bg-x-low color-primary-im small-text" style="padding:8px 20px" id="todo-empty"><?php esc_html_e( "There is no item to show", "material-dashboard" ); ?></p>
+            <p class="badge --sm bg-x-low color-primary-im _badge small-text" style="padding:8px 20px" id="todo-empty"><?php esc_html_e( "There is no item to show", "material-dashboard" ); ?></p>
         </div>
         <div class="amd-todo-row" id="todo-list-items"></div>
     </div>
 </div>
 <div class="h-100"></div>
+<!-- @formatter off -->
 <script>
     <!-- Initialize Quill editor -->
     $(document).on('change keydown keyup', 'textarea.auto-size', function() {
         $(this).height(0).height(this.scrollHeight);
     }).find('textarea.auto-size').trigger("change");
     var _todo_list_item_delete_icon = `<?php _amd_icon( "delete" ); ?>`;
+
     (function() {
         var editor = new Quill('#todo-editor', {
             modules: {
@@ -511,12 +528,16 @@ $primary_color = amd_ext_todo_get_primary_color();
                     if(resp.success) {
                         let items = resp.data.data;
                         for(let [id, data] of Object.entries(items)) {
-                            let _text = data.text || "";
-                            let _status = data.status || "";
-                            let _priority = data.priority || "0";
-                            let $html = $(`<div class="--item --bg" data-todo="${id}" data-priority="${_priority}">
+                            const _text = data.text || "", _status = data.status || "", _priority = data.priority || "0";
+                            const _reminder_alt = data.reminder_alt || "";
+                            let reminder_span = "";
+                            if(_reminder_alt.length) reminder_span = `<span class="tiny-text waiting reminder-badge"">${_i("bell")}<span>${_reminder_alt}</span></span>`;
+                            const $html = $(`<div class="--item --bg" data-todo="${id}" data-priority="${_priority}">
                         <span class="_indicator"></span>
-                        <div class="--text _text" ${_status === "done" ? "style=\"text-decoration:line-through\"" : ""}>${_text}</div>
+                        <div>
+                            <div class="--text _text" ${_status === "done" ? "style=\"text-decoration:line-through\"" : ""}>${_text}</div>
+                            ${reminder_span}
+                        </div>
                         <label class="hb-checkbox">
                             <input type="checkbox" class="_checkbox" ${_status === "done" ? "checked" : ""}>
                             <span></span>
@@ -557,6 +578,16 @@ $primary_color = amd_ext_todo_get_primary_color();
         let clearTextarea = () => {
             setEditorContent("");
         }
+        const $reminder_input = $("#todo-reminder-date");
+        const get_reminder = () => {
+            const enabled = $reminder_input.hasAttr("data-enabled", true) === "true";
+            const time = parseInt(enabled ? $reminder_input.hasAttr("data-time", true) : 0);
+            return {
+                time: isNaN(time) ? 0 : time,
+                enabled: time ? enabled : false,
+                alt: $reminder_input.val()
+            }
+        }
         $cancel.click(() => clearTextarea());
         $add.click(function() {
             let text = getEditorContent();
@@ -566,9 +597,10 @@ $primary_color = amd_ext_todo_get_primary_color();
             }
             let priority = $priority.val();
             let _network = dashboard.createNetwork();
+            let reminder_data = get_reminder();
             _network.clean();
             _network.put("_ajax_target", "ext_todo");
-            _network.put("add_todo", {text, priority});
+            _network.put("add_todo", {text, priority, reminder: reminder_data});
             _network.on.start = () => $card_new.cardLoader();
             _network.on.end = (resp, error) => {
                 $card_new.cardLoader(false);
@@ -576,9 +608,14 @@ $primary_color = amd_ext_todo_get_primary_color();
                     if(resp.success) {
                         clearTextarea();
                         let id = resp.data.id, formatted_text = resp.data.formatted_text || text;
+                        let reminder_span = "";
+                        if(reminder_data.enabled) reminder_span = `<span class="tiny-text waiting reminder-badge"">${_i("bell")}<span>${reminder_data.alt}</span></span>`;
                         let $html = $(`<div class="--item --bg" data-todo="${id}" data-priority="${priority}">
                         <span class="_indicator"></span>
-                        <div class="--text _text">${formatted_text.replaceAll("\n", "<br>")}</div>
+                        <div>
+                            <div class="--text _text">${formatted_text.replaceAll("\n", "<br>")}</div>
+                            ${reminder_span}
+                        </div>
                         <label class="hb-checkbox">
                             <input type="checkbox" class="_checkbox">
                             <span></span>
@@ -610,101 +647,55 @@ $primary_color = amd_ext_todo_get_primary_color();
         });
     }());
 </script>
-<style>
-    .amd-todo-row > .--item, .amd-todo-row {
-        display: flex;
-        align-items: center;
-        justify-content: center
-    }
-
-    .amd-todo-row {
-        position: relative;
-        flex-direction: column;
-        flex-wrap: wrap;
-        margin: 16px
-    }
-
-    .amd-todo-row > .--item {
-        position: relative;
-        box-sizing: border-box;
-        flex-direction: row;
-        border-radius: 10px;
-        margin: 8px 0;
-        width: 100%;
-        padding: 8px
-    }
-
-    @media (min-width: 993px) {
-        .amd-todo-row {
-            flex-wrap: nowrap
-        }
-    }
-
-    .amd-todo-row > .--item.--bg {
-        background: var(--amd-wrapper-fg)
-    }
-
-    .amd-todo-row > .--item .btn {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        min-width: 40px;
-        padding: 9px;
-        height: auto;
-        aspect-ratio: 1;
-        margin: 0 4px
-    }
-
-    .amd-todo-row > .--item .--text {
-        text-align: justify;
-        padding: 0 16px;
-        font-size: var(--amd-size-md)
-    }
-
-    .amd-todo-row > .--item .--text {
-        flex: 8
-    }
-
-    .amd-todo-row > .--item > div {
-        flex: 1
-    }
-
-    .amd-todo-row > .--item > div ._icon_ {
-        font-size: 20px
-    }
-    .amd-todo-row > .--item ._move {
-        cursor: move;
-    }
-
-    .amd-todo-row > .--item ._indicator {
-        position: absolute;
-        top: 0;
-        width: 5px;
-        height: 100%;
-        background-color: var(--amd-primary);
-        transition: background-color ease .3s;
-    }
-
-    body.rtl .amd-todo-row > .--item ._indicator {
-        right: 0;
-        border-radius: 0 10px 10px 0;
-    }
-
-    body.ltr .amd-todo-row > .--item ._indicator {
-        left: 0;
-        border-radius: 10px 0 0 10px;
-    }
-
-    .amd-todo-row > .--item ._text[contenteditable] {
-        margin: 0 8px;
-        border: 1px dashed rgba(var(--amd-text-color-rgb), .2);
-        padding: 4px;
-        text-decoration: none !important;
-        outline: none;
-        border-radius: 8px;
-    }
-</style>
-<!-- @formatter off -->
+<style>.reminder-badge{padding:0 16px;display:flex;align-items:center;gap:5px}.reminder-badge>._icon_{width:18px;height:auto}.reminder-badge>._icon_.bi::before{font-size:15px}body.dark ._badge{color:#fff !important}.amd-todo-row>.--item,.amd-todo-row{display:flex;align-items:center;justify-content:center}.amd-todo-row{position:relative;flex-direction:column;flex-wrap:wrap;margin:16px}.amd-todo-row>.--item{position:relative;box-sizing:border-box;flex-direction:row;border-radius:10px;margin:8px 0;width:100%;padding:8px}@media(min-width:993px){.amd-todo-row{flex-wrap:nowrap}}.amd-todo-row>.--item.--bg{background:var(--amd-wrapper-fg)}.amd-todo-row>.--item .btn{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;width:32px;min-width:40px;padding:9px;height:auto;aspect-ratio:1;margin:0 4px}.amd-todo-row>.--item .--text{text-align:justify;padding:0 16px;font-size:var(--amd-size-md)}.amd-todo-row>.--item .--text{flex:8}.amd-todo-row>.--item>div{flex:1}.amd-todo-row>.--item>div ._icon_{font-size:20px}.amd-todo-row>.--item ._move{cursor:move}.amd-todo-row>.--item ._indicator{position:absolute;top:0;width:5px;height:100%;background-color:var(--amd-primary);transition:background-color ease .3s}body.rtl .amd-todo-row>.--item ._indicator{right:0;border-radius:0 10px 10px 0}body.ltr .amd-todo-row>.--item ._indicator{left:0;border-radius:10px 0 0 10px}.amd-todo-row>.--item ._text[contenteditable]{margin:0 8px;border:1px dashed rgba(var(--amd-text-color-rgb),.2);padding:4px;text-decoration:none !important;outline:0;border-radius:8px}</style>
 <!-- @formatter on -->
+
+<script src="<?php echo esc_url( AMD_MOD . '/persian-date/persian-datepicker.min.js' ); ?>"></script>
+<script>
+    jQuery($ => {
+        const _texts = {
+            reminder: `<?php echo esc_html_x( "Reminder", "Todo", "material-dashboard" ); ?>`,
+            remove_reminder: `<?php echo esc_html_x( "Remove reminder", "Todo", "material-dashboard" ); ?>`,
+            time: `<?php echo esc_html_x( "Time", "clock", "material-dashboard" ); ?>`,
+        }
+        if(typeof persianDate !== "undefined" && typeof persianDatepicker !== "undefined") {
+            const $btn = $("#btn-reminder"), $reminder_section = $("#todo-reminder-section");
+            const $input = $("#todo-reminder-date");
+            const add_zero = num => num <= 9 ? "0" + num : num;
+            const _refresh = () => {
+                const state = date_picker.getState(), {unixDate} = state.selected;
+                const d = new Date(unixDate), year = d.getFullYear(), month = d.getMonth() + 1, date = d.getDate();
+                $input.attr("data-date", `${year}-${add_zero(month)}-${add_zero(date)} ${add_zero(d.getHours())}:${add_zero(d.getMinutes())}`).attr("data-time", unixDate.toString().substring(0, unixDate.toString().length-3));
+            }
+            const date_picker = $input.persianDatepicker({
+                format: `dddd D MMMM YYYY ${_texts.time} H:m`,
+                calendarType: "<?php echo get_locale() === 'fa_IR' ? 'persian' : 'gregorian' ?>",
+                autoClose: true,
+                minDate: new Date().getTime(),
+                toolbox: {enabled:true,calendarSwitch:{enabled:true,format:"MMMM"},todayButton:{enabled:true,text:{fa:"امروز",en:"Today"},onToday:_refresh},submitButton:{enabled:true,text:{fa:"تایید",en:"Submit"}},text:{btnToday:"امروز"}},
+                navigator: {enabled:true,scroll:{enabled:false},text:{btnNextText: "⮜",btnPrevText: "⮞"}},
+                timePicker: {enabled:true,step:1,hour:{enabled:true},minute:{enabled:true},second:{enabled:false},meridian:{enabled:false}},
+                onSelect: _refresh
+            });
+            _refresh();
+            const disable = () => {
+                $reminder_section.slideUp();
+                date_picker.hide();
+                $btn.html(_texts.reminder).removeClass("--red").addClass("--green");
+                $input.attr("data-enabled", "false");
+            }
+            const enable = () => {
+                $reminder_section.slideDown();
+                $btn.html(_texts.remove_reminder).removeClass("--green").addClass("--red");
+                $input.attr("data-enabled", "true");
+            }
+            $btn.click(() => {
+                const enabled = $input.hasAttr("data-enabled", true);
+                if(enabled === "true") disable();
+                else enable();
+            });
+            $("#btn-cancel-todo").click(() => disable());
+            $reminder_section.fadeOut(0);
+        }
+    });
+</script>

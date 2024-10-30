@@ -8,14 +8,14 @@ add_filter( "amd_messages_templates_scopes", function( $scopes ){
 
 	$scopes["email"] = array(
 		"id" => "email",
-		"title" => esc_html__( "Email", "material-dashboard" ),
-		"desc" => esc_html_x( "Alert users with email", "Message scope", "material-dashboard" )
+		"title" => __( "Email", "material-dashboard" ),
+		"desc" => _x( "Alert users with email", "Message scope", "material-dashboard" )
 	);
 
 	$scopes["sms"] = array(
 		"id" => "sms",
-		"title" => esc_html__( "SMS", "material-dashboard" ),
-		"desc" => esc_html_x( "Alert users with SMS if they have registered phone number", "Message scope", "material-dashboard" )
+		"title" => __( "SMS", "material-dashboard" ),
+		"desc" => _x( "Alert users with SMS if they have registered phone number", "Message scope", "material-dashboard" )
 	);
 	
 	return $scopes;
@@ -28,8 +28,13 @@ add_filter( "amd_messages_templates_scopes", function( $scopes ){
  */
 add_filter( "amd_messages_templates_groups", function( $groups ){
 
-	$groups["users"] = array(
-		"title" => esc_html__( "User messages", "material-dashboard" ),
+	$groups["sms_templates"] = array(
+		"title" => _x( "SMS templates", "Admin text template", "material-dashboard" ),
+		"list" => apply_filters( "amd_sms_message_templates", [] )
+	);
+
+    $groups["users"] = array(
+		"title" => __( "User messages", "material-dashboard" ),
 		"list" => apply_filters( "amd_user_message_templates", [] )
 	);
 
@@ -44,47 +49,87 @@ add_filter( "amd_messages_templates_groups", function( $groups ){
 add_filter( "amd_user_message_templates", function( $list ){
 
 	$list["welcome"] = array(
-		"title" => esc_html__( "Welcome", "material-dashboard" ),
-		"template" => sprintf( esc_html__( "Hello dear %s! Thanks for subscribing to our site, we hope you enjoy using it.", "material-dashboard" ), "%FIRSTNAME%" ),
+		"title" => __( "Welcome", "material-dashboard" ),
+		"template" => sprintf( __( "Hello dear %s! Thanks for subscribing to our site, we hope you enjoy using it.", "material-dashboard" ), "%FIRSTNAME%" ),
 		"scopes" => ["email", "sms"]
 	);
 
 	$list["password_reset_verification"] = array(
-		"title" => esc_html__( "Password reset verification code", "material-dashboard" ),
-		"template" => sprintf( esc_html__( "Dear %s, your verification code for password reset is: %s", "material-dashboard" ), "%FIRSTNAME%", "%CODE%" ),
+		"title" => __( "Password reset verification code", "material-dashboard" ),
+		"template" => sprintf( __( "Dear %s, your verification code for password reset is: %s", "material-dashboard" ), "%FIRSTNAME%", "%CODE%" ),
 		"scopes" => ["email", "sms"],
 		"dependencies" => ["code"],
 	);
 
 	$list["password_changed"] = array(
-		"title" => esc_html__( "Password changed", "material-dashboard" ),
+		"title" => __( "Password changed", "material-dashboard" ),
 		"scopes" => ["email", "sms"],
-		"template" => sprintf( esc_html__( "Dear %s, your password has been changed at %s.\nPlease let us know if you didn't change it.", "material-dashboard" ), "%FIRSTNAME%", "%DATE%" )
+		"template" => sprintf( __( "Dear %s, your password has been changed at %s.\nPlease let us know if you didn't change it.", "material-dashboard" ), "%FIRSTNAME%", "%DATE%" )
 	);
 
 	$list["change_email_confirm"] = array(
-		"title" => esc_html__( "Change email confirmation", "material-dashboard" ),
+		"title" => __( "Change email confirmation", "material-dashboard" ),
 		"scopes" => ["email"],
-		"template" => sprintf( esc_html__( "Dear %s, you have requested for changing your email, if you want to change it to %s please click on the below link. %s", "material-dashboard" ), "%FIRSTNAME%", "%NEW_EMAIL%", "%URL%" ),
+		"template" => sprintf( __( "Dear %s, you have requested for changing your email, if you want to change it to %s please click on the below link. %s", "material-dashboard" ), "%FIRSTNAME%", "%NEW_EMAIL%", "%URL%" ),
 		"dependencies" => ["new_email", "url"],
 	);
 
 	$list["email_changed"] = array(
-		"title" => esc_html__( "Email changed", "material-dashboard" ),
+		"title" => __( "Email changed", "material-dashboard" ),
 		"scopes" => ["email"],
-		"template" => sprintf( esc_html__( "Dear %s, your email address has been changed successfully", "material-dashboard" ), "%FIRSTNAME%" ),
+		"template" => sprintf( __( "Dear %s, your email address has been changed successfully", "material-dashboard" ), "%FIRSTNAME%" ),
 		"dependencies" => ["new_email"],
 	);
 
 	$list["2fa_code"] = array(
 		"title" => esc_html__( "Two factor authentication code", "material-dashboard" ),
 		"scopes" => ["email", "sms"],
-		"template" => sprintf( esc_html__( "Dear %s, your 2FA code is: %s", "material-dashboard" ), '%FIRSTNAME%', "\n%CODE%" ),
+		"template" => sprintf( __( "Dear %s, your 2FA code is: %s", "material-dashboard" ), "%FIRSTNAME%", "%CODE%" ),
+		"dependencies" => ["code"],
+	);
+
+    $list["new_login"] = array(
+		"title" => __( "New login", "material-dashboard" ),
+		"scopes" => ["email", "sms"],
+		"template" => sprintf( __( "Dear %s, new device has been logged in to your account.\n%s\n%s", "material-dashboard" ), "%FIRSTNAME%", "%DATE%", "%DEVICE%" ),
+		"dependencies" => ["device"],
+	);
+
+    $list["otp_verification"] = array(
+		"title" => __( "OTP verification", "material-dashboard" ),
+		"scopes" => ["email", "sms"],
+		"template" => sprintf( __( "Your verification code for login is: %s", "material-dashboard" ), "%CODE%" ),
 		"dependencies" => ["code"],
 	);
 
 	return $list;
 
+} );
+
+/**
+ * User SMS templates
+ * @since 1.2.0
+ */
+add_filter( "amd_sms_message_templates", function( $list ){
+
+	$list["sms_footer"] = array(
+		"title" => _x( "Footer template", "Admin text template", "material-dashboard" ),
+		"template" => amd_replace_url( "%domain%" ),
+		"scopes" => ["sms"],
+        "allow_variables" => false,
+        "allowed_html_tags" => [],
+	);
+
+	return $list;
+
+} );
+
+/**
+ * Override SMS footer text
+ * @since 1.2.0
+ */
+add_filter( "amd_sms_footer", function(){
+    return amd_get_user_message_template( "sms_footer", amd_get_dummy_user() );
 } );
 
 /**
@@ -97,9 +142,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["firstname"] = array(
 		"id" => "firstname",
-		"title" => esc_html__( "Firstname", "material-dashboard" ),
-		"desc" => esc_html__( "The name of related user to this message", "material-dashboard" ),
+		"title" => __( "Firstname", "material-dashboard" ),
+		"desc" => __( "The name of related user to this message", "material-dashboard" ),
 		"bbcode" => "Auto", # %FIRSTNAME%
+		"type" => "string",
 		"independent" => "users,~",
 		"callback" => function( $user ){
 			/** @var AMDUser $user */
@@ -111,9 +157,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["lastname"] = array(
 		"id" => "lastname",
-		"title" => esc_html__( "Lastname", "material-dashboard" ),
-		"desc" => esc_html__( "The name of related user to this message", "material-dashboard" ),
+		"title" => __( "Lastname", "material-dashboard" ),
+		"desc" => __( "The name of related user to this message", "material-dashboard" ),
 		"bbcode" => "Auto", # %LASTNAME%
+        "type" => "string",
 		"independent" => "users,~",
 		"callback" => function( $user ){
 			/** @var AMDUser $user */
@@ -125,9 +172,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["fullname"] = array(
 		"id" => "fullname",
-		"title" => esc_html__( "Fullname", "material-dashboard" ),
-		"desc" => esc_html__( "The name of related user to this message", "material-dashboard" ),
+		"title" => __( "Fullname", "material-dashboard" ),
+		"desc" => __( "The name of related user to this message", "material-dashboard" ),
 		"bbcode" => "Auto", # ...
+        "type" => "string",
 		"independent" => "users,~",
 		"callback" => function( $user ){
 			/** @var AMDUser $user */
@@ -139,9 +187,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["email"] = array(
 		"id" => "email",
-		"title" => esc_html__( "Email", "material-dashboard" ),
-		"desc" => esc_html__( "The email of related user to this message", "material-dashboard" ),
+		"title" => __( "Email", "material-dashboard" ),
+		"desc" => __( "The email of related user to this message", "material-dashboard" ),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,*",
 		"callback" => function( $user ){
 			/** @var AMDUser $user */
@@ -153,9 +202,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["username"] = array(
 		"id" => "username",
-		"title" => esc_html__( "Username", "material-dashboard" ),
-		"desc" => esc_html__( "The username of related user to this message", "material-dashboard" ),
+		"title" => __( "Username", "material-dashboard" ),
+		"desc" => __( "The username of related user to this message", "material-dashboard" ),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,*",
 		"callback" => function( $user ){
 			/** @var AMDUser $user */
@@ -167,9 +217,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["phone"] = array(
 		"id" => "phone",
-		"title" => esc_html__( "Phone", "material-dashboard" ),
-		"desc" => esc_html__( "The phone number of related user to this message", "material-dashboard" ),
+		"title" => __( "Phone", "material-dashboard" ),
+		"desc" => __( "The phone number of related user to this message", "material-dashboard" ),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,~",
 		"callback" => function( $user ){
 			/** @var AMDUser $user */
@@ -181,9 +232,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["ncode"] = array(
 		"id" => "ncode",
-		"title" => esc_html__( "National code", "material-dashboard" ),
-		"desc" => esc_html__( "The nationcal code of related user to this message", "material-dashboard" ),
+		"title" => __( "National code", "material-dashboard" ),
+		"desc" => __( "The nationcal code of related user to this message", "material-dashboard" ),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,~",
 		"callback" => function( $user ){
 			/** @var AMDUser $user */
@@ -195,10 +247,11 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["uid"] = array(
 		"id" => "uid",
-		"title" => esc_html__( "User ID", "material-dashboard" ),
-		"desc" => esc_html__( "The ID of related user to this message", "material-dashboard" ),
+		"title" => __( "User ID", "material-dashboard" ),
+		"desc" => __( "The ID of related user to this message", "material-dashboard" ),
 		"bbcode" => "Auto",
-		"independent" => "users,*",
+        "type" => "integer",
+		"independent" => "users,~",
 		"callback" => function( $user ){
 			/** @var AMDUser $user */
 			if( $user )
@@ -209,9 +262,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["date"] = array(
 		"id" => "date",
-		"title" => esc_html__( "Date and time", "material-dashboard" ),
-		"desc" => esc_html__( "Current date and time based on current user region like: 2023/01/01 12:00", "material-dashboard" ),
+		"title" => __( "Date and time", "material-dashboard" ),
+		"desc" => __( "Current date and time based on current user region like: 2023/01/01 12:00", "material-dashboard" ),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,*",
 		"callback" => function( $user, $args ){
 			return amd_true_date( "Y/m/d H:i" );
@@ -220,9 +274,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["single_date"] = array(
 		"id" => "single_date",
-		"title" => esc_html__( "Date", "material-dashboard" ),
-		"desc" => esc_html__( "Current single date based on current user region like: 2023/01/01", "material-dashboard" ),
+		"title" => __( "Date", "material-dashboard" ),
+		"desc" => __( "Current single date based on current user region like: 2023/01/01", "material-dashboard" ),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,*",
 		"callback" => function( $user, $args ){
 			return amd_true_date( "Y/m/d" );
@@ -231,8 +286,8 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["time"] = array(
 		"id" => "time",
-		"title" => esc_html__( "Time", "material-dashboard" ),
-		"desc" => esc_html__( "Current time based on current user region like: 12:00", "material-dashboard" ),
+		"title" => __( "Time", "material-dashboard" ),
+		"desc" => __( "Current time based on current user region like: 12:00", "material-dashboard" ),
 		"bbcode" => "Auto",
 		"independent" => "users,*",
 		"callback" => function( $user, $args ){
@@ -242,21 +297,22 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["url"] = array(
 		"id" => "url",
-		"title" => esc_html__( "URL", "material-dashboard" ),
-		"desc" => esc_html__( "Specified URL, for example if you are editing email confirmation message this URL is email confirmation URL", "material-dashboard" ),
+		"title" => __( "URL", "material-dashboard" ),
+		"desc" => __( "Specified URL, for example if you are editing email confirmation message this URL is email confirmation URL", "material-dashboard" ),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,?",
 		"callback" => function( $user, $args ){
-			$url = $args[1] ?? "-";
-			return $url;
+            return $args[1] ?? "-";
 		}
 	);
 
 	$vars["code"] = array(
 		"id" => "code",
-		"title" => esc_html__( "Verification code", "material-dashboard" ),
-		"desc" => esc_html__( "Specified verification code, for example if you are editing 2 factor authentication message this code is 2FA code", "material-dashboard" ),
+		"title" => __( "Verification code", "material-dashboard" ),
+		"desc" => __( "Specified verification code, for example if you are editing 2 factor authentication message this code is 2FA code", "material-dashboard" ),
 		"bbcode" => "Auto",
+        "type" => "integer",
 		"independent" => "users,?",
 		"callback" => function( $user, $args ){
 			$code = $args[0] ?? null;
@@ -264,23 +320,46 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 		}
 	);
 
-	$vars["new_email"] = array(
-		"id" => "new_email",
-		"title" => esc_html__( "New email", "material-dashboard" ),
-		"desc" => esc_html__( "User new email, this is for messages like email change confirmation and it means what email user wants to change to", "material-dashboard" ),
+    $vars["device"] = array(
+		"id" => "device",
+		"title" => __( "Device", "material-dashboard" ),
+		"desc" => __( "Device info such as device name and IP address (whichever is available)", "material-dashboard" ),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,?",
 		"callback" => function( $user, $args ){
-			$new_email = $args[0] ?? "";
-			return $new_email;
+            $user_agent = $args[0] ?? null;
+            $ip = $args[1] ?? null;
+            if( empty( $user_agent ) OR !is_string( $user_agent ) )
+                return "?";
+            global $amdWall;
+            $result = $amdWall->parseAgent( $user_agent );
+            $out = [];
+            if( $browser = $result->getBrowser() ) $out[] = $browser;
+            if( $platform = $result->getPlatform() ) $out[] = $platform;
+            if( $ip ) $out[] = $ip;
+			return empty( $out ) ? "?" : implode( " - ", $out );
+		}
+	);
+
+	$vars["new_email"] = array(
+		"id" => "new_email",
+		"title" => __( "New email", "material-dashboard" ),
+		"desc" => __( "User new email, this is for messages like email change confirmation and it means what email user wants to change to", "material-dashboard" ),
+		"bbcode" => "Auto",
+        "type" => "string",
+		"independent" => "users,?",
+		"callback" => function( $user, $args ){
+            return $args[0] ?? "";
 		}
 	);
 
 	$vars["site_domain"] = array(
 		"id" => "site_domain",
-		"title" => esc_html__( "Site domain", "material-dashboard" ),
-		"desc" => esc_html__( "This variable is often used for watermarks, for example you can add your site name below the messages, like: example.com", "material-dashboard" ),
+		"title" => __( "Site domain", "material-dashboard" ),
+		"desc" => __( "This variable is often used for watermarks, for example you can add your site name below the messages, like: example.com", "material-dashboard" ),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,*",
 		"callback" => function( $user, $args ){
 			return amd_replace_url( "%domain%" );
@@ -289,9 +368,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["site_name"] = array(
 		"id" => "site_name",
-		"title" => esc_html__( "Site name", "material-dashboard" ),
-		"desc" => esc_html__( "This variable is often used for watermarks, for example your site title is:", "material-dashboard" ) . "<br>" . get_bloginfo( "name" ),
+		"title" => __( "Site name", "material-dashboard" ),
+		"desc" => __( "This variable is often used for watermarks, for example your site title is:", "material-dashboard" ) . "<br>" . get_bloginfo( "name" ),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,*",
 		"callback" => function( $user, $args ){
 			return get_bloginfo( "name" );
@@ -300,9 +380,10 @@ add_filter( "amd_user_message_template_variables", function( $vars ){
 
 	$vars["site_url"] = array(
 		"id" => "site_url",
-		"title" => esc_html__( "Site url", "material-dashboard" ),
-		"desc" => esc_html__( "This is your site full URL address:", "material-dashboard" ) . "<br>" . get_site_url(),
+		"title" => __( "Site url", "material-dashboard" ),
+		"desc" => __( "This is your site full URL address:", "material-dashboard" ) . "\n" . get_site_url(),
 		"bbcode" => "Auto",
+        "type" => "string",
 		"independent" => "users,*",
 		"callback" => function( $user, $args ){
 			return get_site_url();
@@ -328,49 +409,11 @@ add_filter( "amd_user_message_template_text", function( $default, $msg_id ){
 	foreach( $groups as $group ){
 		$templates = $group["list"] ?? [];
 		if( !empty( $templates ) AND !empty( $templates[$msg_id] ) ){
-			$template = $templates[$msg_id] ?? [];
+			$template = $templates[$msg_id];
 			return $template["template"] ?? "";
 		}
 	}
 
-	/*if( $msg_id == "password_reset_verification" )
-		return sprintf( esc_html__( "Dear %s, your verification code for password reset is: %s", "material-dashboard" ), "%FIRSTNAME%", "%CODE%" );*/
-
-	/**
-	 * User messages templates
-	 * @since 1.0.8
-	 */
-	/*$templates = apply_filters( "amd_user_message_templates", [] );
-
-	$template = $templates[$msg_id] ?? null;
-
-	if( $template AND !empty( $template["template"] ) )
-		return $template["template"];*/
-
 	return $default;
 
 }, 10, 2 );
-
-/**
- * Preview
- * @since 1.2.1
- */
-add_filter( "_adp_text_template_password_reset_verification_preview_args", function(){
-	return ["1234"];
-} );
-
-/**
- * Preview
- * @since 1.2.1
- */
-add_filter( "_adp_text_template_change_email_confirm_preview_args", function(){
-	return [is_user_logged_in() ? amd_get_current_user()->email : "you@email.co", get_site_url()];
-} );
-
-/**
- * Preview
- * @since 1.2.1
- */
-add_filter( "_adp_text_template_email_changed_preview_args", function(){
-	return [is_user_logged_in() ? amd_get_current_user()->email : "you@email.co"];
-} );

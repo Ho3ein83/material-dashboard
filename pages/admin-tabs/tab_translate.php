@@ -20,10 +20,19 @@ $locales = apply_filters( "amd_locales", [] );
 	) ); ?>
 </div>
 <div class="amd-admin-card --setting-card">
+    <?php amd_dump_admin_card_keywords( ["locale"] ); ?>
 	<h3 class="--title" style="display:inline-block"><?php echo esc_html_x( "Languages", "Admin", "material-dashboard" ); ?></h3>
     <span><?php echo amd_doc_url( "localization", true ); ?></span>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_languages_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_languages_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="locale-all" class="_locale_item">
@@ -61,9 +70,17 @@ $locales = apply_filters( "amd_locales", [] );
                     </div>
                 </div>
             <?php endforeach; ?>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_languages_items" );
+            ?>
         </div>
         <h3 class="color-primary"><?php echo esc_html_x( "Translate", "Admin", "material-dashboard" ); ?></h3>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_translate_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="locale-show-region">
@@ -90,7 +107,15 @@ $locales = apply_filters( "amd_locales", [] );
                     </label>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_translate_items" );
+            ?>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_languages_content" );
+        ?>
     </div>
 </div>
 <script>

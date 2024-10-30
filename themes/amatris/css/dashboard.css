@@ -673,7 +673,7 @@ body.ltr .amd-card.--boxed > .--icon {
 
 .amd-card.--boxed > .--icon.--flex-align > .bi {
     display: flex;
-    align-content: center;
+    align-items: center;
     justify-content: center;
 }
 
@@ -1421,9 +1421,10 @@ body.ltr .ht-magic-select .--value {
     align-items: center;
     justify-content: stretch;
     gap: 12px;
+    font-size: 15px;
     color: #fff;
     background: var(--amd-primary);
-    padding: 4px 16px;
+    padding: 8px 16px;
     border-radius: 8px;
     margin: 8px 0;
     max-width: 100%;

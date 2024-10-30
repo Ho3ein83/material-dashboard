@@ -62,3 +62,58 @@ function amd_load_custom_hooks(){
 
 }
 add_action( "amd_after_cores_init", "amd_load_custom_hooks" );
+
+/**
+ * Enable or disable default avatar pack
+ * @since 1.3.0
+ */
+add_filter( "amd_enable_default_avatars", function( $default ){
+    return amd_get_site_option( "pro_avatar_pack_prefer", "default" ) == "custom" ? false : $default;
+} );
+
+/**
+ * Custom avatars
+ * @since 1.3.0
+ */
+add_filter( "amd_custom_avatars", function( $list ){
+    if( amd_get_site_option( "pro_avatar_pack_prefer", "default" ) == "custom" ){
+        $pro_custom_avatar_pack = amd_get_site_option( "pro_custom_avatar_pack" );
+        foreach( explode( ",", $pro_custom_avatar_pack ) as $item ){
+            if( $url = wp_get_attachment_url( $item ) )
+                $list[$item] = array(
+                    "url" => $url,
+                    "attachment" => $item
+                );
+        }
+    }
+    return $list;
+} );
+
+/**
+ * Avatars whitelist
+ * @since 1.3.0
+ */
+add_filter( "amd_is_avatar_url_allowed", function( $default, $url ){
+    $pro_custom_avatar_pack = amd_get_site_option( "pro_custom_avatar_pack" );
+    foreach( explode( ",", $pro_custom_avatar_pack ) as $item ){
+        if( $atc_url = wp_get_attachment_url( $item ) ){
+            if( amd_match_uri( $url, $atc_url ) )
+                return true;
+        }
+    }
+    return $default;
+}, 10, 2 );
+
+add_filter( "amd_placeholder_avatar_url", function( $default ){
+    $pro_custom_placeholder_avatar = amd_get_site_option( "pro_custom_placeholder_avatar" );
+    if( $pro_custom_placeholder_avatar && $url = wp_get_attachment_url( $pro_custom_placeholder_avatar ) )
+        return $url;
+    return $default;
+} );
+
+add_filter( "amd_placeholder_avatar_path", function( $default ){
+    $pro_custom_placeholder_avatar = amd_get_site_option( "pro_custom_placeholder_avatar" );
+    if( $pro_custom_placeholder_avatar && $file = get_attached_file( $pro_custom_placeholder_avatar ) )
+        return $file;
+    return $default;
+} );

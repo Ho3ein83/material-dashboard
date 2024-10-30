@@ -374,8 +374,7 @@ else if( !empty( $r["_avatar"] ) ){
 
 }
 
-global /** @var AMDFirewall $amdWall */
-$amdWall;
+global $amdWall;
 
 # Use registered API handlers
 $amdWall->handleAPI();

@@ -2,8 +2,8 @@
   "name": "Todo list",
   "description": "A professional todo list with data encryption for users privacy",
   "thumbnail": "{EXT_URL}/thumbnail.png",
-  "version": "1.0.3",
-  "compatible": ">= 1.0.4",
+  "version": "1.0.4",
+  "compatible": ">= 1.2.1",
   "url": "{DOC_URL}?e=todo",
   "author": "Amatris"
 }

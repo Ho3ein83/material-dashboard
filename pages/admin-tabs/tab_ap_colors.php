@@ -102,7 +102,7 @@ $_primaryColor = amd__validate_color_code( $primaryColor );
             <div class="-item">
                 <div class="-sub-item">
                     <label for="cp-custom">
-						<?php _ex( "Custom", "Admin", "material-dashboard" ); ?>
+						<?php echo esc_html_x( "Custom", "Admin", "material-dashboard" ); ?>
                         <span class="color-badge"
                               style="<?php echo $_primaryColor ? "background:$_primaryColor" : ''; ?>"
                               id="custom-color-badge"></span>
@@ -135,9 +135,11 @@ $_primaryColor = amd__validate_color_code( $primaryColor );
                     '#067bc2',
                     '#84bcda',
                     '#80e377',
-                    '#ecc30b',
+                    '#d6b109',
                     '#f37748',
-                    '#d56062'
+                    '#d56062',
+                    '#303030',
+                    '#5142fc',
                 ],
                 format: "hex",
                 alpha: false

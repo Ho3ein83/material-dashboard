@@ -87,14 +87,14 @@ class AMDUser{
 	public $gender;
 
 	/**
-	 * User secret key
+	 * User secret key (insensitive)
 	 * @var string
 	 * @since 1.0.0
 	 */
 	public $secretKey;
 
 	/**
-	 * User serial number for personal data encryption
+	 * User serial number for personal data encryption (sensitive)
 	 * @var string
 	 * @since 1.0.0
 	 */
@@ -128,6 +128,13 @@ class AMDUser{
 	 */
 	public $rollback_locale;
 
+    /**
+     * Whether the user is dummy user and has no real identity
+     * @var bool
+     * @sicne 1.2.0
+     */
+    public $is_dummy;
+
 	/**
 	 * Simple user object
 	 */
@@ -146,6 +153,7 @@ class AMDUser{
 		$this->secretKey = "";
 		$this->serial = "";
 		$this->isValid = false;
+		$this->is_dummy = false;
 	}
 
 	/**
@@ -162,8 +170,6 @@ class AMDUser{
 		$this->extra = apply_filters( "amd_simple_user_extra", [], $this );
 
         $this->rollback_locale = $this->locale;
-
-        $user = $this;
 
 	}
 
@@ -301,6 +307,20 @@ class AMDUser{
 
 	}
 
+    /**
+     * Get user safe name for SMS and messages
+     * @param null|string $safe_name
+     * Safe name string, or pass null to use default safe name (default is 'user' in English or 'کاربر' in Persian)
+     * @return string
+     * Safe name string
+     * @since 1.2.1
+     */
+    public function getSafeName( $safe_name = null ) {
+        if( !empty( trim( $this->firstname ) ) )
+            return $this->firstname;
+        return $safe_name === null ? _x( "user", "safe name", "material-dashboard" ) : $safe_name;
+    }
+
 	/**
 	 * Get user avatar image
 	 * @return string
@@ -380,10 +400,192 @@ class AMDUser{
 
 		$role = _x( ucfirst( $role ), "User role" );
 
-		$role = _x( ucfirst( $role ), "User role", "material-dashboard-pro" );
-
-		return $role;
+        return _x( ucfirst( $role ), "User role", "material-dashboard-pro" );
 
 	}
+
+    /**
+     * Export user data for front-end
+     * @return array
+     * <pre>array(
+     *    "id" => INT,
+     *    "email" => STRING,
+     *    "username" => STRING,
+     *    "phone" => STRING,
+     *    "first_name" => STRING,
+     *    "last_name" => STRING,
+     *    "fullname" => STRING,
+     *    "role" => STRING,
+     *    "role_name" => STRING,
+     *    "ncode" => STRING
+     *    "gender" => STRING,
+     *    "avatar" => STRING,
+     *    "profile_url" => STRING,
+     *    "locale" => STRING,
+     *    "registration" => INT,
+     * )
+     * </pre>
+     * @since 1.2.0
+     */
+    public function export() {
+        return array(
+            "id" => $this->ID,
+            "email" => $this->email,
+            "username" => $this->username,
+            "phone" => $this->phone,
+            "first_name" => $this->firstname,
+            "last_name" => $this->lastname,
+            "fullname" => $this->fullname,
+            "role" => $this->role,
+            "role_name" => $this->getRoleName(),
+            "ncode" => amd_get_user_meta( $this->ID, "ncode" ),
+            "gender" => $this->gender,
+            "avatar" => $this->profile,
+            "profile_url" => $this->getProfileURL(),
+            "locale" => $this->locale,
+            "registration" => $this->getRegistrationTime(),
+        );
+    }
+
+    /**
+     * Get OTP data like resend duration and verifying the code
+     * @param string|null $code
+     * OTP code, pass null to generate a new one and assign it to the user
+     *
+     * @return array
+     * Information array about given OTP code
+     * @since 1.2.0
+     */
+    public function get_otp( $code = null ) {
+
+        /**
+         * One time password length
+         * @sicne 1.2.0
+         */
+        $otp_length = apply_filters( "amd_otp_code_length", 6 );
+
+        /**
+         * The number of seconds that users can request OTP resend
+         * @since 1.2.0
+         */
+        $resend_time = apply_filters( "amd_otp_resend_interval", 60 );
+
+        /**
+         * The number of seconds that OTP code will be expired
+         * @since 1.2.0
+         */
+        $expire_time = apply_filters( "amd_otp_code_expire", 300 ); # 5 minutes
+
+        global $amdWall;
+
+        $temp = amd_find_temp( "temp_key", "otp_code_{$this->ID}_*", true );
+
+        $is_new = false;
+        if( empty( $temp[0] ) ){
+            $_code = amd_generate_string( $otp_length, "number" );
+            $serial = $amdWall->serialize( $_code );
+            $temp_key = "otp_code_" . $this->ID . "_$serial";
+            $resend_expires = time() + $resend_time;
+            $is_new = true;
+            amd_set_temp( $temp_key, time() + $resend_time, $expire_time );
+        }
+        else{
+            $t = $temp[0];
+            $temp_key = $t->temp_key;
+            $resend_expires = $t->temp_value;
+            $_code = $amdWall->deserialize( str_replace( "otp_code_{$this->ID}_", "", $temp_key ) );
+        }
+
+        return array(
+            "code" => $_code,
+            "verify" => !empty( $code ) AND $_code == $code,
+            "is_new" => $is_new,
+            "key" => $temp_key,
+            "resend" => $resend_expires
+        );
+
+    }
+
+    /**
+     * Send OTP code to the user, the message will be initiated with text templates
+     * and message method can be changed from settings
+     * @param string $otp_code
+     * One-time-password code
+     * @param bool $schedule
+     * Whether to schedule message or send it immediately
+     *
+     * @return bool
+     * True on successfully sending the message, false on failure
+     * @since 1.2.0
+     */
+    public function send_otp( $otp_code, $schedule=false ) {
+
+        if( empty( $otp_code ) )
+            return false;
+
+        global $amdWarn;
+
+        $use_email_otp = amd_get_site_option( "use_email_otp", "false" ) == "true";
+
+        $message = apply_filters( "amd_otp_verification_code_message", $this, $otp_code );
+
+        $method = null;
+
+        if( $use_email_otp )
+            $method = "email";
+        else if( !empty( $this->phone ) )
+            $method = "sms";
+
+        if( empty( $method ) )
+            return false;
+
+        if( $method == "sms" ){
+            # Send message by pattern if pattern exist, otherwise send it normally
+            $pattern_send = amd_send_message_by_pattern( $this->phone, "otp_verification", ["code" => $otp_code] );
+            if( $pattern_send >= 0 )
+                return boolval( $pattern_send );
+        }
+
+        return $amdWarn->sendMessage( array(
+            "user" => $this,
+            "title" => esc_html__( "Login verification code (OTP)", "material-dashboard" ),
+            "message" => $message
+        ), $method, $schedule );
+
+    }
+
+    /**
+     * This only will return a value if Linky extension is enabled, otherwise it may be an empty string
+     *
+     * @return string
+     * Referral code string
+     * @since 1.2.0
+     */
+    public function get_referral_code() {
+        if( function_exists( "amd_ext_linky" ) )
+            return amd_ext_linky_get_user_referral_code( $this->ID );
+        return "";
+    }
+
+    /**
+     * This only will return a value if Linky extension is enabled, otherwise it may be an empty string
+     *
+     * @return string
+     * Referral link string
+     * @since 1.2.0
+     */
+    public function get_referral_link() {
+        if( function_exists( "amd_ext_linky" ) ) {
+            $referral_code = amd_ext_linky_get_user_referral_code( $this->ID );
+            $referral_url = amd_merge_url_query( amd_get_login_page(), "auth=register&referral=" . urlencode( $referral_code ) );
+
+            /**
+             * Referral URL
+             * @since 1.2.0
+             */
+            return apply_filters( "amd_ext_linky_referral_url", $referral_url, $referral_code );
+        }
+        return "";
+    }
 
 }

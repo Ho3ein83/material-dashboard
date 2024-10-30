@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Handle AJAX requests
+ * @param array $r
+ * Request data
+ * @return void
+ * @since 1.1.0
+ */
 function amd_ajax_target_search_engine( $r ){
 
     if( isset( $r["fetch_index"] ) ){
@@ -34,6 +41,59 @@ function amd_ajax_target_search_engine( $r ){
                     file_put_contents( $cache_file, wp_json_encode( $data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
                 wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "data" => $data ] );
             }
+        }
+
+    }
+
+    if( amd_is_admin() ){
+
+        if( !empty( $r["search_users"] ) ){
+            $query = $r["search_users"];
+            $users = [];
+
+            if( is_string( $query ) AND strpos( $query, "," ) !== false )
+                $query = explode( ",", $query );
+
+            global $amdSearch;
+
+            if( is_iterable( $query ) ){
+                foreach( $query as $q ){
+                    $u = $amdSearch->search_user( $q );
+                    if( $u AND $u instanceof AMDUser AND method_exists( $u, "export" ) )
+                        $users[$u->ID] = $u->export();
+                }
+            }
+            else if( is_string( $query ) OR is_numeric( $query ) ){
+                $u = $amdSearch->search_user( $query );
+                if( $u AND $u instanceof AMDUser AND method_exists( $u, "export" ) )
+                    $users[$u->ID] = $u->export();
+            }
+
+            wp_send_json_success( ["msg" => __( "Success", "material-dashboard" ), "users" => $users] );
+
+        }
+        else if( !empty( $r["export_users_by_id"] ) ){
+            $query = $r["export_users_by_id"];
+            $users = [];
+
+            if( is_string( $query ) AND strpos( $query, "," ) !== false )
+                $query = explode( ",", $query );
+
+            if( is_iterable( $query ) ){
+                foreach( $query as $q ){
+                    $u = amd_get_user_by( "id", $q );
+                    if( $u AND $u instanceof AMDUser AND method_exists( $u, "export" ) )
+                        $users[$u->ID] = $u->export();
+                }
+            }
+            else if( is_string( $query ) OR is_numeric( $query ) ){
+                $u = amd_get_user_by( "id", $query );
+                if( $u AND $u instanceof AMDUser AND method_exists( $u, "export" ) )
+                    $users[$u->ID] = $u->export();
+            }
+
+            wp_send_json_success( ["msg" => __( "Success", "material-dashboard" ), "users" => $users] );
+
         }
 
     }

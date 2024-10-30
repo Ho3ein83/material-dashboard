@@ -2,8 +2,8 @@
 Contributors: ho3einie,amatris
 Tags: dashboard, material dashboard, user profile, woocommerce, easy digital downloads
 Requires at least: 5.2
-Tested up to: 6.5
-Stable tag: 1.1.0
+Tested up to: 6.6
+Stable tag: 1.2.1
 Requires PHP: 7.4.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -37,6 +37,8 @@ Once you have completed these steps, the plugin will be removed completely from 
 2. Home page (dark mode)
 3. Account page
 4. Purchases page
+5. Admin page
+7. Admin modules
 
 == Frequently Asked Questions ==
 
@@ -64,66 +66,30 @@ You can create your own extensions and themes for your dashboard and publish it 
 
 == Changelog ==
 
-= 1.1.2 =
-* Custom hooks feature added
+= 1.2.1 =
+* Reminder feature added to to-do list
+* Raw template mode added for more compatibility with themes
+* User experience improved
+* Some UI parts improved
 * Some security issues fixed
-* Bugs fixed
-
-= 1.1.0 =
-* C-Track core added for better data management
-* Icon library improvements
-* Task manager feature
-* Database structures change (database engine and collation)
-* Advanced search feature added
-* New core added: Search engine for better search results
-* Dashboard sidebar menu custom items
 * Cores improved
 * Bugs fixed
 
-= 1.0.9 =
-* Cores improved
-* Bugs fixed
-
-= 1.0.8 =
-* Cores improved
-* Background tasks and cron jobs added
-* Bugs fixed
-
-= 1.0.7 =
-* Bugs fixed
-
-= 1.0.6 =
-* Database cache improved
-* SMS webservice added
-* Cores improved
-* Bugs fixed
-
-= 1.0.5 =
-* Database cache added
-* Database collation fixed for Persian language
-* Cache core improved
-* Components feature added (templates, custom fields, etc.)
-* Custom field feature added to improve registration
-* 2-factor authentication (2FA) feature added
-* Login reports feature added
-* Sessions manager feature added
-* Tera wallet supported
-* Bugs fixed
-
-= 1.0.4 =
-* Login with phone number added
-* WP rocket minifier disabled in dashboard pages for more compatibility
-* Some of other features improved
-* Bugs fixed
-
-= 1.0.1 =
-* Open graph meta tags added to headers
+= 1.2.0 =
+* SMS webservice panel added
+* Downloads access management updated for managing downloads limit and expiration
+* You can now force users to write their names with Persian or Arabic letters
+* You can now use phone number, email and random generated values for username auto-generate
+* Invitation feature added
+* Markdown module added
+* User picker feature added
+* Date picker feature added
+* QR code generator core added
 * New icons added
-* 'Change Phone Number' card added
+* Appearance and performance changes
+* Some security issues fixed
+* Cores improved
 * Bugs fixed
-
-= 1.0.0 =
-* First release
 
 == Make your application and connect it with API ==
 
@@ -155,4 +121,5 @@ Documentations are available in [documentations](https://amatris.ir/amd/d).
 
 == Premium version ==
 
-We apologize for the inconvenience, but currently, we only support payments made through Iranian gateways. However, if you are interested in upgrading to the premium version of our plugin, please do not hesitate to contact us. We will do our best to assist you in obtaining a license for the premium version. Thank you for your understanding and continued support. [Get premium version](https://amatris.ir/amd#get-premium)
+In premium version you have lots of new features like membership system, ticketing, more themes and modules, Google reCaptcha and authentication and many other features that you may want.
+If you are living in Iran or you have access to their payment methods, you can [get premium version now](https://amatris.ir/amd#get-premium), however for any reason if you need to get the premium version using crypto or other payment methods, contact us at [ho3ein.b.83@gmail.com](mailto:ho3ein.b.83@gmail.com).

@@ -3,6 +3,9 @@
 # Load to-do class
 require_once( __DIR__ . "/AMD_Todo.php" );
 
+# Load hooks
+require_once( __DIR__ . "/hooks.php" );
+
 /**
  * Add allowed status IDs
  * @since 1.0.4
@@ -17,8 +20,6 @@ add_filter( "amd_ext_todo_allowed_status_ids", function( $items ){
 	return $items;
 
 } );
-
-//add_filter( "amd_ext_todo_authorize_required_for_get_list", "__return_false" );
 
 /**
  * Authorize current user with to-do item
@@ -95,7 +96,6 @@ function amd_ajax_target_ext_todo( $r, $unfilteredRequest ){
 		$data = $r["add_todo"];
 		$unfilteredData = $unfilteredRequest["add_todo"] ?? [];
 
-//		$text = wp_kses( $unfilteredData["text"] ?? "", amd_allowed_tags_with_attr( "i,b,br" ) );
 		$text = $unfilteredData["text"] ?? "";
 
 		$text = str_replace( "\n", "<br>", $text );
@@ -105,12 +105,34 @@ function amd_ajax_target_ext_todo( $r, $unfilteredRequest ){
 
 		$todo = new AMD_Todo();
 
-		$success = $todo->insert( $user->serial, $text, "pending", [] );
+		$success = $todo->insert( $user->serial, $text, "pending" );
 
 		if( $success ){
 			$priority = $data["priority"] ?? 0;
 			global $amdDB;
 			$amdDB->setTodoMeta( $success, "priority", $priority );
+
+            $todo_reminder = amd_get_site_option( "todo_reminder_enabled", "true" );
+            if( amd_get_logical_value( $todo_reminder ) ) {
+                $reminder = $data["reminder"] ?? [];
+                $reminder_enabled = $reminder["enabled"] ?? false;
+                $reminder_time = $reminder["time"] ?? 0;
+                if( $reminder_enabled && $reminder_time > time() + 30 ) {
+                    global $amdTasks;
+                    $task_id = $amdTasks->addTask( $user->ID, "todo_reminder_$success", __( "User to-do list reminder", "material-dashboard" ), array(
+                        "action" => "remind_todo",
+                        "data" => array(
+                            "todo" => $success,
+                            "user_id" => $user->ID,
+                        )
+                    ), 1, $reminder_time - time() );
+                    if( $task_id ) {
+                        $amdDB->setTodoMeta( $success, "reminder", $reminder_time );
+                        $amdDB->setTodoMeta( $success, "reminder_task", $task_id );
+                    }
+                }
+            }
+
 			amd_send_api_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "id" => $success, "formatted_text" => $amdDB->formatHtml( $text ) ] );
 		}
 
@@ -154,10 +176,22 @@ function amd_ajax_target_ext_todo( $r, $unfilteredRequest ){
 		if( $authorize === false )
 			amd_send_api_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
 
+        $todo = amd_get_todo_list( ["id" => $id] );
 		$success = amd_delete_todo_list( ["id" => $id] );
 
-		if( $success )
-			amd_send_api_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+		if( $success ) {
+            if( !empty( $todo ) AND !empty( $todo[0]->meta ) ){
+                $meta = @unserialize( $todo[0]->meta );
+                if( !empty( $meta ) ){
+                    $reminder_task = $meta["reminder_task"] ?? null;
+                    if( $reminder_task ){
+                        global $amdTasks;
+                        $amdTasks->deleteTaskByID( $reminder_task );
+                    }
+                }
+            }
+            amd_send_api_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+        }
 
 		amd_send_api_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
 
@@ -256,11 +290,22 @@ function amd_ext_todo_tasks( $serial, $salt=null ){
 	$data = [];
 	/** @var AMD_Todo $item */
 	foreach( $list as $id => $item ){
+        $reminder = $item->meta["reminder"] ?? 0;
+        $reminder_task = $item->meta["reminder_task"] ?? 0;
+        $reminder_alt = "";
+        if( $reminder_task && $reminder > time() ){
+            global $amdTasks;
+            $task = $amdTasks->getTaskByID( $reminder_task );
+            if( !empty( $task ) )
+                $reminder_alt = str_replace( "%", _x( "Time", "clock", "material-dashboard" ), amd_true_date( "l j F Y % H:i" ) );
+        }
 		$data[$id] = array(
 			"id" => esc_html( $item->id ),
 			"text" => str_replace( "\n", "<br>", $item->text ),
 			"status" => $item->status,
 			"priority" => $item->priority,
+			"reminder_time" => $reminder,
+			"reminder_alt" => $reminder_alt,
 		);
 	}
 

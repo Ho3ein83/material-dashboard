@@ -1,13 +1,13 @@
 "use strict";
 const AMDIconPicker = (function () {
 
-    function AMDIconPicket(id, $el, $library) {
+    function AMDIconPicker(id, $el, $library) {
 
         let _this = this;
 
         this.texts = {
-            default_text: `<?php esc_html_e( "Choose icon", "material-dashboard" ); ?>`,
-        }
+            default_text: `<?php esc_html_e( "Choose icon", "material-dashboard" ); ?>`
+        };
 
         this.class_list = ["amd-icon-picker"];
         this.default_icon = "";
@@ -60,7 +60,7 @@ const AMDIconPicker = (function () {
 
     }
 
-    return AMDIconPicket;
+    return AMDIconPicker;
 
 }());
 

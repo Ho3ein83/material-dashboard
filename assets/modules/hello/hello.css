@@ -227,7 +227,7 @@ body.ltr .hello-card-content { direction: ltr }
     padding: 10px 16px 7px;
     border-radius: 5px;
     background: var(--amd-text-color);
-    max-width: 300px;
+    max-width: 450px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -236,7 +236,12 @@ body.ltr .hello-card-content { direction: ltr }
     font-size: 14px;
     user-select: none;
 }
-
+@media ( max-width: 993px ) {
+    .hello-toast {
+        max-width: calc(100vw - 75px);
+        white-space: break-spaces !important;
+    }
+}
 .hello-pop svg.status-icon {
     display: block;
     width: 50px;

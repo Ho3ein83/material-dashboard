@@ -10,6 +10,24 @@ $isCustomAvatar = $thisuser->profileKey == $thisuser->secretKey;
 # [AVATAR_IMAGE_FORMAT]
 $hasCustomAvatar = file_exists( amd_get_avatars_path() . "/" . $thisuser->secretKey . ".png" );
 
+/**
+ * Enable or disable default avatar pack
+ * @since 1.2.0
+ */
+$enable_default_avatars = apply_filters( "amd_enable_default_avatars", true );
+
+/**
+ * Custom avatars
+ * @since 1.2.0
+ */
+$custom_avatars = apply_filters( "amd_custom_avatars", [] );
+
+/**
+ * Placeholder avtar URL
+ * @since 1.2.0
+ */
+$placeholder_avatar = apply_filters( "amd_placeholder_avatar_url", amd_avatar_url( "placeholder" ) );
+
 ?>
 
 <?php ob_start(); ?>
@@ -31,36 +49,66 @@ $hasCustomAvatar = file_exists( amd_get_avatars_path() . "/" . $thisuser->secret
     <div class="--item <?php echo esc_attr( $thisuser->profileKey == 'placeholder' ? 'active' : '' ); ?>"
          data-avatar="placeholder">
         <div class="--image">
-            <img src="<?php echo esc_url( amd_avatar_url( 'placeholder' ) ); ?>" alt="" loading="lazy">
+            <img src="<?php echo esc_url( $placeholder_avatar ); ?>" alt="" loading="lazy">
         </div>
     </div>
-	<?php foreach( $avatars as $path_id => $avatar ): ?>
-		<?php
-
-		if( !file_exists( $avatar ) )
-			continue;
-		$files = [];
-		if( is_dir( $avatar ) )
-			$files = glob( rtrim( $avatar, "/\\" ) . "/*.{png,svg,jpg,jpeg}", GLOB_BRACE );
-		else
-			$files = [ $avatar ];
-		foreach( $files as $file ){
-			$filename = pathinfo( $file, PATHINFO_BASENAME );
-            if( amd_starts_with( $filename, "_" ) )
+    <?php
+        /**
+         * Before avatars gallery
+         * @since 1.2.0
+         */
+        do_action( "amd_before_avatars_gallery" );
+    ?>
+    <?php foreach( $custom_avatars as $avatar_id => $avatar ): ?>
+        <?php
+            $url = $avatar["url"] ?? null;
+            if( empty( $url ) )
                 continue;
-			$avatarKey = "$path_id:$filename";
-			$url = amd_get_api_url( "_avatar=$avatarKey" );
-			?>
-            <div class="--item <?php echo esc_attr( $thisuser->profileKey == $avatarKey ? 'active' : '' ); ?>"
-                 data-avatar="<?php echo esc_attr( "$path_id:$filename" ); ?>">
-                <div class="--image">
-                    <img src="<?php echo esc_url( $url ); ?>" alt="" loading="lazy">
-                </div>
+            $avatarKey = $url;
+        ?>
+        <div class="--item <?php echo esc_attr( $thisuser->profileKey == $avatarKey ? 'active' : '' ); ?>"
+             data-avatar="<?php echo esc_attr( $avatarKey ); ?>">
+            <div class="--image">
+                <img src="<?php echo esc_url( $url ); ?>" alt="" loading="lazy">
             </div>
-			<?php
-		}
-		?>
-	<?php endforeach; ?>
+        </div>
+    <?php endforeach; ?>
+    <?php if( $enable_default_avatars ): ?>
+        <?php foreach( $avatars as $path_id => $avatar ): ?>
+            <?php
+
+            if( !file_exists( $avatar ) )
+                continue;
+            $files = [];
+            if( is_dir( $avatar ) )
+                $files = glob( rtrim( $avatar, "/\\" ) . "/*.{png,svg,jpg,jpeg}", GLOB_BRACE );
+            else
+                $files = [ $avatar ];
+            foreach( $files as $file ){
+                $filename = pathinfo( $file, PATHINFO_BASENAME );
+                if( amd_starts_with( $filename, "_" ) )
+                    continue;
+                $avatarKey = "$path_id:$filename";
+                $url = amd_get_api_url( "_avatar=$avatarKey" );
+            ?>
+                <div class="--item <?php echo esc_attr( $thisuser->profileKey == $avatarKey ? 'active' : '' ); ?>"
+                     data-avatar="<?php echo esc_attr( "$path_id:$filename" ); ?>">
+                    <div class="--image">
+                        <img src="<?php echo esc_url( $url ); ?>" alt="" loading="lazy">
+                    </div>
+                </div>
+                <?php
+            }
+            ?>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <?php
+        /**
+         * After avatars gallery
+         * @since 1.2.0
+         */
+        do_action( "amd_after_avatars_gallery" );
+    ?>
 </div>
 <div id="cropper" class="amd-cropper">
     <img src="" alt="" id="cropper-img">
@@ -276,5 +324,5 @@ $hasCustomAvatar = file_exists( amd_get_avatars_path() . "/" . $thisuser->secret
 <!-- @formatter off -->
 <style>.amd-drop-zone{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:inherit;background:rgba(var(--amd-primary-rgb),.7);z-index:10}.amd-drop-zone>div{display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;margin:32px;width:calc(100% - 64px);height:calc(100% - 64px);border-radius:inherit;border:3px dashed #fff}.amd-drop-zone>div>*{color:#fff}
 .amd-cropper{width:90%;max-width:300px;margin:20px auto;text-align:center}.amd-cropper>img{display:block;max-width:100%}
-.amd-avatars-gallery{display:flex;flex-wrap:wrap;align-items:start;justify-content:center}.amd-avatars-gallery>.--item{display:flex;width:100%;height:auto;aspect-ratio:1;flex:0 0 85px;background:var(--amd-primary-x-low);color:var(--amd-primary);padding:16px;margin:8px;border-radius:10px;transition:background-color ease .2s;cursor:var(--amd-pointer)}.amd-avatars-gallery>.--item:hover{background:rgba(var(--amd-primary-rgb),.7);color:#fff}.amd-avatars-gallery>.--item.active{background:var(--amd-primary);color:#fff}.amd-avatars-gallery>.--item>.--image{border-radius:6px;overflow:hidden}.amd-avatars-gallery>.--item>.--image>img{object-fit:cover;user-select:none;pointer-events:none}.amd-avatars-gallery>.--item>.--image>img,.amd-avatars-gallery>.--item>.--icon{width:100%;height:100%;border-radius:10px}.amd-avatars-gallery>.--item>.--icon.--dashed{border:3px dashed currentColor}.amd-avatars-gallery>.--item>.--icon{display:flex;align-items:center;justify-content:center}.amd-avatars-gallery>.--item>.--icon>._icon_{color:currentColor;font-size:28px}.amd-avatars-gallery>.--item>.--icon>svg._icon_{width:auto;height:30px}</style>
+#avatar-card>.--content{overflow:auto;-ms-overflow-style:none;scrollbar-width:none}#avatar-card>.--content::-webkit-scrollbar{display:none}.amd-avatars-gallery{display:flex;flex-wrap:wrap;align-items:start;justify-content:center}.amd-avatars-gallery>.--item{display:flex;width:100%;height:auto;aspect-ratio:1;flex:0 0 85px;background:var(--amd-primary-x-low);color:var(--amd-primary);padding:16px;margin:8px;border-radius:10px;transition:background-color ease .2s;cursor:var(--amd-pointer)}.amd-avatars-gallery>.--item:hover{background:rgba(var(--amd-primary-rgb),.7);color:#fff}.amd-avatars-gallery>.--item.active{background:var(--amd-primary);color:#fff}.amd-avatars-gallery>.--item>.--image{border-radius:6px;overflow:hidden}.amd-avatars-gallery>.--item>.--image>img{object-fit:cover;user-select:none;pointer-events:none}.amd-avatars-gallery>.--item>.--image>img,.amd-avatars-gallery>.--item>.--icon{width:100%;height:100%;border-radius:10px}.amd-avatars-gallery>.--item>.--icon.--dashed{border:3px dashed currentColor}.amd-avatars-gallery>.--item>.--icon{display:flex;align-items:center;justify-content:center}.amd-avatars-gallery>.--item>.--icon>._icon_{color:currentColor;font-size:28px}.amd-avatars-gallery>.--item>.--icon>svg._icon_{width:auto;height:30px}</style>
 <!-- @formatter on -->

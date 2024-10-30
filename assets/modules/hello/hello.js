@@ -93,7 +93,7 @@ var Hello = (function () {
             card: `<div data-hello="{id}" class="layer-top">
     <div class="hello-pop card">
         <div class="hello-content">
-            <span class="hello-content">{content}</span>
+            <div class="hello-content">{content}</div>
         </div>
     </div>
 </div>`,
@@ -106,7 +106,7 @@ var Hello = (function () {
             <span class="hello-title" dir="auto">{title}</span>
         </div>
         <div class="hello-content">
-            <span class="hello-content" dir="auto">{content}</span>
+            <div class="hello-content" dir="auto">{content}</div>
             <p class="hello-log"></p>
         </div>
         <div class="hello-footer">{footer}</div>
@@ -175,6 +175,7 @@ var Hello = (function () {
                 let posT = pos[0] || "b";
                 let posL = pos[1] || "m";
                 let l = 0, t = 0, offset = conf.toastOffset;
+                const padding_right = $e.css("padding-right").replaceAll("px", "");
 
                 if(posT === "t") t = offset;
                 else if(posT === "m") t = h/2 - rh/2;
@@ -184,7 +185,7 @@ var Hello = (function () {
                 else if(posL === "m") l = w/2 - rw/2;
                 else if(posL === "r") l = w - rw - offset;
 
-                $e.css("left", l);
+                $e.css("left", l-padding_right);
                 $e.css("top", t);
             }
 

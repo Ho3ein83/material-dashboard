@@ -20,8 +20,10 @@ var AMDTab = (function() {
                 if(typeof data.id !== "undefined") id = data.id;
                 let text = data.text || "", icon = data.icon || "";
                 let active = data.active || false;
+                const _badge = data.badge || null;
+                let badge = _badge ? `<span class="badge --sm --circle --tab bg-primary-low color-primary-im text-center">${_badge}</span>` : "";
 
-                html += `<div${active ? ` class="active"` : ``} data-amd-tab="${id}">${icon.length > 0 ? `${icon} ` : ``}<span>${text}</span></div>`;
+                html += `<div class="${active ? `active ` : ``}${_badge ? 'has-badge' : ''}" data-amd-tab="${id}">${icon.length > 0 ? `${icon} ` : ``}<span>${text}</span> ${badge}</div>`;
             }
             _this.$items.html(html);
 
@@ -82,3 +84,45 @@ var AMDTab = (function() {
     return AMDTab;
 
 }());
+
+window.addEventListener("load", () => {
+    jQuery($ => {
+        $(".amd-order-box").each(function(){
+            const $container = $(this);
+            if($container.hasClass("exclude"))
+                return;
+            function reorder(){
+                $container.find(".--item").sort((a, b) => $(a).attr("data-order") - $(b).attr("data-order")).appendTo($container);
+            }
+            function update_order(){
+                const $items = $container.find(".--item")
+                $container.find(".--item > .--icon").setWaiting(false);
+                $items.first().find(".-up").setWaiting();
+                $items.last().find(".-down").setWaiting();
+                let order = 0;
+                $items.each(function(){
+                    $(this).attr("data-order", order);
+                    order++;
+                });
+            }
+            reorder();
+            update_order();
+            $container.sortable({
+                update: () => update_order()
+            });
+            $container.find(".--item").each(function(){
+                const $i = $(this);
+                const $down = $i.find(".-down"), $up = $i.find(".-up");
+                const change_order = x => {
+                    const o = parseInt($i.hasAttr("data-order", true, 0));
+                    $i.attr("data-order", o+x);
+                    $i[x > 0 ? "next" : "prev"]().attr("data-order", o);
+                    reorder();
+                    update_order();
+                }
+                $down.click(() => change_order(1));
+                $up.click(() => change_order(-1));
+            });
+        });
+    });
+});

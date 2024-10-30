@@ -171,7 +171,7 @@ class AMDFirewall{
 	 */
 	public function getActualIP(){
 
-		return apply_filters( "amd_firewall_remote_ip", sanitize_text_field( $_SERVER['REMOTE_ADDR'] ) );
+		return apply_filters( "amd_firewall_remote_ip", sanitize_text_field( $_SERVER["REMOTE_ADDR"] ) );
 
 	}
 
@@ -715,5 +715,14 @@ class AMDFirewall{
 		return new AMDFirewallBrowser( $user_agent );
 
 	}
+
+    /**
+     * Get current user agent if available
+     * @return string
+     * @since 1.2.0
+     */
+    public function getUserAgent() {
+        return sanitize_text_field( $_SERVER["HTTP_USER_AGENT"] ?? "" );
+    }
 
 }

@@ -1,4 +1,6 @@
 <?php
+/** @noinspection SqlResolve */
+/** @noinspection SqlNoDataSourceInspection */
 
 /** @var AMDSilu $amdSilu */
 $amdSilu = null;
@@ -108,7 +110,7 @@ class AMDSilu{
 	/**
 	 * Create simple user object for user ID
 	 *
-	 * @param int $uid
+	 * @param int|WP_User|AMDUser $uid
 	 * User ID
 	 *
 	 * @return AMDUser
@@ -387,32 +389,34 @@ class AMDSilu{
 
 	}
 
-	/**
-	 * Register new user
-	 *
-	 * @param string $email
-	 * User email
-	 * @param string $username
-	 * Username
-	 * @param string $password
-	 * User account password
-	 * @param false $login
-	 * Whether to login after registration or not
-	 *
-	 * @return array|string[]
-	 * @since 1.0.0
-	 */
-	public function registerUser( $email, $username, $password, $login = false ){
+    /**
+     * Register new user
+     *
+     * @param string $email
+     * User email
+     * @param string $username
+     * Username
+     * @param string $password
+     * User account password
+     * @param false $login
+     * Whether to login after registration or not
+     * @param string|null $phone
+     * User phone number for username auto-generate, default is null
+     *
+     * @return array|string[]
+     * @since 1.0.0
+     */
+	public function registerUser( $email, $username, $password, $login = false, $phone = null ){
 
 		if( $username <= -1 )
-			$username = self::generateUsername();
+			$username = self::generateUsernameFor( $email, $phone );
 
 		$errors = [];
 
 		if( !amd_validate( $email, "%email%" ) ){
 			$errors[] = array(
 				'id' => 'email_incorrect',
-				'error' => esc_html__( 'Please enter email correctly', "material-dashboard" ),
+				'error' => __( 'Please enter email correctly', "material-dashboard" ),
 				'field' => 'email'
 			);
 		}
@@ -420,7 +424,7 @@ class AMDSilu{
 		if( !amd_validate( $username, "%username%" ) ){
 			$errors[] = array(
 				'id' => 'username_invalid',
-				'error' => esc_html__( 'Username must be between 5 to 20 characters (including a to z, underscore, dot and numbers)', "material-dashboard" ),
+				'error' => __( 'Username must be between 5 to 20 characters (including a to z, underscore, dot and numbers)', "material-dashboard" ),
 				'field' => 'username'
 			);
 		}
@@ -428,7 +432,7 @@ class AMDSilu{
 		else if( strpos( $username, "admin" ) ){
 			$errors[] = array(
 				'id' => 'username_keyword',
-				'error' => esc_html__( 'This username is not allowed to take', "material-dashboard" ),
+				'error' => __( 'This username is not allowed to take', "material-dashboard" ),
 				'field' => 'username'
 			);
 		}
@@ -436,7 +440,7 @@ class AMDSilu{
 		if( strlen( $password ) < 8 ){
 			$errors[] = array(
 				'id' => 'password_length',
-				'error' => esc_html__( 'Password must contain at least 8 characters', "material-dashboard" ),
+				'error' => __( 'Password must contain at least 8 characters', "material-dashboard" ),
 				'field' => 'password'
 			);
 		}
@@ -444,7 +448,7 @@ class AMDSilu{
 		if( email_exists( $email ) ){
 			$errors[] = array(
 				'id' => 'email_exists',
-				'error' => esc_html__( 'This email is already in use', "material-dashboard" ),
+				'error' => __( 'This email is already in use', "material-dashboard" ),
 				'field' => 'email'
 			);
 		}
@@ -452,7 +456,7 @@ class AMDSilu{
 		if( username_exists( $username ) ){
 			$errors[] = array(
 				'id' => 'username_exists',
-				'error' => esc_html__( 'This username already taken', "material-dashboard" ),
+				'error' => __( 'This username already taken', "material-dashboard" ),
 				'field' => 'username'
 			);
 		}
@@ -471,7 +475,7 @@ class AMDSilu{
 				'success' => false,
 				'errors' => array(
 					'id' => 'failed',
-					'error' => esc_html__( 'Failed', 'material-dashboard' )
+					'error' => __( 'Failed', 'material-dashboard' )
 				),
 			);
 		}
@@ -492,7 +496,8 @@ class AMDSilu{
 	 * @param bool $fromEmail
 	 * Whether to generate user from email address or generate random username
 	 *
-	 * @return mixed
+	 * @return string
+     * Generated username
 	 * @since 1.0.0
 	 */
 	public function generateUsername( $fromEmail = false ){
@@ -504,7 +509,14 @@ class AMDSilu{
 				$emailPart = $emailExp[0];
 				if( strlen( $emailPart ) > 10 )
 					$emailPart = str_split( $emailPart, 10 )[0];
-				$format = amd_slugify( $emailPart, "" );
+				# $format = str_replace( "-", "_", amd_slugify( $emailPart, "" ) );
+                $format = preg_replace( "/[^A-Za-z0-9]/", "", $emailPart );
+                $n = 2;
+                $original_format = $format;
+                while( username_exists( $format ) ){
+                    $format = $original_format . $n;
+                    $n++;
+                }
 			}
 		}
 		$username = amd_generate_string_pattern( $format );
@@ -516,6 +528,41 @@ class AMDSilu{
 		return $username;
 
 	}
+
+    /**
+     * Generate a new username based on preferred priorities
+     * @param string $email
+     * User email, can be an empty string
+     * @param string $phone
+     * User phone, can be an empty string
+     *
+     * @return string
+     * Generated username
+     * @since 1.2.0
+     */
+    public function generateUsernameFor( $email, $phone ) {
+
+        $username_ag_priority = amd_get_site_option( "username_ag_priority", "random,phone,email" );
+        $_username_ag_priority = explode( ",", $username_ag_priority );
+
+        for( $i = 0; $i < count( $_username_ag_priority ); $i++ ){
+            $v = $_username_ag_priority[$i];
+            if( $v == "random" )
+                return self::generateUsername();
+            if( $v == "email" AND !empty( $email ) )
+                return self::generateUsername( $email );
+            if( $v == "phone" AND !empty( $phone ) AND amd_validate_phone_number( $phone ) ){
+                if( amd_starts_with( $phone, "+98" ) )
+                    $phone = preg_replace( "/^\+98/", "0", $phone );
+                $phone = str_replace( "+", "", $phone );
+                if( !username_exists( $phone ) )
+                    return $phone;
+            }
+        }
+
+        return self::generateUsername();
+
+    }
 
 	/**
 	 * Get AMDUser and WP_User as a same object
@@ -742,7 +789,7 @@ class AMDSilu{
 
 			/**
 			 * After successful login
-			 * @since 1.0.5
+             * @since 1.0.5
 			 */
 			do_action("amd_login", $signon );
 
@@ -762,8 +809,8 @@ class AMDSilu{
 	 * @param bool $notice
 	 * Whether to notice user with email or not
 	 *
-	 * @return bool
-	 * True on success, false on failure
+	 * @return string
+	 * Error message or empty string on success
 	 * @since 1.0.0
 	 */
 	public function changePassword( $uid, $password, $notice = true ){
@@ -777,16 +824,34 @@ class AMDSilu{
 			$uid = get_current_user_id();
 		}
 
+        $user = amd_get_user( $uid );
+
 		wp_set_password( $password, $uid );
 
 		if( $notice ){
 
-			global /** @var AMDWarner $amdWarn */
-			$amdWarn;
+			global $amdWarn;
 
 			$message = apply_filters( "amd_password_changed_message", $uid );
 
-			$amdWarn->sendEmail( $uid, esc_html__( "Password changed", "material-dashboard" ), $message );
+            $methods = ["email"];
+            if( apply_filters( "amd_notify_password_change_with_sms", false ) )
+                $methods[] = "sms";
+
+            # Send message by pattern if pattern exist, otherwise send it normally
+            if( in_array( "sms", $methods ) ) {
+                # since 1.2.1
+                $data_format = apply_filters( "amd_password_changed_message_data_format", "Y/m/d H:i" );
+                $pattern_send = amd_send_message_by_pattern( $user->phone, "password_changed", [ "firstname" => $user->getSafeName(), "data" => amd_true_date( $data_format ) ] );
+                if( $pattern_send === false || $pattern_send > 0 )
+                    unset( $methods[array_search( "sms", $methods )] );
+            }
+
+			$amdWarn->sendMessage( array(
+                "user" => $user,
+                "subject" => __( "Password changed", "material-dashboard" ),
+                "message" => $message
+            ), implode( ",", $methods ), true );
 
 		}
 
@@ -939,21 +1004,23 @@ class AMDSilu{
 
 	}
 
-	/**
-	 * Unauthorized Safe Login
-	 * @param AMDUser $u
-	 * User object to log in as that user
-	 *
-	 * @return bool
-	 * True on success, false on failure
-	 * @since 1.0.5
-	 */
-	public function usl( $u ){
+    /**
+     * Unauthorized Safe Login
+     * @param AMDUser $u
+     * User object to log in as that user
+     * @param bool $remember
+     * Whether to remember the user
+     *
+     * @return bool
+     * True on success, false on failure
+     * @since 1.0.5
+     */
+	public function usl( $u, $remember=false ){
 
 		if( $u->ID ){
 			wp_clear_auth_cookie();
 			wp_set_current_user( $u->ID );
-			wp_set_auth_cookie( $u->ID );
+			wp_set_auth_cookie( $u->ID, $remember );
 
 			/**
 			 * After successful login
@@ -966,5 +1033,31 @@ class AMDSilu{
 		return false;
 
 	}
+
+    /**
+     * Create a dummy user with no identity, just for error prevention
+     * @return AMDUser
+     * @since 1.2.0
+     */
+    public function create_dummy() {
+
+        $u = new AMDUser();
+        $u->ID = "DUMMY";
+        $u->serial = "DUMMY_USER";
+        $u->secretKey = "DUMMY_USER_1234";
+        $u->locale = get_locale();
+        $u->profile = amd_get_api_url( "?_avatar=placeholder" );
+        $u->is_dummy = true;
+
+        return $u;
+
+    }
+
+    public function checkPassword( $user_id, $password ) {
+        $user = $user_id === null ? wp_get_current_user() : get_user_by( "ID", $user_id );
+        if( !$user OR !$user instanceof WP_User )
+            return false;
+        return wp_check_password( $password, $user->user_pass, $user->ID );
+    }
 
 }

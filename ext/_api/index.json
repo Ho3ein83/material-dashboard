@@ -3,7 +3,7 @@
   "description": "Develop your own application and connect it with your dashboard",
   "thumbnail": "{AMD_IMG}/extensions_thumb.png",
   "version": "1.0.0",
-  "compatible": "1.0.0",
+  "compatible": ">= 1.0.0",
   "url": "{DOC_URL}/?e=_api",
   "author": "Amatris"
 }

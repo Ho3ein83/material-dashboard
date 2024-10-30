@@ -1,0 +1,6 @@
+= 1.0.4 =
+Reminder feature added
+Bugs fixed
+
+= 1.0.0 =
+First release

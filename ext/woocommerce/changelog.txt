@@ -1,0 +1,6 @@
+= 1.0.2 =
+* Some UI components changed
+* Invoice support added
+
+= 1.0.0 =
+* First release

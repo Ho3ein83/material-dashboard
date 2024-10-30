@@ -82,6 +82,15 @@ class AMDDashboard{
 
 		}, 10, 4 );
 
+        # Register validation page
+        $this->registerPageSimple( "__account_validation", __( "Account validation", "material-dashboard" ), AMD_DASHBOARD . "/validation.php", "security_warning" );
+
+        # Disallow messages for premium notifications in special pages
+        add_filter( "adp_disallowed_pages_for_displaying_messages", function( $black_list ){
+            $black_list[] = "__account_validation";
+            return $black_list;
+        } );
+
 	}
 
 	/**

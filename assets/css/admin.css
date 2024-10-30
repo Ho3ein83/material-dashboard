@@ -60,6 +60,8 @@ body {
     transition: background-color ease .2s, color ease .3s;
     cursor: var(--amd-pointer);
 }
+body.rtl .amd-admin-tabs > .--tabs > div.has-badge { padding-left: 36px }
+body.ltr .amd-admin-tabs > .--tabs > div.has-badge { padding-right: 36px }
 
 .amd-admin-tabs > .--tabs > div:hover {
     color: var(--amd-primary);
@@ -241,7 +243,11 @@ input[data-coloris] {
     margin: 8px;
     border-radius: 8px;
 }
-
+.amd-admin-card-keywords {
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
 .amd-admin-card:not(.--overflow) {
     overflow: hidden;
 }

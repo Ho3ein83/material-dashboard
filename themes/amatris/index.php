@@ -63,8 +63,8 @@ function amd_theme_amatris_init_themes(){
 		'--amd-color-red-rgb' => '245, 87, 83',
 		'--amd-color-orange' => '#f6a04d',
 		'--amd-color-orange-rgb' => '246, 160, 77',
-		'--amd-color-purple' => '#5142fc',
-		'--amd-color-purple-rgb' => '81, 66, 252',
+		'--amd-color-purple' => '#602acc',
+		'--amd-color-purple-rgb' => '96, 42, 204',
 		'--amd-shadow' => '0 0 4px 0 #00000009',
 		'--amd-pointer' => 'pointer',
 	) );
@@ -98,8 +98,8 @@ function amd_theme_amatris_init_themes(){
 		'--amd-color-red-rgb' => '245, 87, 83',
 		'--amd-color-orange' => '#f6a04d',
 		'--amd-color-orange-rgb' => '246, 160, 77',
-		'--amd-color-purple' => '#645dbe',
-		'--amd-color-purple-rgb' => '100, 93, 190',
+		'--amd-color-purple' => '#602acc',
+		'--amd-color-purple-rgb' => '96, 42, 204',
 		'--amd-shadow' => '0 1px 4px 0 #00000008',
 		'--amd-pointer' => 'pointer',
 	) );

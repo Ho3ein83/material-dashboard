@@ -845,6 +845,28 @@ function amd_delete_temp( $name = null, $timeCheck = false ){
 }
 
 /**
+ * Delete temporarily data from database by its ID
+ *
+ * @param int $id
+ * Temp data row ID in database
+ * @param bool $timeCheck
+ * If you pass $name you can let it check expiration time and keep it if not expired.
+ * Otherwise, if you set it to false it will delete it anyway.
+ *
+ * @return bool
+ * True on success, false on failure
+ * @since 1.2.0
+ */
+function amd_delete_temp_by_id( $id, $timeCheck = false ){
+
+	global /** @var AMD_DB $amdDB */
+	$amdDB;
+
+	return $amdDB->deleteTempByID( $id, $timeCheck );
+
+}
+
+/**
  * Remove expired temps
  * @return void
  * @since 1.0.0
@@ -972,7 +994,8 @@ function amd_generate_string( $len = 10, $key = -1 ){
 
 	$string = '';
 
-	$key = str_shuffle( str_shuffle( $key ) );
+    # Randomize the key even more
+	$key = str_shuffle( str_shuffle( $key . $key ) );
 
     # Set random seed
 	srand( microtime( true ) * 1000000 );
@@ -1221,6 +1244,17 @@ function amd_get_current_user(){
 
 	return $user->isValid ? $user : false;
 
+}
+
+/**
+ * Create a dummy user with no identity, just for error prevention
+ * @return AMDUser
+ * @since 1.2.0
+ * @see AMDSilu::create()
+ */
+function amd_get_dummy_user(){
+    global $amdSilu;
+    return $amdSilu->create_dummy();
 }
 
 /**
@@ -1524,6 +1558,9 @@ function amd_validate( $string, $regex, $required = true ){
 			case "zipcode":
 				$regex = "/^[0-9]{5,}$/";
 				break;
+            case "domain":
+				$regex = "/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/";
+				break;
 			default:
 				return false;
 		}
@@ -1780,6 +1817,12 @@ function amd_admin_head(){
     $amdCache->addStyle( 'admin:icon_library', amd_merge_url_query( $API_URL, "stylesheets=icon_library&ver=1.0.0" ), null );
     $amdCache->addScript( 'admin:icon_library', amd_merge_url_query( $API_URL, "scripts=icon_library&ver=1.0.0" ), null );
 
+    $amdCache->addStyle( 'admin:user_picker', amd_merge_url_query( $API_URL, "stylesheets=user_picker&ver=1.0.0" ), null );
+    $amdCache->addScript( 'admin:user_picker', amd_merge_url_query( $API_URL, "scripts=user_picker&ver=1.0.0" ), null );
+
+    $amdCache->addStyle( 'admin:product_picker', amd_merge_url_query( $API_URL, "stylesheets=product_picker&ver=1.0.0" ), null );
+    $amdCache->addScript( 'admin:product_picker', amd_merge_url_query( $API_URL, "scripts=product_picker&ver=1.0.0" ), null );
+
 	$amdCache->dumpStyles( "admin" );
 	$amdCache->dumpScript( "admin" );
 
@@ -1976,7 +2019,7 @@ function amd_is_dashboard_page(){
 /**
  * Get login page URL
  * @param bool $safe
- * [Deprecated] this parameter is no longer available since 1.0.4 version
+ * [Deprecated] this parameter is no longer doing anything since 1.0.4 version
  * @return string
  * @since 1.0.0
  */
@@ -3410,7 +3453,8 @@ function amd_get_all_users(){
 
 	$table = $amdDB->getTable( "wp_users" );
 
-	$res = $amdDB->safeQuery( $table, "SELECT * FROM `%{TABLE}%`" );
+    /** @noinspection SqlResolve */
+    $res = $amdDB->safeQuery( $table, "SELECT * FROM `%{TABLE}%`" );
 
 	$users = [];
 	foreach( $res as $user ){
@@ -3456,16 +3500,32 @@ function amd_get_newest_users(){
  */
 function amd_get_online_users(){
 
-	$users = amd_get_all_users();
+    global $amdDB;
+
+    $online_users = [];
+    $results = $amdDB->findTempKey( "^checkin_\d", true );
+    foreach( $results as $result ){
+        $key = $result->temp_key ?? "";
+        if( amd_starts_with( $key, "checkin_" ) ){
+            $uid = intval( str_replace( "checkin_", "", $key ) );
+            $user = amd_get_user( $uid );
+            if( $user )
+                $online_users[] = $user;
+        }
+    }
+
+    return $online_users;
+
+    # Old method
+	/*$users = amd_get_all_users();
 
 	$out = [];
-	/** @var AMDUser $user */
 	foreach( $users as $user ){
 		if( $user->isOnline() )
 			$out[$user->ID] = $user;
 	}
 
-	return $out;
+	return $out;*/
 
 }
 
@@ -3597,7 +3657,7 @@ function amd_get_time_pass( $time ){
 	$passedTime = time() - $time;
 	$passedDays = amd_get_date_diff( date( "Y-m-d", $time ) );
 
-	$ii = $passedTime;
+	$ii = abs( $passedTime );
 	$mm = floor( $ii / 60 );
 	$hh = floor( $ii / 3600 );
 	$dd = floor( $ii / 86400 );
@@ -3605,6 +3665,7 @@ function amd_get_time_pass( $time ){
 	$yy = floor( $ii / ( 86400 * 365 ) );
 
 	$data = array(
+		'total' => $ii, # since 1.2.0
 		'each' => array(
 			'seconds' => $ii,
 			'minutes' => $mm,
@@ -3629,11 +3690,13 @@ function amd_get_time_pass( $time ){
  * Timestamp
  * @param bool $ago
  * Whether to get ago format of date or not, e.g: "12 days ago"
+ * @param int $depth
+ * Whether to go deeper than day or not (0 for day, 1 for hour, 2 for minutes and 3 for second depth)
  *
  * @return string|null
  * @since 1.0.0
  */
-function amd_get_time_pass_str( $time, $ago = false ){
+function amd_get_time_pass_str( $time, $ago = false, $depth=false ){
 
 	$last = amd_get_time_pass( $time );
 
@@ -3647,7 +3710,7 @@ function amd_get_time_pass_str( $time, $ago = false ){
 		else
 			return sprintf( _n( "%s year", "%s years", $yy, "material-dashboard" ), $yy );
 	}
-	else if( $days < 365 && $days >= 30 ){
+	else if( $days >= 30 ){
 		// Month
 		$mm = floor( $days / 30 );
 		if( $ago )
@@ -3655,7 +3718,7 @@ function amd_get_time_pass_str( $time, $ago = false ){
 		else
 			return sprintf( _n( "%s month", "%s months", $mm, "material-dashboard" ), $mm );
 	}
-	else if( $days < 30 && $days >= 7 ){
+	else if( $days >= 7 ){
 		// Week
 		$ww = floor( $days / 7 );
 		if( $ago )
@@ -3663,7 +3726,7 @@ function amd_get_time_pass_str( $time, $ago = false ){
 		else
 			return sprintf( _n( "%s week", "%s weeks", $ww, "material-dashboard" ), $ww );
 	}
-	else if( $days < 7 && $days > 0 ){
+	else if( $days > 0 ){
 		// Day
 		$dd = floor( $days );
 		if( $ago )
@@ -3671,12 +3734,24 @@ function amd_get_time_pass_str( $time, $ago = false ){
 		else
 			return sprintf( _n( "%s day", "%s days", $dd, "material-dashboard" ), $dd );
 	}
-	else if( $days <= 0 ){
-		return esc_html__( "Today", "material-dashboard" );
-	}
 
-	return "";
+    if( $depth ) {
+        $hour = floor( $last['each']['hours'] );
+        if( $hour > 0 )
+            return sprintf( _n( "%s hour", "%s hours", $hour, "material-dashboard" ), $hour );
+        if( $depth > 1 ){
+            $minute = floor( $last['each']['minutes'] );
+            if( $minute > 0 )
+                return sprintf( _n( "%s minute", "%s minutes", $minute, "material-dashboard" ), $minute );
+            if( $depth > 2 ){
+                $second = floor( $last['each']['seconds'] );
+                if( $second > 0 )
+                    return sprintf( _n( "%s second", "%s seconds", $second, "material-dashboard" ), $second );
+            }
+        }
+    }
 
+    return !$depth ? esc_html__( "Today", "material-dashboard" ) : "";
 }
 
 /**
@@ -3814,8 +3889,9 @@ function amd_check_user_filters( $filters ){
 				return true;
 		}
 		else{
-			if( $u = amd_guess_user( $item )["user"] ?? null )
-				return $u->ID == get_current_user_id();
+            $u = amd_guess_user( $item )["user"] ?? null;
+			if( $u AND $u->ID == get_current_user_id() )
+				return true;
 		}
 
 	}
@@ -3972,13 +4048,16 @@ function amd_open_auth_page(){
  */
 function amd_dump_admin_tabs( $tabs ){
 
-	$tabCounter = 0;
+    global $amdExp;
+
+//	$tabCounter = 0;
 	$tabsJS = [];
 	foreach( $tabs as $id => $tab ){
 		$_id = $tab["id"] ?? null;
 		$_text = $tab["title"] ?? "";
 		$_icon = $tab["icon"] ?? "";
 		$_page = $tab["page"] ?? "";
+		$_badge = $tab["badge"] ?? "";
 		if( !empty( $_id ) )
 			$id = $_id;
 		if( empty( $_text ) )
@@ -3986,19 +4065,51 @@ function amd_dump_admin_tabs( $tabs ){
         $safe_id = sanitize_key( $id );
         $safe_icon = sanitize_text_field( $_icon );
         $tabsJS[$safe_id] = array(
-            "text" => sanitize_text_field( $_text ),
-            "icon" => amd_icon( $safe_icon )
+            "text" => wp_kses( $_text, amd_allowed_tags_with_attr( "span,p,a,br" ) ),
+            "icon" => amd_icon( $safe_icon ),
+            "badge" => $_badge
         );
-		$tabCounter++;
+//		$tabCounter++;
 		if( !empty( $_page ) AND file_exists( $_page ) ){
 			?>
-            <div data-amd-content="<?php echo esc_attr( $id ) ?>"><?php @require_once( $_page ); ?></div>
+            <div data-amd-content="<?php echo esc_attr( $id ) ?>">
+                <?php
+
+                    /** @since 1.2.0 */
+                    do_action( "amd_settings_before_page_dump", $id );
+
+                    $amdExp->requireOnceFile( $_page );
+
+                    /** @since 1.2.0 */
+                    do_action( "amd_settings_after_page_dump", $id );
+
+                ?>
+            </div>
 			<?php
 		}
 	}
 
 	return $tabsJS;
 
+}
+
+/**
+ * Print admin card keywords
+ * @param string|array $keywords
+ * Comma separated list or array
+ * @return void
+ * @since 1.2.0
+ */
+function amd_dump_admin_card_keywords( $keywords ){
+    if( empty( $keywords ) )
+        return;
+    if( is_string( $keywords ) )
+        $keywords = explode( ",", $keywords );
+    if( !is_array( $keywords ) )
+        return;
+    ?>
+    <div class="amd-admin-card-keywords"><?php echo esc_html( implode( " ", $keywords ) ); ?></div>
+    <?php
 }
 
 /**
@@ -4129,7 +4240,7 @@ function amd_assert_error( $error_id, $error_text = "", $headersCheck = true ){
 		$error = sprintf( esc_html__( "An error has occurred", "material-dashboard" ) . ". " . esc_html__( "Error code %s", "material-dashboard" ), $error_code );
 	else
 		$error = $error_text . "<br>" . "<a href=\"" . esc_url( amd_doc_url( $error_id ) ) . "\">" . sprintf( esc_html__( "Error code %s", "material-dashboard" ), $error_code ) . "</a>";
-	if( $headersCheck AND headers_sent() ){
+	if( $headersCheck and headers_sent() ){
 		ob_start();
 		# @formatter off
 		?>
@@ -4361,6 +4472,19 @@ function amd_enqueue_scripts(){
 	wp_enqueue_script( "jquery-ui-droppable" );
 	wp_enqueue_script( "jquery-ui-resizable" );
 	wp_enqueue_script( "jquery-ui-sortable" );
+
+    wp_enqueue_script( "amd-qr-code-styling", AMD_MOD . "/qr-code-styling/qr-code-styling.min.js" );
+
+    # since 1.1.3
+    if( apply_filters( "amd_use_date_picker", false ) ){
+        wp_enqueue_script( "amd-persian-date", AMD_MOD . "/persian-date/persian-date.min.js" );
+        wp_enqueue_script( "amd-persian-date-picker", AMD_MOD . "/persian-date/persian-datepicker.js" );
+        wp_enqueue_style( "amd-persian-date-picker", AMD_MOD . "/persian-date/persian-datepicker.min.css" );
+    }
+
+    # since 1.2.0
+    if( apply_filters( "amd_use_markdown_module", false ) )
+        wp_enqueue_script( "amd-marked", AMD_MOD . '/marked/marked.min.js', [], "12.0.1" );
 
 }
 add_action( "wp_enqueue_scripts", "amd_enqueue_scripts" );
@@ -4634,6 +4758,10 @@ function amd_deregister_script_scope( $scope ){
  */
 function amd_switch_locale( $locale, $updateUserOrCookie=true ){
 
+    # since 1.2.0
+    if( !apply_filters( "amd_allow_locale_switch", true, $locale ) )
+        return;
+
     # Change WordPress global locale
     switch_to_locale( $locale );
 
@@ -4831,11 +4959,16 @@ function amd_pull_value( $input, $element, $separator=",", $unique=true ){
  * Print phone number in login and registration and other forms
  * @param bool $isForLogin
  * Whether phone field is for login page or not
+ * @param bool|null $is_phone_field_required
+ * Decide whether phone field is required or not, pass null to decide automatically
+ * @param string|null $field_id
+ * Unique field ID for handling the phone number out of a form
  *
- * @return void
+ * @return string
+ * Field ID
  * @since 1.0.4
  */
-function amd_phone_fields( $isForLogin=false ){
+function amd_phone_fields( $isForLogin=false, $is_phone_field_required=null, $field_id=null ){
 
     if( $isForLogin ){
         $phone_field = true;
@@ -4846,18 +4979,23 @@ function amd_phone_fields( $isForLogin=false ){
 	    $phone_field_required = amd_get_site_option( "phone_field_required" ) == "true";
     }
 
+    if( $is_phone_field_required !== null )
+        $phone_field_required = $is_phone_field_required;
+
 	$regions = amd_get_regions();
 	$cc_count = $regions["count"];
 	$first_cc = $regions["first"];
 	$format = $regions["format"];
 
+    $id = $field_id ?: amd_generate_string( 12 );
+
     ?>
     <?php if( $phone_field ): ?>
-        <div id="phone-fields">
+        <div data-phone-field="<?php echo esc_attr( $id ); ?>">
 			<?php if( $cc_count > 1 ): ?>
                 <div class="_phone_field_holder_ ht-magic-select">
                     <label>
-                        <input type="text" class="--input" data-field="country_code" data-next="phone_number"
+                        <input type="text" class="--input _country_code_" data-field="country_code" data-translate-digits="*" data-next="phone_number"
                                placeholder=""<?php echo $phone_field_required ? "required" : ""; ?>>
                         <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
                         <span class="--value" dir="auto"><?php _amd_icon( "phone" ) ?></span>
@@ -4873,7 +5011,7 @@ function amd_phone_fields( $isForLogin=false ){
                     <div class="--search"></div>
                 </div>
                 <label class="_phone_field_holder_ ht-input --ltr">
-                    <input type="text" class="not-focus" data-field="phone_number" data-pattern="" data-keys="[+0-9]"
+                    <input type="text" class="not-focus _phone_number_" data-field="phone_number" data-translate-digits="*" data-pattern="" data-keys="[+0-9]"
                            data-next="<?php echo $isForLogin ? 'password' : ''; ?>"
                            placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
                     <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
@@ -4882,7 +5020,7 @@ function amd_phone_fields( $isForLogin=false ){
 			<?php else: ?>
 				<?php if( $first_cc == "98" AND apply_filters( "amd_use_phone_simple_digit", false ) ): ?>
                     <label class="_phone_field_holder_ ht-input --ltr">
-                        <input type="text" class="not-focus" data-field="phone_number" data-keys="[0-9]"
+                        <input type="text" class="not-focus _phone_number_" data-field="phone_number" data-translate-digits="*" data-keys="[0-9]"
                                data-pattern="[0-9]" placeholder=""
 							<?php echo $phone_field_required ? "required" : ""; ?>>
                         <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
@@ -4891,7 +5029,7 @@ function amd_phone_fields( $isForLogin=false ){
 				<?php else: ?>
                     <div class="_phone_field_holder_ ht-magic-select" style="display:none">
                         <label>
-                            <input type="text" class="--input" data-field="country_code" data-next="phone_number"
+                            <input type="text" class="--input _country_code_" data-field="country_code" data-next="phone_number"
                                    data-value="<?php echo esc_attr( $first_cc ); ?>" value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
 								<?php echo $phone_field_required ? "required" : ""; ?>>
                             <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
@@ -4903,8 +5041,8 @@ function amd_phone_fields( $isForLogin=false ){
                         <div class="--search"></div>
                     </div>
                     <label class="_phone_field_holder_ ht-input --ltr">
-                        <input type="text" class="not-focus" data-field="phone_number" data-pattern="[0-9]{11}"
-                               data-keys="[0-9]"
+                        <input type="text" class="not-focus _phone_number_" data-field="phone_number" data-pattern="[0-9]{11}"
+                               data-keys="[0-9]" data-translate-digits="*"
                                placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
                         <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
 						<?php _amd_icon( "phone" ); ?>
@@ -4912,8 +5050,101 @@ function amd_phone_fields( $isForLogin=false ){
 				<?php endif; ?>
 			<?php endif; ?>
         </div>
+        <script>
+            (function(){
+                const _id = `<?php echo esc_js( $id ); ?>`;
+                const $fields = $(`[data-phone-field="${_id}"]`);
+                let $country_code = $fields.find("._country_code_");
+                let $phone_number = $fields.find("._phone_number_");
+                let country_codes = {};
+                $country_code.parent().parent().find(".--options > span").each(function() {
+                    let cc = $(this).hasAttr("data-value", true);
+                    let format = $(this).hasAttr("data-format", true, "");
+                    if(cc) {
+                        country_codes[cc] = {
+                            "$e": $(this),
+                            "format": format.toUpperCase()
+                        };
+                    }
+                });
+
+                var getSelectedCC = () => {
+                    return $country_code.hasAttr("data-value", true, "");
+                }
+                $country_code.on("change", function() {
+                    let cc = getSelectedCC();
+                    if(cc) {
+                        $phone_number.blur();
+                        $phone_number.focus();
+                        $phone_number.val("+" + cc);
+                    }
+                });
+                var formatPhoneNumber = (number, format, clean = true) => {
+                    let cc = getSelectedCC();
+                    let num = number;
+                    num.replaceAll(" ", "");
+                    num = num.replaceAll("+" + cc, "");
+                    num = num.replaceAll("+", "");
+                    num = num.replace(cc, "");
+                    let out = format;
+                    for(let i = 0; i < num.length; i++) {
+                        let n = num[i] || "";
+                        out = out.replace("X", n);
+                    }
+                    if(clean) {
+                        out = out.replaceAll("X", "");
+                        out = out.replaceAll("-", " ");
+                    }
+                    return "+" + cc + " " + out;
+                }
+                let formatted = "";
+                $phone_number.on("input", function(e) {
+                    let key = e.key;
+                    let $el = $(this);
+                    let v = $el.val();
+                    v = v.replaceAll("+", "");
+                    v = v.replaceAll(" ", "");
+                    if(v && !amd_conf.forms.isSpecialKey(key)) {
+                        if(typeof country_codes[v] !== "undefined") {
+                            $phone_number.val("+" + v);
+                            $country_code.val(v);
+                            $country_code.trigger("change");
+                        }
+                        let _cc = getSelectedCC();
+                        let ff = typeof country_codes[_cc] !== "undefined" ? (country_codes[_cc].format || "") : "";
+                        if(ff) {
+                            let sub = v.substring(_cc.length, v.length);
+                            if(sub.startsWith("0")) {
+                                do {
+                                    sub = sub.substring(1, v.length);
+                                } while(sub.startsWith("0"));
+                                v = sub;
+                            }
+                            formatted = formatPhoneNumber(v, ff);
+                            $phone_number.val(formatted.trimChar(" "));
+                        }
+                    }
+                });
+                $country_code.on("change", function(){
+                    let cc = $(this).hasAttr("data-value", true, "");
+                    let _format = (country_codes[cc] || {format: ""}).format || "";
+                    if(_format) {
+                        let _f = _format;
+                        _f = _f.replaceAll("-", "\\s?");
+                        _f = _f.replaceAll("X", "\\d");
+                        $phone_number.attr("data-pattern", `^\\+${cc}\\s?${_f}$`);
+                    }
+                    let val = $country_code.val();
+                    for(let i = 0; i < val.length; i++)
+                        val = val.replaceAll("  ", " ");
+                    $country_code.val(val.trimChar(" "));
+                });
+                $country_code.trigger("change");
+            }());
+        </script>
 	<?php endif; ?>
     <?php
+    return $id;
 }
 
 /**
@@ -5094,7 +5325,17 @@ function amd_apply_user_template( $template, $user, $args ){
 	 */
     $variables = apply_filters( "amd_user_message_template_variables", [] );
 
+    if( $user->is_dummy ) {
+        $sms_pattern_enabled = amd_get_site_option( "sms_pattern_enabled", "false" ) == "true";
+        $sms_pattern_enabled = apply_filters( "amd_sms_pattern_enabled", $sms_pattern_enabled );
+        $variable_mode = apply_filters( "amd_sms_pattern_variable_mode", $sms_pattern_enabled ? "index" : "default" );
+    }
+    else{
+        $variable_mode = "default";
+    }
+
     $text = $template;
+    $delimiter = apply_filters( "amd_sms_pattern_variable_delimiter", "%" );
     foreach( $variables as $variable ){
 	    $id = $variable["id"] ?? null;
         if( !$id )
@@ -5104,15 +5345,33 @@ function amd_apply_user_template( $template, $user, $args ){
         if( $bbcode == "Auto" )
 	        $bbcode = "%" . strtoupper( $id ) . "%";
 
-        $callback = $variable["callback"] ?? null;
-        if( is_callable( $callback ) ){
-            $v = call_user_func( $callback, $user, $args );
-	        $text = str_replace( $bbcode, sanitize_text_field( $v ), $text );
+        if( $variable_mode == "index" ){
+	        $text = str_replace( $bbcode, "{%}", $text );
+        }
+        else if( $variable_mode == "delimiter" ){
+	        $text = str_replace( $bbcode, $delimiter[0] . strtolower( $id ) . $delimiter[1], $text );
+        }
+        else if( $variable_mode == "DELIMITER" ){
+	        $text = str_replace( $bbcode, $delimiter[0] . strtoupper( $id ) . $delimiter[1], $text );
+        }
+        else{
+            $callback = $variable["callback"] ?? null;
+            if( is_callable( $callback ) ){
+                $v = call_user_func( $callback, $user, $args );
+                $text = str_replace( $bbcode, sanitize_text_field( $v ), $text );
+            }
         }
 
     }
 
-    return $text;
+    $index = 0;
+    return preg_replace_callback( "/\{(%)}/", function( $a ) use ( $delimiter, &$index ) {
+        if( !empty( $a[1] ) ){
+            $index++;
+            return $delimiter[0] . ( $index-1 ) . $delimiter[1];
+        }
+        return "";
+    }, $text );
 }
 
 /**
@@ -5430,8 +5689,11 @@ function amd_convert_time_to_text( $seconds ){
 function amd_initialize_locale(){
 	global $amdCache;
 
+    # since 1.2.0
+    $meta_prefer = apply_filters( "amd_locale_prefer_user_meta_than_cookie", true );
+
     # Get preferred locale from user meta (for logged-in users) and cookie (for logged-out users)
-    if( is_user_logged_in() )
+    if( $meta_prefer && is_user_logged_in() )
 		$locale = get_user_meta( get_current_user_id(), "locale", true );
 	else
         $locale = $amdCache->getCache( "locale", "cookie" );
@@ -5554,4 +5816,284 @@ function amd_get_custom_hooks(){
         "actions" => $actions,
     );
 
+}
+
+/**
+ * Get version requirement from version expression, for example if the version expression is '>= 1.0.0' and
+ * the app name is 'Material dashboard', the output will be 'Material dashboard version 1.0.0 or later'
+ * @param string $version_expression
+ * Version expression, e.g: ">= 1.0.0", "<= 1.2.0", "= 1.3.2", "== 1.1.0"
+ * @param string $app_name
+ * App name to add in the output string (optional)
+ *
+ * @return string
+ * Version requirement string
+ * @since 1.2.0
+ */
+function amd_version_requirement( $version_expression, $app_name="" ){
+    $version = trim( preg_replace( "/[<=>]/", "", $version_expression ) );
+    if( amd_starts_with( $version_expression, ">=" ) )
+        $str = sprintf( esc_html__( "%s version %s or later", "material-dashboard" ), $app_name, $version );
+    else if( amd_starts_with( $version_expression, "<=" ) )
+        $str = sprintf( esc_html__( "%s version %s or below", "material-dashboard" ), $app_name, $version );
+    else
+        $str = sprintf( esc_html__( "%s version %s", "material-dashboard" ), $app_name, $version );
+    return trim( $str );
+}
+
+/**
+ * Extract PHP file meta-data from comments. An example of
+ * meta-data in the beginning of a PHP file:
+ * <pre>
+ *  /&#42;&#42;
+ *   &#42; Theme: Snowflake Dev
+ *   &#42; Description: Snowflake theme for developers with basic tools
+ *   &#42; Author: Hossein
+ *   &#42; Version: 1.0
+ *   &#42; Text domain: sfd
+ *   &#42; Required at least: 0.0
+ *   &#42; Required PHP: 7.4
+ *   &#42; Package: Amatris Original Software (AOS)
+ *   &#42; License: GNU General Public License v2 or later
+ *   &#42; License URI: http://www.gnu.org/licenses/gpl-2.0.html
+ *   &#42;
+ *   &#42; &#65312;author Hossein
+ *   &#42; &#65312;package AOS
+ *   &#42; &#65312;version 1.0
+ *   &#42; &#65312;since 0.0
+ *   &#42;/
+ * </pre>
+ * Above code will be parsed as an array like this:
+ * <pre>
+ * array (
+ *   'info' =>
+ *      array (
+ *         'Theme' => 'Snowflake Dev',
+ *         'Description' => 'Snowflake theme for developers with basic tools',
+ *         'Author' => 'Hossein',
+ *         'Version' => '1.0',
+ *         'Text domain' => 'sfd',
+ *         'Required at least' => '0.0',
+ *         'Required PHP' => '7.4',
+ *         'Package' => 'Amatris Original Software (AOS)',
+ *         'License' => 'GNU General Public License v2 or later',
+ *         'License URI' => 'http://www.gnu.org/licenses/gpl-2.0.html',
+ *      ),
+ *   'props' =>
+ *      array (
+ *         'author' => 'Hossein',
+ *         'package' => 'AOS',
+ *         'version' => '1.0',
+ *         'since' => '0.0',
+ *      ),
+ * )
+ * </pre>
+ *
+ * @param string $file_path
+ * File path to be parsed
+ *
+ * @return array[]
+ * @since 1.2.0
+ */
+function amd_extract_php_file_meta( $file_path ){
+
+    $content = file_get_contents( $file_path );
+
+    $meta = array(
+        "info" => [],
+        "props" => []
+    );
+
+    preg_match( '/\/\*\*(.*)\*\//s', $content, $matches );
+
+    $m = $matches[1] ?? "";
+
+    foreach( explode( PHP_EOL, $m ) as $line ){
+        $line = trim( $line, " \t\n\r\0\x0B*" );
+        if( empty( $line ) )
+            continue;
+        if( amd_starts_with( $line, "@" ) ){
+            preg_match( '/@([a-zA-Z]+)\s?(.*)/', $line, $prop );
+            $key = sanitize_text_field( strtolower( trim( $prop[1] ?? "", "@" ) ) );
+            $value = sanitize_text_field( $prop[2] ?? "" );
+            $meta["props"][$key] = $value;
+        }
+        else{
+            preg_match( '/([a-zA-Z\s]+):\s?(.*)/', $line, $info );
+            $name = sanitize_text_field( $info[1] ?? "" );
+            $value = sanitize_text_field( $info[2] ?? "" );
+            $meta["info"][$name] = $value;
+        }
+    }
+
+    return $meta;
+
+}
+
+/**
+ * Get specific property from PHP header info
+ * @param array $meta
+ * The returned value from {@see amd_extract_php_file_meta()}
+ * @param string $name
+ * Property name of the info parameter, e.g: "Description", "Theme", "Module"
+ *
+ * @return string
+ * Property value, e.g: "Snowflake theme for developers", "Snowflake Dev"
+ * @sinc 1.2.0
+ */
+function amd_get_php_file_meta_info( $meta, $name ){
+
+    if( !empty( $meta["info"] ) AND !empty( $meta["info"][$name] ) )
+        return $meta["info"][$name];
+
+    return "";
+
+}
+
+/**
+ * Parse separated list. For example we have a list like this:
+ * <br><code>"12, 20, apple, banana,,"</code>
+ * <br>if you `explode` the list by comma, you get this array:
+ * <br><code>["12", " 20", " apple", " banana", "", ""]</code>
+ * <br>which is not completely valid, instead you can use this function like this:
+ * <br><code>amd_clean_separated_list( "12, 20, apple, banana,," )</code>
+ * <br>and get cleaned the list:
+ * <br><code>"12,20,apple,banana"</code>
+ * @param string|array $list
+ * The list, it can be character-separated list like "a, b, c" or an array like ["a", "b", "c"]
+ * @param string $separator
+ * Separator character, e.g: ","
+ * @param bool $allow_zero
+ * Whether to remove zeros (null, false or any other logical zero values) from list, default is true
+ *
+ * @return string
+ * Cleaned list string (imploded with separator character)
+ * @sicne 1.2.0
+ */
+function amd_clean_separated_list( $list, $separator=",", $allow_zero=true ){
+    $data = [];
+    if( is_string( $list ) ){
+        foreach( explode( $separator, $list ) as $item ){
+            if( !$allow_zero AND !$item )
+                continue;
+            if( $item !== "" )
+                $data[] = trim( $item );
+        }
+    }
+    else if( is_iterable( $list ) ){
+        foreach( $list as $value ){
+            if( !$allow_zero AND !$value )
+                continue;
+            if( $value !== "" )
+                $data[] = trim( $value );
+        }
+    }
+    return implode( $separator, $data );
+}
+
+/**
+ * Check if user account is valid or not (for example, phone number and essential fields are valid)
+ * @param int|null $user_id
+ * User ID, or null for current user
+ * @return bool
+ * True if user is valid, otherwise false
+ * @since 1.2.0
+ */
+function amd_is_account_valid( $user_id = null ){
+    $user = $user_id === null ? amd_get_current_user() : amd_get_user( $user_id );
+    if( $user ){
+
+        $phone_field = amd_get_site_option( "phone_field" ) == "true";
+        $phone_field_required = amd_get_site_option( "phone_field_required" ) == "true";
+
+        if( $phone_field AND $phone_field_required ) {
+            if( empty( $user->phone ) )
+                return false;
+        }
+
+        return apply_filters( "amd_validate_user_account", true, $user );
+    }
+
+    return false;
+}
+
+/**
+ * Export post data to array
+ * @param WP_Post $post
+ * Post object
+ *
+ * @return array
+ * Post data array
+ * @since 1.2.0
+ */
+function amd_export_post_data( $post ){
+    if( $post instanceof WP_Post ){
+        return array(
+            "id" => $post->ID,
+            "author" => $post->post_author,
+            "title" => $post->post_title,
+            "type" => $post->post_type,
+            "status" => $post->post_status,
+            "thumbnail" => get_the_post_thumbnail_url( $post ),
+            "data" => $post->post_date,
+            "time" => strtotime( $post->post_date ),
+        );
+    }
+    return [];
+}
+
+/**
+ * Get the logical value of a number, boolean or string.
+ *
+ * Logical true values: `1, "1", true, "true"` and numeric values larger than 0 like `2 and "15"`
+ *
+ * Logical false values: `0, "0", false, "false", null, "null"`, empty arrays and numeric values smaller than 1 like `0 and "-10"`
+ * @param string|bool|int $value
+ * The value to get the logical value
+ *
+ * @return bool
+ * True if value is logically true, otherwise false
+ * @since 1.2.0
+ */
+function amd_get_logical_value( $value ){
+
+    if( empty( $value ) || in_array( $value, ["0", "false", "null"], true ) )
+        return false;
+
+    if( in_array( $value, [1, "1", "true"] ) )
+        return true;
+
+    return intval( $value ) > 0;
+
+}
+
+/**
+ * Convert bytes to KB, MB, GB and TB
+ * @param int $bytes
+ * Size in bytes
+ * @param null|string $to
+ * Target unit, allowed values: "B", "KB", "MB", "GB", "TB" or pass null to convert it to the biggest unit possible
+ * @param int $base
+ * The base number, you can pass 1000 for multi-byte standard
+ * @return array
+ * The first index is the new size (numeric), and the second index is size unit (e.g: "MB", "KB", "GB")
+ * @since 1.2.1
+ */
+function amd_format_bytes( $bytes, $to = null, $base = 1024 ) {
+    $units = ["B", "KB", "MB", "GB", "TB"];
+    $power = 1;
+    if( $to === null ){
+        for( $i = count( $units )-1; $i >= 0; $i-- ){
+            if( $bytes >= pow( $base, $i ) ){
+                $power = $i;
+                break;
+            }
+        }
+    }
+    if( is_string( $to ) ){
+        $index = array_search( $to, $units ) + 1;
+        if( $index > 0 )
+            $power = $index;
+    }
+    return [$bytes / pow($base, $power), $units[$power] ?? ""];
 }

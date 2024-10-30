@@ -1,4 +1,6 @@
 <?php
+/** @noinspection ALL */
+/** @noinspection SqlNoDataSourceInspection */
 
 /** @var AMD_DB $amdDB */
 $amdDB = null;
@@ -59,7 +61,7 @@ class AMD_DB {
 	 * @var int
 	 * @since 1.0.5
 	 */
-	const db_version = 4;
+	const db_version = 6;
 
 	/**
 	 * Tables SQL structure
@@ -96,7 +98,8 @@ class AMD_DB {
 		$wpdb;
 
 		$this->db = $wpdb;
-		$this->db_name = $wpdb->dbname;
+		# $this->db_name = $wpdb->dbname;
+		$this->db_name = DB_NAME;
 		$this->wp_prefix = $wpdb->prefix;
 		$this->prefix = $this->wp_prefix . "amd_";
 
@@ -183,7 +186,7 @@ class AMD_DB {
 		) );
 
 		self::registerTable( "reports", array(
-			"id" => "INT NOT NULL AUTO_INCREMENT",
+			"id" => "BIGINT NOT NULL AUTO_INCREMENT",
 			"report_key" => "VARCHAR(64) NOT NULL",
 			"report_user" => "VARCHAR(64) NOT NULL",
 			"report_value" => "LONGTEXT NOT NULL",
@@ -328,6 +331,37 @@ class AMD_DB {
 		return self::importData( $json, false );
 
 	}
+
+    /**
+     * Update the structure of database
+     * @param int $version
+     * Database version number
+     * @return void
+     * @since 1.2.1
+     */
+    public function updateStructures( $version ) {
+
+        # Update structures (for 1.2.1 version)
+        if( $version >= 4 && $version <= 6 ){
+            /**
+             * Some tables like 'temp' are too active and they are being changed a lot and this can cause them to
+             * have a large AUTO_INCREAMENT value. This is not a big deal in small websites but if they are using
+             * this plugin for a long time it can happen, so it's better to change the 'id' column type from 'INT' to
+             * 'BIGINT'
+             */
+
+            # Update temp table
+            $this->db->query( $this->db->prepare( "ALTER TABLE %i CHANGE `id` `id` BIGINT NOT NULL AUTO_INCREMENT;", $this->getTable( "temp" ) ) );
+
+            # Update reports table
+            $this->db->query( $this->db->prepare( "ALTER TABLE %i CHANGE `id` `id` BIGINT NOT NULL AUTO_INCREMENT;", $this->getTable( "reports" ) ) );
+
+            # Update tasks table
+            $this->db->query( $this->db->prepare( "ALTER TABLE %i CHANGE `id` `id` BIGINT NOT NULL AUTO_INCREMENT;", $this->getTable( "tasks" ) ) );
+
+        }
+
+    }
 
 	/**
 	 * Import site options from JSON data
@@ -845,15 +879,18 @@ class AMD_DB {
 
 	}
 
-	/**
-	 * Create table if not exists
-	 *
-	 * @param array $tables
-	 * Tables data array
-	 *
-	 * @return bool
-	 * @since 1.0.0
-	 */
+    /**
+     * Create table if not exists
+     *
+     * @param array $tables
+     * Tables data array
+     * @param bool $create
+     * Whether to create table if it doesn't exist, or just check the table existence
+     *
+     * @return bool
+     * True or false if table created (if $create is false), true or false if table exists (if $create is true)
+     * @since 1.0.0
+     */
 	public function mct( $tables, $create = true ){
 
 		$installed = true;
@@ -891,7 +928,7 @@ class AMD_DB {
 	 */
 	public function tableExists( $tablename ){
 
-		$sql = "SHOW TABLES LIKE '$tablename'";
+        $sql = $this->db->prepare( "SHOW TABLES LIKE %s", $tablename );
 
 		$res = $this->query( $sql );
 
@@ -960,6 +997,121 @@ class AMD_DB {
 		return $r ? $this->db->insert_id : false;
 
 	}
+
+    /**
+     * Parse comparison operator, table value:
+     * 
+     * `is`, `=`, `==`
+     * 
+     * `gt`, `>`
+     * 
+     * `lt`, `<`
+     * 
+     * `gte`, `>=`
+     * 
+     * `lte`, `<=`
+     * 
+     * `ne`, `not`, `!=`
+     * @param string $operator
+     * Operator to be replaced, e.g: 'is' will return '=', 'gt' will return '>'
+     *
+     * @return string
+     * Replaced operator
+     * @since 1.2.0
+     */
+    public function parse_operator( $operator ) {
+        $operator = strtolower( $operator );
+        if( in_array( $operator, ["=", "==", "is"] ) )
+            return "=";
+        if( in_array( $operator, [">", "gt"] ) )
+            return ">";
+        if( in_array( $operator, ["<", "lt"] ) )
+            return "<";
+        if( in_array( $operator, [">=", "gte"] ) )
+            return ">=";
+        if( in_array( $operator, ["<=", "lte"] ) )
+            return "<=";
+        if( in_array( $operator, ["!=", "not", "ne"] ) )
+            return "!=";
+        return "";
+    }
+
+    /**
+     * Parse expression array, syntax:
+     * <pre>[COLUMN, {@see self::parse_operator() OPERATOR}, VALUE]</pre>
+     * Example expression array:
+     * <pre>["user_id", "is", 1]</pre>
+     * Output string:
+     * <pre>`user_id` = '1'</pre>
+     * @param array $expression
+     * Expression array
+     *
+     * @return string|null
+     * Query string on success, null if expression array is not valid
+     * @sicne 1.2.0
+     */
+    public function parse_expression( $expression ) {
+        if( count( $expression ) < 3 )
+            return null;
+        $column = $expression[0];
+        $operator = $this->parse_operator( $expression[1] );
+        $value = $expression[2];
+        return $this->db->prepare( "%i $operator %s", $column, $value );
+    }
+
+    /**
+     * Parse search query. Examples:
+     * <pre>$amdDB->parse_search_query( ["id", "is", 10], ["user_id", "&gt;", 5] )</pre>
+     * <pre>  `id` = '10' OR `user_id` &gt; '5'</pre>
+     * <pre>$amdDB->parse_search_query( [["user_id", "=", 1], ["expire", "&gt;", 1000]] )</pre>
+     * <pre>  `user_id` = '1' AND `expire` &gt; '1000'</pre>
+     * <pre>$amdDB->parse_search_query( [["user_id", "=", 1], ["expire", "&gt;", 1000]], ["value", "&lt;=", "50"] )</pre>
+     * <pre>  `user_id` = '1' AND `expire` &gt; '1000' OR `value` &lt;= '50'</pre>
+     * @param array ...$search
+     * Query array
+     *
+     * @return string
+     * Query string, e.g: "`id` = '10' OR `id` = '20'"
+     * @since 1.2.0
+     */
+    public function parse_search_query( ...$search ) {
+        $query = "";
+        foreach( $search as $item ){
+            $the_expression = $item;
+            foreach( $item as $expression ){
+                if( is_array( $expression ) ){
+                    if( count( $expression ) == 3 ){
+                        $r = $this->parse_expression( $expression );
+                        if( $r )
+                            $query .= " OR $r";
+                    }
+                }
+            }
+            $r = $this->parse_expression( $the_expression );
+            if( $r )
+                $query .= " AND $r";
+        }
+        return strval( preg_replace( "/(^(\s+)?(AND|OR)\s?)|(\s+(AND|OR)(\s+)?$)/", "", $query ) );
+    }
+
+    /**
+     * Select rows from database
+     * @param string $table
+     * Table name you want to search inside
+     * @param array ...$search
+     * Query array, see {@see self::parse_search_query()}
+     *
+     * @return mixed
+     * {@see self::query()} returned value
+     * @since 1.2.0
+     */
+    public function select( $table, ...$search ) {
+        $where = $this->parse_search_query( ...$search );
+        if( empty( $where ) )
+            $where = "0";
+        $sql = $this->db->prepare( "SELECT * FROM %i WHERE " . $where, $table );
+        return $this->query( $sql );
+    }
 
 	/**
 	 * Convert data array to SQL query
@@ -1275,7 +1427,9 @@ class AMD_DB {
 
 		$res = $this->safeQuery( $table, $sql );
 
-		$value = !empty( $res[0]->option_value ) ? $res[0]->option_value : null;
+        # This line replaced in 1.2.0 version, idk if it's going to break everything or not, bring it back if in case of that
+		# $value = !empty( $res[0]->option_value ) ? $res[0]->option_value : null;
+        $value = $res[0]->option_value ?? null;
 
 		if( !$ignoreCaches ){
 			$amdCache->setCache( $cache_key, $value );
@@ -1449,7 +1603,7 @@ class AMD_DB {
 
 		$table = $this->getTable( "temp" );
 
-		$sql = $this->db->prepare( "SELECT * FROM %i WHERE %i REGEXP '$regex'", $table, $col );
+		$sql = $this->db->prepare( "SELECT * FROM %i WHERE %i REGEXP %s", $table, $col, $regex );
 		$res = $this->safeQuery( $table, $sql );
 
 		return $get ? $res : count( $res ) > 0;
@@ -1523,6 +1677,31 @@ class AMD_DB {
 		$sql = $this->db->prepare( $sql, $table );
 
 		return $this->safeQuery( $table, $sql );
+
+	}
+
+    /**
+     * Delete temporarily data from database by its ID
+     *
+     * @param int $id
+     * Temp data row ID in database
+     * @param bool $timeCheck
+     * If you pass $name you can let it check expiration time and keep it if not expired.
+     * Otherwise, if you set it to false it will delete it anyway.
+     *
+     * @return bool
+     * True on success, false on failure
+     * @since 1.2.0
+     */
+	public function deleteTempByID( $id, $timeCheck = false ){
+
+		$table = $this->getTable( "temp" );
+
+        $sql = "DELETE FROM %i WHERE id='$id'" . ( $timeCheck ? " AND expire <= " . time() : "" );
+
+		$sql = $this->db->prepare( $sql, $table );
+
+		return (bool) $this->safeQuery( $table, $sql );
 
 	}
 
@@ -1613,7 +1792,14 @@ class AMD_DB {
 		if( $tags === null )
 			$tags = $this->allowedHtmlTags;
 
-		return wp_kses( $html, $tags );
+
+		$html = wp_kses( $html, $tags );
+
+        # Remove QL editor cursor for editor contents (since 1.2.0
+        if( strpos( $html, "\"ql-cursor\"" ) !== false )
+            $html = preg_replace( "/<span class=\"ql-cursor\">(.*)<\/span>/", "", $html );
+
+        return $html;
 
 	}
 
@@ -1864,6 +2050,33 @@ class AMD_DB {
 	}
 
     /**
+     * Change table and its columns collation
+     * @param string $table
+     * Table name (prefix won't be added)
+     * @param string $collation
+     * New collation name, e.g: "utf8mb4_general_ci", "utf8mb4_persian_ci", "utf8mb4_unicode_520_ci"
+     * @param string $charset
+     * Character set for table, pass null to use default value, e.g: "utf8mb4"
+     *
+     * @return bool
+     * True on success, false on failure
+     * @since 1.1.3
+     */
+    public function collateTableAndColumns( $table, $collation, $charset = null ) {
+
+        if( !$charset )
+            $charset = self::DB_CHARSET;
+
+        if( !$this->tableExists( $table ) )
+            return false;
+
+        $sql = $this->db->prepare( "ALTER TABLE %i CONVERT TO CHARACTER SET %s COLLATE %s", $table, $charset, $collation );
+
+        return (bool) $this->db->query( $sql );
+
+    }
+
+    /**
      * Reset tables engine
      * @param string $table
      * Table name
@@ -1995,6 +2208,26 @@ class AMD_DB {
 		$table = $this->getTable( "reports" );
 
 		return (bool) $this->db->delete( $table, $where );
+
+	}
+
+    /**
+     * Delete reports older than specific time
+     * @param string $report_key
+     * Report key, e.g: "login"
+     * @param int $older_than
+     * Unix timestamp to select reports older than
+     * @return bool
+     * True on success, false on failure
+     * @since 1.2.1
+     */
+    public function deleteOldReports( $report_key, $older_than ){
+
+		$table = $this->getTable( "reports" );
+
+		$results = $this->db->query( $this->db->prepare( "DELETE FROM %i WHERE `report_key`=%s AND `report_time`<=%s", $table, $report_key, $older_than ) );
+
+        return boolval( $results );
 
 	}
 
@@ -2273,22 +2506,26 @@ class AMD_DB {
 
 	}
 
-	/**
-	 * Get components by specific field
-	 * @param string $by
-	 * Case-insensitive field name (e.g: "ID", "id", "type", "key", "component_key", "component_type")
-	 * @param string $part
-	 * Field value to search
-	 * @param bool $make
-	 * Whether to make object for results or not
-	 * @param bool $single
-	 * Whether to return first result or full results
-	 *
-	 * @return AMDComponent|array|mixed|object|stdClass|null
-	 * {@see AMDComponent} object if you need to make object, otherwise {@see wpdb::query()} results
-	 * @since 1.0.5
-	 */
-	public function getComponents( $by, $part, $make=false, $single=false ){
+    /**
+     * Get components by specific field
+     * @param string $by
+     * Case-insensitive field name (e.g: "ID", "id", "type", "key", "component_key", "component_type")
+     * @param string $part
+     * Field value to search
+     * @param bool $make
+     * Whether to make object for results or not
+     * @param bool $single
+     * Whether to return first result or full results
+     * @param bool $make_empty
+     * Whether to make an empty object if no result found, or return an empty component object for error prevention
+     * <br><code>since 1.2.0</code>
+     *
+     * @return AMDComponent|array|mixed|object|stdClass|null
+     * {@see AMDComponent} object if you need to make object, otherwise {@see wpdb::query()} results or null if no
+     * results found and `$make_empty` is falde
+     * @since 1.0.5
+     */
+	public function getComponents( $by, $part, $make=false, $single=false, $make_empty=true ){
 
 		$by = strtolower( $by );
 		$by = str_replace( "type", "component_type", $by );
@@ -2300,8 +2537,11 @@ class AMD_DB {
 
 		$res = $this->safeQuery( $table, $sql );
 
-		if( $make )
-			return self::makeComponents( $res, $single );
+		if( $make ) {
+            if( !$make_empty AND empty( $res ) )
+                return null;
+            return self::makeComponents( $res, $single );
+        }
 
 		return $single ? ( $res[0] ?? [] ) : $res;
 
@@ -2417,5 +2657,39 @@ class AMD_DB {
 
 		return $data;
 	}
+
+    public function estimateTableSize( $table_name ) {
+        $query = $this->db->prepare( "SELECT table_name AS `Table`, round(((data_length + index_length)), 2) `Size_in_B` FROM information_schema.tables WHERE table_schema = '{$this->db_name}'  AND table_name = %s", $table_name );
+        $row = $this->db->get_row( $query );
+        return intval( $row->Size_in_B );
+    }
+
+    public function estimateDashboardDatabaseSize() {
+        $database_size = 0;
+        foreach( $this->getTables() as $table )
+            $database_size += $this->estimateTableSize( $table );
+        return $database_size;
+    }
+
+    public function estimateDatabaseSize() {
+        $database_size = 0;
+        $results = $this->query( $this->db->prepare( "SHOW TABLES FROM %i", $this->db_name ) );
+        foreach( $results as $result ){
+            foreach( $result as $table )
+                $database_size += $this->estimateTableSize( $table );
+        }
+        return $database_size;
+    }
+
+    public function extractDatabaseSize() {
+        $results = $this->query( $this->db->prepare( "SHOW TABLES FROM %i", $this->db_name ) );
+        $out = [];
+        foreach( $results as $result ){
+            foreach( $result as $table ) {
+                $out[$table] = $this->estimateTableSize( $table );
+            }
+        }
+        return $out;
+    }
 
 }

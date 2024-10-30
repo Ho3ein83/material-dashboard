@@ -223,7 +223,7 @@ $max_in_page = apply_filters( "amd_task_manager_max_in_page", 10 );
                         ${user_id > 0 ? `#${user_id}<br><span class="tiny-text color-primary">${user_fullname}</span>` : `-`}
                     </td>
                     <td>${_t("task_n_times").replace("%s", repeats)}</td>
-                    <td>${_t("task_every_n").replace("%s", period_str)}</td>
+                    <td>${period_str}</td>
                     <td data-next-execute="${execution_time}" data-task-id="${id}">
                         <progress class="hb-progress-circular" style="width:20px;height:20px;font-size:13px"></progress>
                     </td>

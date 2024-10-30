@@ -64,6 +64,12 @@ jQuery.fn.extend({
             }, timeout);
         });
     },
+    onKeyPress: function(key, callback) {
+        $(this).on("keydown", e => {
+            if(e.key === key)
+                callback();
+        });
+    },
     waitHold: function(text=null){
         let $el = $(this);
         let lastHtml = $el.html();
@@ -82,13 +88,27 @@ jQuery.fn.extend({
     },
     removeSlow: function(t = 700, fromParent = false, done=()=>null) {
         let $el = fromParent ? $(this).parent() : $(this);
-        $el.fadeOut();
-        setTimeout(() => {
+        $el.fadeOut(t, () => {
             $el.remove();
             done();
-        }, t + 10);
+        });
     },
     winload: (callback) => window.addEventListener("load", callback),
+    translateDigits: function(translate_persian=true, translate_arabic=true, once=false){
+        const $e = $(this);
+        const do_translate = () => {
+            translate_persian ? $e.val($amd.p2e($e.val())) : "";
+            translate_arabic ? $e.val($amd.a2e($e.val())) : "";
+        }
+        if(once){
+            do_translate();
+            return;
+        }
+        if(!$e.hasClass("amd-digit-translate")){
+            $e.on("input", () => do_translate());
+            $e.addClass("amd-digit-translate");
+        }
+    }
 });
 
 String.prototype.regex = function(r) {
@@ -180,8 +200,8 @@ String.prototype.trimChar = function(character) {
 var $amd = {
     /**
      * Hello popup simple alert
-     * @param {string} title
-     * @param {*} text
+     * @param {string|*} title
+     * @param {string|*} text
      * @param {{cancelButton: (string|*), onConfirm: (function(): void), confirmButton: (string|*)}|{icon: string}} conf
      * @return Hello
      */
@@ -190,6 +210,25 @@ var $amd = {
             title: title,
             text: text,
             confirmButton: _t("ok"),
+            type: "popup",
+        }, conf));
+    },
+    /**
+     * @param {String} title
+     * @param {String} text
+     * @param {Function} onConfirm
+     * @param {Function} onCancel
+     * @param {{confirmButton: (string|*), cancelButton: (string|*)}} conf
+     * @since 1.2.0
+     */
+    confirm: (title, text, onConfirm=()=>null, onCancel=()=>null, conf={}) => {
+        Hello.fire(Object.assign({
+            title: title,
+            text: text,
+            confirmButton: _t("yes"),
+            cancelButton: _t("no"),
+            onConfirm: () => onConfirm(),
+            onCancel: () => onCancel(),
             type: "popup",
         }, conf));
     },
@@ -650,6 +689,11 @@ var $amd = {
         }
     },
     escapeHtml: html => new Option(html).innerHTML,
+    escapeAttr: html => {
+        html = $amd.escapeHtml(html);
+        html = html.replaceAll("'", "&#39;");
+        return html.replaceAll('"', "&quot;");
+    },
     mergeUrlQuery: (url, query, toRemove = [], onlyQuery = true) => {
         let params = new URLSearchParams(url.split("?")[1] || "");
         let _params = new URLSearchParams(query.indexOf("?") > -1 ? (query.split("?")[1] || "") : query);
@@ -784,6 +828,123 @@ var $amd = {
             }
         }
         return out;
+    },
+    /**
+     * English digits to Persian
+     * @param s
+     * @return string
+     */
+    e2p: s => s.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]),
+    /**
+     * English digits to Arabic
+     * @param s
+     * @return string
+     */
+    e2a: s => s.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]),
+    /**
+     * Persian digits to English
+     * @param s
+     * @return string
+     */
+    p2e: s => s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)),
+    /**
+     * Arabic digits to English
+     * @param s
+     * @return string
+     */
+    a2e: s => s.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)),
+    /**
+     * Get CSS variable
+     * @param var_name
+     * @param element
+     * @returns {string}
+     */
+    getCssVar: (var_name, element=null) => {
+        if(element === null)
+            element = document.body;
+        return getComputedStyle(element).getPropertyValue(var_name);
+    },
+    /**
+     * Generate QR code
+     * @param config {{width: number}|{height: number}|{data: string|any}|{margin: number}}
+     * @param qr_color {string|null}
+     * @param qr_bg {string|null}
+     * @return {QRCodeStyling|null}
+     */
+    generateQR: (config, qr_color=null, qr_bg=null) => {
+        const color = qr_color ? (qr_color.startsWith("--") ? $amd.getCssVar(qr_color) : qr_color) : $amd.getCssVar("--amd-title-color");
+        const bg = qr_bg ? (qr_bg.startsWith("--") ? $amd.getCssVar(qr_bg) : qr_bg) : $amd.getCssVar("--amd-wrapper-bg");
+        if(typeof QRCodeStyling === "undefined")
+            return null;
+        return new QRCodeStyling(Object.assign({
+            "width": 300,
+            "height": 300,
+            "data": "",
+            "margin": 0,
+            "qrOptions": {"typeNumber": "0", "mode": "Byte", "errorCorrectionLevel": "Q"},
+            "imageOptions": {"hideBackgroundDots": true, "imageSize": 0.4, "margin": 0},
+            "dotsOptions": {"type": "rounded", "color": color},
+            "backgroundOptions": {"color": bg},
+            "dotsOptionsHelper": {
+                "colorType": {"single": true, "gradient": false},
+                "gradient": {"linear": true, "radial": false, "color1": "#6a1a4c", "color2": "#6a1a4c", "rotation": "0"}
+            },
+            "cornersSquareOptions": {"type": "extra-rounded", "color": color},
+            "cornersSquareOptionsHelper": {
+                "colorType": {"single": true, "gradient": false},
+                "gradient": {"linear": true, "radial": false, "color1": "#000000", "color2": "#000000", "rotation": "0"}
+            },
+            "cornersDotOptions": {"type": "dot", "color": color},
+            "cornersDotOptionsHelper": {
+                "colorType": {"single": true, "gradient": false},
+                "gradient": {"linear": true, "radial": false, "color1": "#000000", "color2": "#000000", "rotation": "0"}
+            },
+            "backgroundOptionsHelper": {
+                "colorType": {"single": true, "gradient": false},
+                "gradient": {
+                    "linear": true,
+                    "radial": false,
+                    "color1": color,
+                    "color2": bg,
+                    "rotation": "0"
+                }
+            }
+        }, config))
+    },
+    /**
+     * Parse markdown content
+     * @param content {string}
+     * @return {string|*}
+     */
+    markDown: content => {
+        if(typeof marked !== "undefined" && typeof marked.parse === "function")
+            return marked.parse($(`<div>${content}</div>`).text());
+        return content;
+    },
+    markDownElements: () => {
+        if(typeof $ !== "undefined"){
+            $(".amd-markdown-section, .adp-markdown-section").each(function(){
+                $(this).html($amd.markDown($(this).text()));
+            });
+        }
+    },
+    byteTo: (bytes, to=null, base=1024) => {
+        let power = 1;
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        if(to === null){
+            for(let i = units.length-1; i >= 0; i--){
+                if(bytes >= Math.pow(base, i)){
+                    power = i;
+                    break;
+                }
+            }
+        }
+        if(typeof to === "string"){
+            const index = units.indexOf(to.toUpperCase());
+            if(index >= 0)
+                power = index;
+        }
+        return [bytes / Math.pow(base, power), units[power] || ""];
     }
 }
 /* End of amd.js */
@@ -1170,7 +1331,7 @@ var AMDForm = (function() {
             else if(localName === "select" || localName === "textarea") {
                 value = $el.val();
             }
-            return value;
+            return typeof value === "string" ? value.trim() : value;
         }
 
         this.setFieldValue = (fieldID, value) => {
@@ -1221,7 +1382,7 @@ var AMDForm = (function() {
                     type: type,
                     localName: localName,
                     element: $el,
-                    value: value,
+                    value: typeof value === "string" ? value.trim() : value,
                     pattern: pattern
                 };
             }
@@ -1293,6 +1454,8 @@ var AMDForm = (function() {
 
         this.validateInput = (el, mark = true) => {
             let $el = $(el);
+            if($el.hasAttr("data-ignore"))
+                return 0;
             let invalid = 0;
             let pattern = $el.hasAttr("data-pattern", true, null);
             let isRequired = $el.hasAttr("required");
@@ -1415,25 +1578,16 @@ var AMDForm = (function() {
             $amd.unbindEvents(`_form_${_form}`);
         }
 
-        this.init = () => {
-            if(!$form.length || disposed)
-                return;
-            _form = $form.hasAttr("data-form", true, _form);
-
-            $submit = $form.find(`[data-submit="${_form}"]`);
-            $dismiss = $form.find(`[data-dismiss="${_form}"]`);
-
-            // Initialize action events
-            _this.on("before_submit", (e) => {
-                if(!_this.validate())
-                    e.preventDefault();
-            });
-
-            // Initialize DOM events
+        this.reload_fields = () => {
             $form.find(`[data-field]`).each(function() {
                 let $el = $(this), el = $el.get(0);
+                if($el.hasAttr("data-ignore"))
+                    return;
                 let id = $el.attr("data-field");
                 _fields[id] = $el;
+                const digit_translation = $el.hasAttr("data-translate-digits", true, "").toString().toLowerCase();
+                const translate_persian = ["all", "*", "persian", "fa", "fa_IR"].includes(digit_translation);
+                const translate_arabic = ["all", "*", "arabic", "ar"].includes(digit_translation);
                 let next = $el.hasAttr("data-next", true);
                 let allowed_keys = $el.hasAttr("data-keys", true, "");
                 if(next) {
@@ -1483,13 +1637,20 @@ var AMDForm = (function() {
                         return false;
                     }
                     let key = e.key || "";
+                    if(translate_persian) key = $amd.p2e(key);
+                    if(translate_arabic) key = $amd.a2e(key);
                     let isSpecial = amd_conf.forms.special_keys.includes(key);
-                    if(!isSpecial && allowed_keys && !key.regex(allowed_keys)) e.preventDefault();
+                    if(!isSpecial && allowed_keys && !key.regex(allowed_keys)){
+                        e.preventDefault();
+                        return false;
+                    }
+                    digit_translation ? $el.translateDigits(translate_persian, translate_arabic, true) : "";
                 });
+                digit_translation ? $el.translateDigits(translate_persian, translate_arabic) : "";
             });
+        }
 
-            _this.resetDefaults();
-
+        this.reload_events = () => {
             $form.find(".ht-magic-input").each(function() {
                 let $el = $(this);
                 let $keys = $el.find(".--keys");
@@ -1536,7 +1697,6 @@ var AMDForm = (function() {
                 });
                 $el.one("click", () => $input.focus());
             });
-
             $form.find(".ht-magic-select").each(function() {
                 let $el = $(this);
                 let $input = $el.find(".--input"), $value = $el.find(".--value");
@@ -1597,6 +1757,28 @@ var AMDForm = (function() {
                     }
                 });
             });
+        }
+
+        this.init = () => {
+            if(!$form.length || disposed)
+                return;
+            _form = $form.hasAttr("data-form", true, _form);
+
+            $submit = $form.find(`[data-submit="${_form}"]`);
+            $dismiss = $form.find(`[data-dismiss="${_form}"]`);
+
+            // Initialize action events
+            _this.on("before_submit", (e) => {
+                if(!_this.validate())
+                    e.preventDefault();
+            });
+
+            // Initialize DOM events
+            _this.reload_fields();
+
+            _this.resetDefaults();
+
+            _this.reload_events();
 
             $submit.on("click", e => _this.submit(e));
             $dismiss.on("click", e => _this.dismiss(e));

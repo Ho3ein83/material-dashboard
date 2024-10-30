@@ -100,9 +100,24 @@ $countries_cc_html = $regions["html"];
 $icon_pack = amd_get_icon_pack();
 $theme_id = amd_get_theme_property( "id" );
 
-amd_add_element_class( "body", [$theme, $direction, $current_locale, "icon-$icon_pack", "theme-$theme_id"] );
+$default_body_bg = "";
+$extra_classes = [];
+if( amd_theme_support( "image_background" ) ) {
+    $register_form_bg = intval( amd_get_site_option( "register_form_bg" ) );
+    $default_body_bg = $register_form_bg ? wp_get_attachment_url( $register_form_bg ) : $default_body_bg;
+    $theme = $default_body_bg ? apply_filters( "amd_backgrounded_form_theme", $theme ) : $theme;
+    $forced_ui_mode = boolval( $default_body_bg );
+    $use_glass_morphism = apply_filters( "amd_use_glass_morphism_form", amd_theme_support( "glass_morphism_forms" ), "register" );
+    $extra_classes = [$use_glass_morphism ? "use-glass-morphism" : "", $default_body_bg ? "image-bg" : "", $forced_ui_mode ? "forced-ui-mode" : ""];
+}
 
-$bodyBG = apply_filters( "amd_dashboard_bg", "" );
+amd_add_element_class( "body", array_merge( [$theme, $direction, $current_locale, "icon-$icon_pack", "theme-$theme_id"], $extra_classes ) );
+
+$bodyBG = apply_filters( "amd_dashboard_bg", $default_body_bg );
+
+$allow_only_persian_names = amd_get_site_option( "allow_only_persian_names" ) == "true";
+$name_keys = $allow_only_persian_names ? "[\u0622-\u064A\u0672-\u06D5\s]" : ".";
+$name_pattern = $allow_only_persian_names ? "[\u0622-\u064A\u0672-\u06D5\s]+" : ".*";
 
 ?><!doctype html>
 <html lang="<?php bloginfo_rss( 'language' ); ?>">
@@ -124,9 +139,9 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     <p id="register-log" class="amd-form-log _bg_"></p>
     <div class="h-10"></div>
     <form id="register-fields">
-        <?php if( isset( $_GET["nofill"] ) OR apply_filters( "amd_resgiter_form_nofill", false ) ): ?>
+        <?php if( isset( $_GET["nofill"] ) OR apply_filters( "amd_register_form_nofill", false ) ): ?>
             <input type="text" name="_username" style="width: 0; height: 0; border: 0; padding: 0" />
-            <input type="email" name="_emil" style="width: 0; height: 0; border: 0; padding: 0" />
+            <input type="email" name="_email" style="width: 0; height: 0; border: 0; padding: 0" />
             <input type="password" name="_password" style="width: 0; height: 0; border: 0; padding: 0" />
         <?php endif; ?>
 
@@ -141,20 +156,20 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
         <?php if( $lastname_field ): ?>
             <div class="ht-input-row">
                 <label class="ht-input">
-                    <input type="text" data-field="firstname" data-next="lastname" placeholder="" required>
-                    <span><?php esc_html_e( "Firstname", "material-dashboard" ); ?></span>
+                    <input type="text" data-field="firstname" data-next="lastname" data-pattern="<?php echo esc_attr( $name_pattern ); ?>" data-keys="<?php echo esc_attr( $name_keys ); ?>" placeholder="" required>
+                    <span><?php esc_html_e( "Firstname", "material-dashboard" ); ?><?php echo $allow_only_persian_names ? " (فارسی)" : ""; ?></span>
 					<?php _amd_icon( "person" ); ?>
                 </label>
                 <label class="ht-input">
-                    <input type="text" data-field="lastname" data-next="username|phone|email" placeholder="" required>
-                    <span><?php esc_html_e( "Last name", "material-dashboard" ); ?></span>
+                    <input type="text" data-field="lastname" data-next="username|phone|email" data-pattern="<?php echo esc_attr( $name_pattern ); ?>" data-keys="<?php echo esc_attr( $name_keys ); ?>" placeholder="" required>
+                    <span><?php esc_html_e( "Last name", "material-dashboard" ); ?><?php echo $allow_only_persian_names ? " (فارسی)" : ""; ?></span>
 					<?php _amd_icon( "person" ); ?>
                 </label>
             </div>
 		<?php else: ?>
             <label class="ht-input">
-                <input type="text" data-field="firstname" data-next="username|phone|email" placeholder="" required>
-                <span><?php esc_html_e( "Fullname", "material-dashboard" ); ?></span>
+                <input type="text" data-field="firstname" data-next="username|phone|email" data-pattern="<?php echo esc_attr( $name_pattern ); ?>" data-keys="<?php echo esc_attr( $name_keys ); ?>" placeholder="" required>
+                <span><?php esc_html_e( "Fullname", "material-dashboard" ); ?><?php echo $allow_only_persian_names ? " (فارسی)" : ""; ?></span>
 				<?php _amd_icon( "person" ); ?>
             </label>
             <input type="hidden" data-field="lastname" placeholder="">
@@ -170,7 +185,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 
         <?php if( $username_field ): ?>
             <label class="ht-input">
-                <input type="text" name="username" value="<?php echo esc_attr( sanitize_text_field( $_GET['username'] ?? '' ) ); ?>" data-field="username" data-pattern="%username%" data-next="phone|email" placeholder="" required>
+                <input type="text" name="username" value="<?php echo esc_attr( sanitize_text_field( $_GET['username'] ?? '' ) ); ?>" data-field="username" data-pattern="%username%" data-next="phone|email" data-translate-digits="*" placeholder="" required>
                 <span><?php esc_html_e( "Username", "material-dashboard" ); ?></span>
 				<?php _amd_icon( "" ); ?>
             </label>
@@ -185,7 +200,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 	    ?>
 
         <label class="ht-input">
-            <input type="text" name="email" value="<?php echo esc_attr( sanitize_text_field( $_GET['email'] ?? '' ) ); ?>" data-field="email" data-pattern="%email%" data-next="password" placeholder="" required>
+            <input type="text" name="email" value="<?php echo esc_attr( sanitize_text_field( $_GET['email'] ?? '' ) ); ?>" data-field="email" data-pattern="%email%" data-next="password" data-translate-digits="*" placeholder="" required>
             <span><?php esc_html_e( "Email", "material-dashboard" ); ?></span>
 			<?php _amd_icon( "email" ); ?>
         </label>
@@ -236,6 +251,10 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 
     <!-- Phone number fields -->
     <?php amd_phone_fields(); ?>
+    <?php
+        /** @since 1.2.0 */
+        do_action( "amd_after_registration_phone_field" );
+    ?>
 
 	<?php
         /**
@@ -336,6 +355,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
             let password = data.password.value;
             let username = $username.length > 0 ? $username.val() : "";
             let phone = (data.phone_number || {value: ""}).value || "";
+            let vCode = (data.vCode || {value: ""}).value || "";
             login_after_registration = login_after_registration === "true";
             let custom_fields = exportCustomFields();
             network.clean();
@@ -347,6 +367,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
                 password,
                 phone,
                 custom_fields,
+                vCode,
                 login_after_registration
             });
             network.on.start = () => {
@@ -363,6 +384,10 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
                     }
                     else {
                         dashboard.resume();
+                        if(typeof resp.data.pause !== "undefined" && resp.data.pause){
+                            $amd.doEvent("registration_pause", resp);
+                            return;
+                        }
                         setTimeout(() => {
                             let errors = resp.data.errors || [];
                             for(let i = 0; i <= errors.length; i++) {
@@ -400,87 +425,10 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
             else if(id === "phone_number") {
                 dashboard.toast(_t("phone_incorrect"));
             }
-        });
-        let $country_code = form.$getField("country_code");
-        let $phone_number = form.$getField("phone_number");
-        let country_codes = {};
-        $country_code.parent().parent().find(".--options > span").each(function() {
-            let cc = $(this).hasAttr("data-value", true);
-            let format = $(this).hasAttr("data-format", true, "");
-            if(cc) {
-                country_codes[cc] = {
-                    "$e": $(this),
-                    "format": format.toUpperCase()
-                };
+            else if(id === "vCode") {
+                dashboard.toast(_t("vCode_invalid"));
             }
         });
-
-        var getSelectedCC = () => {
-            return $country_code.hasAttr("data-value", true, "");
-        }
-        $country_code.on("change", function() {
-            let cc = getSelectedCC();
-            if(cc) {
-                $phone_number.blur();
-                $phone_number.focus();
-                $phone_number.val("+" + cc);
-            }
-        });
-        var formatPhoneNumber = (number, format, clean = true) => {
-            let cc = getSelectedCC();
-            let num = number;
-            num.replaceAll(" ", "");
-            num = num.replaceAll("+" + cc, "");
-            num = num.replaceAll("+", "");
-            num = num.replace(cc, "");
-            let out = format;
-            for(let i = 0; i < num.length; i++) {
-                let n = num[i] || "";
-                out = out.replace("X", n);
-            }
-            if(clean) {
-                out = out.replaceAll("X", "");
-                out = out.replaceAll("-", " ");
-            }
-            return "+" + cc + " " + out;
-        }
-        let formatted = "";
-        $phone_number.on("input", function(e) {
-            let key = e.key;
-            let $el = $(this);
-            let v = $el.val();
-            v = v.replaceAll("+", "");
-            v = v.replaceAll(" ", "");
-            if(v && !amd_conf.forms.isSpecialKey(key)) {
-                if(typeof country_codes[v] !== "undefined") {
-                    $phone_number.val("+" + v);
-                    $country_code.val(v);
-                    $country_code.trigger("change");
-                }
-                let _cc = getSelectedCC();
-                let ff = typeof country_codes[_cc] !== "undefined" ? (country_codes[_cc].format || "") : "";
-                if(ff) {
-                    formatted = formatPhoneNumber(v, ff);
-                    $phone_number.val(formatted.trimChar(" "));
-                }
-            }
-        });
-        $country_code.on("change", function() {
-            let cc = $(this).hasAttr("data-value", true, "");
-            let _format = (country_codes[cc] || {format: ""}).format || "";
-            if(_format) {
-                let _f = _format;
-                _f = _f.replaceAll("-", "\\s?");
-                _f = _f.replaceAll("X", "[0-9]");
-                $phone_number.attr("data-pattern", `^\\+${cc}\\s?${_f}$`);
-            }
-            let val = $country_code.val();
-            for(let i = 0; i < val.length; i++)
-                val = val.replaceAll("  ", " ");
-            $country_code.val(val.trimChar(" "));
-        });
-        $country_code.trigger("change");
-
     }());
 </script>
 <?php do_action( "amd_after_registration_page" ); ?>

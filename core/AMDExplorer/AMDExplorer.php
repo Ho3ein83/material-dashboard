@@ -75,14 +75,13 @@ class AMDExplorer{
 		$prefix = ( $single ? "" : $this->path . "/" );
 		switch( $id ){
 			case "upload":
-			case "uploads":
+            case "backup":
+            case "uploads":
 				return $prefix . "backup";
 			case "avatar":
 			case "avatars":
 				return $prefix . "avatars";
-			case "backup":
-				return $prefix . "backup";
-			case "users_upload":
+            case "users_upload":
 				return $prefix . "users";
 		}
 
@@ -391,5 +390,48 @@ class AMDExplorer{
 			require( $path );
 
 	}
+
+    public function getFileSize( $path ) {
+
+        if( !file_exists( $path ) )
+            return 0;
+
+        if( is_file( $path ) )
+            return filesize( $path );
+
+        $size = 0;
+
+        $dir = opendir( $path );
+
+        while( ( $file = readdir( $dir ) ) !== false ) {
+            if( $file != '.' && $file != '..' ) {
+                $filePath = $path . DIRECTORY_SEPARATOR . $file;
+
+                if( is_dir( $filePath ) )
+                    $size += $this->getFileSize( $filePath );
+                else
+                    $size += filesize( $filePath );
+            }
+        }
+
+        closedir( $dir );
+
+        return $size;
+    }
+
+    public function getFileSizeOptimized( $path ) {
+
+        if( !file_exists( $path ) )
+            return 0;
+
+        $size = 0;
+
+        $iterator = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $path, FilesystemIterator::SKIP_DOTS ) );
+
+        foreach( $iterator as $file )
+            $size += $file->getSize();
+
+        return $size;
+    }
 
 }

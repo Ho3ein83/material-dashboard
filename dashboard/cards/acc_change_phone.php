@@ -233,6 +233,13 @@ $phone_field_required = true;
                 let _cc = getSelectedCC();
                 let ff = typeof country_codes[_cc] !== "undefined" ? (country_codes[_cc].format || "") : "";
                 if(ff) {
+                    let sub = v.substring(_cc.length, v.length);
+                    if(sub.startsWith("0")) {
+                        do {
+                            sub = sub.substring(1, v.length);
+                        } while(sub.startsWith("0"));
+                        v = sub;
+                    }
                     formatted = formatPhoneNumber(v, ff);
                     $phone_number.val(formatted.trimChar(" "));
                 }

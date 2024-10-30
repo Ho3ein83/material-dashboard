@@ -26,6 +26,13 @@ class AMDLoader{
 	 */
 	protected $defaultExtensions;
 
+    /**
+	 * Fallback theme to use in case of theme errors
+	 * @var string
+	 * @since 1.2.1
+	 */
+	protected $fallbackTheme;
+
 	/**
 	 * Default enabled extensions
 	 * @var array
@@ -74,6 +81,9 @@ class AMDLoader{
 
 		# Use another theme instead of enabled theme
 		$this->override_theme = null;
+
+        # Set fallback theme
+        $this->fallbackTheme = "amatris";
 
 		# Initialize
 		self::init();
@@ -128,8 +138,7 @@ class AMDLoader{
 	 */
 	public function registerExtensions( $dir ){
 
-		global /** @var AMDExplorer $amdExp */
-		$amdExp;
+		global $amdExp;
 
 		if( $amdExp->sys->exists( $dir ) ){
 
@@ -254,7 +263,7 @@ class AMDLoader{
 
 		$theme = self::getActiveTheme( $ignoreOverride );
 
-		return $this->themes[$theme] ?? false;
+		return $this->themes[$theme] ?? $this->fallbackTheme;
 
 	}
 
@@ -272,7 +281,7 @@ class AMDLoader{
         if( $theme === null )
 			return self::getCurrentTheme();
 
-		return $this->themes[$theme] ?: false;
+		return $this->themes[$theme] ?? false;
 
 	}
 
@@ -307,7 +316,7 @@ class AMDLoader{
 			return $default;
 
 
-		return isset( $_theme["properties"]->{$property} ) ? $_theme["properties"]->{$property} : ( isset( $_theme[$property] ) ? $_theme[$property] : $default );
+		return $_theme["properties"]->{$property} ?? ( $_theme[$property] ?? $default );
 
 	}
 
@@ -340,9 +349,14 @@ class AMDLoader{
 		$desc = $json->description ?? "";
 		$ver = $json->version ?? "";
 		$url = $json->url ?? "";
+        $since = $json->since ?? null;
+        $compatible = $json->compatible ?? null;
+        $compatible_premium = $json->compatible_premium ?? null;
 		$translateContext = $json->context ?? $dir;
 		$deprecated = $json->deprecated ?? false;
 		$requirements = $json->requirements ?? "";
+		$admin_url = $json->admin_url ?? null;
+        $admin_url_label = $json->admin_url_label ?? null;
 		$text_domain = $json->text_domain ?? "material-dashboard";
 		$extURL = plugins_url( $dir, $path );
 		$url = amd_replace_constants( $url );
@@ -363,6 +377,13 @@ class AMDLoader{
 
 		return array(
 			"directory" => $dir,
+			"path" => $path, # since 1.2.0
+			"url" => $extURL, # since 1.2.0
+			"since" => $since, # since 1.2.0
+			"compatible" => $compatible, # since 1.2.0
+			"compatible_premium" => $compatible_premium, # since 1.2.0
+			"admin_url" => $admin_url, # since 1.2.0
+            "admin_url_label" => $admin_url_label, # since 1.2.0
 			"info" => array(
 				"name" => esc_html_x( $name, $translateContext, "$text_domain" ),
 				"description" => esc_html_x( $desc, $translateContext, "$text_domain" ),
@@ -415,10 +436,13 @@ class AMDLoader{
 		$desc = $json->description ?? "";
 		$ver = $json->version ?? "";
 		$url = $json->url ?? "";
+        $since = $json->since ?? null;
 		$translateContext = $json->context ?? $dir;
 		$translateDomain = $json->text_domain ?? "material-dashboard";
 		$deprecated = $json->deprecated ?? false;
 		$requirements = $json->requirements ?? "";
+        $admin_url = $json->admin_url ?? null;
+        $admin_url_label = $json->admin_url_label ?? null;
 		$url = amd_replace_constants( $url );
 		$themeURL = plugins_url( $dir, $path );
 		$thumb = $json->thumbnail ?? "";
@@ -440,35 +464,37 @@ class AMDLoader{
 		if( is_object( $requirements ) )
 			$requirements = (array) $requirements;
 
-		$data = array(
-			"path" => $path,
-			"id" => $dir,
-			"directory" => $dir,
-			"info" => array(
-				"name" => esc_html_x( $name, $translateContext, $translateDomain ),
-				"description" => esc_html_x( $desc, $translateContext, $translateDomain ),
-				"version" => $ver,
-				"url" => $url,
-				"thumbnail" => $thumb,
-				"requirements" => $requirements,
-				"author" => esc_html_x( $author, $translateContext, $translateDomain )
-			),
-			"json" => $json,
-			"dashboard_style" => $dashboard_style,
-			"components_style" => $components_style,
-			"theme_url" => $themeURL,
-			"properties" => $properties,
-			"index" => $index_php,
-			"is_premium" => $isPremium,
-			"functions" => $functions_php,
-			"is_usable" => function() use ( $requirements ){
-				return amd_check_requirements( $requirements );
-			},
-			"deprecated" => $deprecated,
-			"is_active" => $isActive
-		);
-
-		return $data;
+        return array(
+            "path" => $path,
+            "id" => $dir,
+            "directory" => $dir,
+            "url" => $themeURL, # since 1.2.0
+            "since" => $since, # since 1.2.0
+            "admin_url" => $admin_url, # since 1.2.0
+            "admin_url_label" => $admin_url_label, # since 1.2.0
+            "info" => array(
+                "name" => esc_html_x( $name, $translateContext, $translateDomain ),
+                "description" => esc_html_x( $desc, $translateContext, $translateDomain ),
+                "version" => $ver,
+                "url" => $url,
+                "thumbnail" => $thumb,
+                "requirements" => $requirements,
+                "author" => esc_html_x( $author, $translateContext, $translateDomain )
+            ),
+            "json" => $json,
+            "dashboard_style" => $dashboard_style,
+            "components_style" => $components_style,
+            "theme_url" => $themeURL,
+            "properties" => $properties,
+            "index" => $index_php,
+            "is_premium" => $isPremium,
+            "functions" => $functions_php,
+            "is_usable" => function() use ( $requirements ){
+                return amd_check_requirements( $requirements );
+            },
+            "deprecated" => $deprecated,
+            "is_active" => $isActive
+        );
 
 	}
 
@@ -484,10 +510,38 @@ class AMDLoader{
 		foreach( self::getExtensions() as $dir => $ext ){
 			$_index = $ext["index"] ?? "";
 			$_functions = $ext["functions"] ?? "";
+
+            $compatible = $ext["compatible"] ?? null;
+            $compatible_premium = $ext["compatible_premium"] ?? null;
+            $is_compatible = true;
+            $is_premium_compatible = true;
+
 			$usable = false;
 			if( !empty( $ext["is_usable"] ) AND is_callable( $ext["is_usable"] ) )
 				$usable = call_user_func( $ext["is_usable"] );
 			$active = $ext["is_active"] ?? false;
+            if( $active ){
+                if( !empty( $compatible ) ){
+                    $v = trim( preg_replace( "/[<=>]/", "", $compatible ) );
+                    $e = trim( str_replace( $v, "", $compatible ) );
+                    $e = empty( $e ) ? ">=" : $e;
+                    if( !version_compare( AMD_VER, $v, $e ) ) {
+                        $usable = false;
+                        $is_compatible = false;
+                    }
+                }
+                if( !empty( $compatible_premium ) ){
+                    if( function_exists( "adp_plugin" ) ) {
+                        $v = trim( preg_replace( "/[<=>]/", "", $compatible_premium ) );
+                        $e = trim( str_replace( $v, "", $compatible_premium ) );
+                        $e = empty( $e ) ? ">=" : $e;
+                        if( !version_compare( adp_plugin()["Version"] ?? "", $v, $e ) ) {
+                            $usable = false;
+                            $is_premium_compatible = false;
+                        }
+                    }
+                }
+            }
 			if( !$usable OR !$active )
 				continue;
 			$path = AMD_EXT . "/$dir";

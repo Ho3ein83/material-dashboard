@@ -87,7 +87,7 @@ if( empty( $row_cards ) OR !is_array( $row_cards ) )
         do_action( "amd_home_before_cards_row" );
 
         foreach( $row_cards as $row_card ){
-	        $row_card["type"] = "col_card";
+            $row_card["type"] = "col_card";
             amd_dump_single_card( $row_card );
         }
 

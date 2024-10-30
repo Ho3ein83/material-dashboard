@@ -157,7 +157,7 @@ define( 'AMD_SEARCH_ENGINE_URL', 'https://amatris.ir/Machines/MaterialDashboard/
  * Plugin current version
  * @since 1.0.4
  */
-define( 'AMD_VER', '1.1.0' );
+define( 'AMD_VER', '1.2.1' );
 
 /**
  * cTrack collect URL

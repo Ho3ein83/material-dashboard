@@ -154,6 +154,13 @@ function amd_ext_todo_init_hooks(){
 		)
 	) );
 
+    # Register allowed options (since 1.2.1)
+    do_action( "amd_allowed_options", array(
+        "todo_reminder_enabled" => "BOOL",
+        "todo_reminder_use_email" => "BOOL",
+        "todo_reminder_use_sms" => "BOOL",
+    ) );
+
 }
 add_action( "init", "amd_ext_todo_init_hooks" );
 add_action( "admin_init", "amd_ext_todo_init_hooks" );

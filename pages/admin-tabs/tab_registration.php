@@ -9,6 +9,12 @@ $login_after_registration = amd_get_site_option( "login_after_registration", "tr
 $lastname_field = amd_get_site_option( "lastname_field" ) == "true";
 $username_field = amd_get_site_option( "username_field", "true" ) == "true";
 $password_conf_field = amd_get_site_option( "password_conf_field" ) == "true";
+$allow_only_persian_names = amd_get_site_option( "allow_only_persian_names" ) == "true";
+$username_ag_priority = amd_get_site_option( "username_ag_priority", "random,phone,email" );
+$_username_ag_priority = explode( ",", $username_ag_priority );
+$username_ag_random_order = array_search( "random", $_username_ag_priority );
+$username_ag_phone_order = array_search( "phone", $_username_ag_priority );
+$username_ag_email_order = array_search( "email", $_username_ag_priority );
 
 $country_codes = amd_get_site_option( "country_codes" );
 $country_codes = amd_unescape_json( $country_codes );
@@ -24,9 +30,18 @@ foreach( $country_codes as $key => $value ){
 ?>
 <!-- Register -->
 <div class="amd-admin-card --setting-card" id="rg-card">
+    <?php amd_dump_admin_card_keywords( ["register", "حساب کاربری", "user account"] ); ?>
     <h3 class="--title"><?php esc_html_e( "Register", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_registration_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_registration_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="enable-register">
@@ -44,6 +59,10 @@ foreach( $country_codes as $key => $value ){
                     <p class="color-primary text-justify"><?php echo esc_html_x( "This item should be enabled to show you the rest of options and let users to sign-up.", "Admin", "material-dashboard" ); ?></p>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_registration_items" );
+            ?>
         </div>
         <?php if( $register_enabled ): ?>
             <div class="__option_grid">
@@ -63,6 +82,10 @@ foreach( $country_codes as $key => $value ){
                 </div>
             </div>
         <?php endif; ?>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_registration_content" );
+        ?>
     </div>
 </div>
 <script>
@@ -109,9 +132,18 @@ endif;
 
 <!-- Fields -->
 <div class="amd-admin-card --setting-card">
+    <?php amd_dump_admin_card_keywords( ["form", "فرم", "کد ملی", "موبایل", "phone"] ); ?>
     <h3 class="--title"><?php _ex( "Fields", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_registration_fields_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_registration_fields_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="ask-lastname">
@@ -126,7 +158,35 @@ endif;
                     </label>
                 </div>
                 <div class="-sub-item --full">
-                    <p class="color-primary text-justify"><?php _ex( "If you enable this item users last name will be taken separately, otherwise only one field will be shown for user full-name.", "Admin", "material-dashboard" ); ?></p>
+                    <p class="color-primary text-justify"><?php echo esc_html_x( "If you enable this item users last name will be taken separately, otherwise only one field will be shown for user full-name.", "Admin", "material-dashboard" ); ?></p>
+                </div>
+            </div>
+            <div class="-item">
+                <div class="-sub-item">
+                    <label for="only-persian-names">
+				        <?php esc_html_e( "Only allow Persian characters for name", "material-dashboard" ); ?>
+                    </label>
+                </div>
+                <div class="-sub-item">
+                    <label class="hb-switch">
+                        <input type="checkbox" role="switch" name="allow_only_persian_names" value="true"
+                               id="only-persian-names" <?php echo $allow_only_persian_names ? 'checked' : ''; ?>>
+                        <span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="-item">
+                <div class="-sub-item">
+                    <label for="password-conf-field">
+                        <?php esc_html_e( "Password confirmation", "material-dashboard" ); ?>
+                    </label>
+                </div>
+                <div class="-sub-item">
+                    <label class="hb-switch">
+                        <input type="checkbox" role="switch" name="password_conf_field" value="true"
+                               id="password-conf-field" <?php echo $password_conf_field ? 'checked' : ''; ?>>
+                        <span></span>
+                    </label>
                 </div>
             </div>
             <div class="-item">
@@ -143,24 +203,39 @@ endif;
                     </label>
                 </div>
                 <div class="-sub-item --full">
-                    <p class="color-primary text-justify"><?php _ex( "If you don't check this item, the username field will not displayed to users and a username will be generated for them automatically.", "Admin", "material-dashboard" ); ?></p>
+                    <p class="color-primary text-justify"><?php echo esc_html_x( "If you don't check this item, the username field will not displayed to users and a username will be generated for them automatically.", "Admin", "material-dashboard" ); ?></p>
                 </div>
             </div>
-            <div class="-item">
-                <div class="-sub-item">
-                    <label for="password-conf-field">
-				        <?php esc_html_e( "Password confirmation", "material-dashboard" ); ?>
-                    </label>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_registration_fields_items" );
+            ?>
+        </div>
+        <div class="amd-admin-card _hide_on_username_enabled_">
+            <h4 class="color-primary"><?php echo esc_html_x( "Username auto-generate priority", "Admin", "material-dashboard" ); ?></h4>
+            <span class="tiny-text color-low"><?php echo esc_html_x( "You can change username auto-generate priority to generate a username for new users automatically. Some fields may be unavailable like phone number, if they are it uses the next priority to generate a new username.", "Admin", "material-dashboard" ); ?></span>
+            <div class="amd-order-box" id="username-ag-priorities">
+                <div class="--item" data-box="random" data-order="<?php echo esc_attr( $username_ag_random_order === false ? '99' : $username_ag_random_order ); ?>">
+                    <div class="--icon -down"><?php _amd_icon( "chev_down" ); ?></div>
+                    <div class="--icon -up"><?php _amd_icon( "chev_up" ); ?></div>
+                    <span class="--text"><?php esc_html_e( "Random generate", "material-dashboard" ); ?></span>
                 </div>
-                <div class="-sub-item">
-                    <label class="hb-switch">
-                        <input type="checkbox" role="switch" name="password_conf_field" value="true"
-                               id="password-conf-field" <?php echo $password_conf_field ? 'checked' : ''; ?>>
-                        <span></span>
-                    </label>
+                <div class="--item" data-box="email" data-order="<?php echo esc_attr( $username_ag_email_order === false ? '99' : $username_ag_email_order ); ?>">
+                    <div class="--icon -down"><?php _amd_icon( "chev_down" ); ?></div>
+                    <div class="--icon -up"><?php _amd_icon( "chev_up" ); ?></div>
+                    <span class="--text"><?php esc_html_e( "Email", "material-dashboard" ); ?></span>
+                </div>
+                <div class="--item" data-box="phone" data-order="<?php echo esc_attr( $username_ag_phone_order === false ? '99' : $username_ag_phone_order ); ?>">
+                    <div class="--icon -down"><?php _amd_icon( "chev_down" ); ?></div>
+                    <div class="--icon -up"><?php _amd_icon( "chev_up" ); ?></div>
+                    <span class="--text"><?php esc_html_e( "Phone number", "material-dashboard" ); ?></span>
                 </div>
             </div>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_registration_fields_content" );
+        ?>
     </div>
 </div>
 
@@ -168,7 +243,15 @@ endif;
 <div class="amd-admin-card --setting-card">
     <h3 class="--title"><?php esc_html_e( "Phone", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_registration_phone_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_registration_phone_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="phone-field">
@@ -188,6 +271,10 @@ endif;
             </div>
         </div>
         <div class="__option_grid show_on_phone_field">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_registration_phone_dependencies_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="phone-field-required">
@@ -222,12 +309,32 @@ endif;
                     <p class="color-primary text-justify"><?php _ex( "Enable it if you want to prevent users to register existing phone number", "Admin", "material-dashboard" ); ?>.</p>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_registration_phone_dependencies_items" );
+            ?>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_registration_phone_content" );
+        ?>
     </div>
 </div>
 
 <script>
     (function(){
+        $("#username-field").change(function(){
+            $("._hide_on_username_enabled_")[$(this).is(":checked") ? "fadeOut" : "fadeIn"]();
+        });
+        const getUsernameAgPriorities = () => {
+            let data = [];
+            $("#username-ag-priorities").find(".--item").each(function(){
+                const $e = $(this);
+                const name = $e.hasAttr("data-box", true);
+                if(name) data.push(name);
+            });
+            return data;
+        }
         $amd.addEvent("on_settings_saved", () => {
             let $loginAfter = $('input[name="login_after_registration"]'), $lnField = $('input[name="lastname_field"]');
             let $unField = $('input[name="username_field"]'), $pcField = $('input[name="password_conf_field"]'),
@@ -240,6 +347,8 @@ endif;
                 username_field: $unField.is(":checked") ? "true" : "false",
                 password_conf_field: $pcField.is(":checked") ? "true" : "false",
                 single_phone: $spField.is(":checked") ? "true" : "false",
+                username_ag_priority: getUsernameAgPriorities().join(","),
+                allow_only_persian_names: $('input[name="allow_only_persian_names"]').is(":checked") ? "true" : "false",
             }
         });
     }());
@@ -249,6 +358,10 @@ endif;
 <div class="amd-admin-card --setting-card show_on_phone_field">
     <h3 class="--title"><?php esc_html_e( "Country codes", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_registration_phone_country_code_content" );
+        ?>
         <div class="__option_grid" id="cc-items">
 			<?php foreach( $phoneRegions as $cc => $data ): ?>
 				<?php
@@ -338,6 +451,10 @@ endif;
                 </div>
             </div>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_registration_phone_country_code_content" );
+        ?>
     </div>
 </div>
 <script>

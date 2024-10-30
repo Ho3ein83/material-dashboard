@@ -115,7 +115,7 @@ class AMDCore{
         add_filter( "amd_user_filter_role", function( $role ){
             $u = amd_get_current_user();
 
-            return $u ? $role == $u->role : false;
+            return $u && $role == $u->role;
         } );
 
         # Get frontend translation strings
@@ -130,9 +130,7 @@ class AMDCore{
         add_filter( "amd_get_setting_tabs", function(){
             global /** @var AMDCache $amdCache */
             $amdCache;
-            $data = $amdCache->getScopeGroup( "setting_tabs", null, true );
-
-            return $data;
+            return $amdCache->getScopeGroup( "setting_tabs", null, true );
         } );
 
         # Get admin appearance item
@@ -479,6 +477,10 @@ class AMDCore{
         add_action( "admin_enqueue_scripts", function(){
             wp_enqueue_style( "wp-color-picker" );
             wp_enqueue_script( "wp-color-picker" );
+
+            global $pagenow;
+            if( in_array( $pagenow, ["profile.php", "user-edit.php"] ) )
+                wp_enqueue_style( "amd-vars", amd_get_api_url( '?stylesheets=_vars&ver=' . AMD_VERSION_CODES['vars'] ?? "" ) );
         } );
 
         # Config script
@@ -541,6 +543,7 @@ class AMDCore{
                                     $btn.setWaiting(false);
                                     $image.setWaiting(false);
                                     $image.attr("src", url);
+                                    $image.trigger("change");
                                 },
                                 function(error) {
                                     $btn.html(lastHtml);
@@ -559,7 +562,6 @@ class AMDCore{
                             attachment.fetch();
                             selection.add(attachment ? [attachment] : []);
                         });
-
                     });
 
                     image_frame.open();
@@ -568,16 +570,16 @@ class AMDCore{
 
                 function amd_refresh_image(the_id, onSuccess, onFailed) {
                     send_ajax({
-                            action: amd_conf.ajax.private,
-                            get_atc_url: the_id
-                        },
-                        resp => {
-                            if(resp.success) onSuccess(resp.data.url)
-                            else onFailed(resp.data);
-                        },
-                        (xhr, options, error) => {
-                            onFailed(error);
-                        });
+                        action: amd_conf.ajax.private,
+                        get_atc_url: the_id
+                    },
+                    resp => {
+                        if(resp.success) onSuccess(resp.data.url)
+                        else onFailed(resp.data);
+                    },
+                    (xhr, options, error) => {
+                        onFailed(error);
+                    });
                 }
             </script><?php
         } );
@@ -648,20 +650,11 @@ class AMDCore{
             $user = amd_get_user_by( "ID", $uid );
 
             if( $amdDB AND $user ){
-
-                if( $amdDB ){
-
-                    global $amdWall, $amdCache;
-
-                    $agent = $amdWall->parseAgent();
-
-                    $report = $amdDB->addReport( "login", "null", $user->ID, ["ip" => $amdWall->getActualIP(), "identity" => $agent->export()] );
-
-                    if( $report )
-                        $amdCache->setCookie( "login_pending", $report, 1 );
-
-                }
-
+                global $amdWall, $amdCache;
+                $agent = $amdWall->parseAgent();
+                $report = $amdDB->addReport( "login", "null", $user->ID, ["ip" => $amdWall->getActualIP(), "identity" => $agent->export()] );
+                if( $report )
+                    $amdCache->setCookie( "login_pending", $report, 1 );
             }
 
         } );
@@ -711,6 +704,28 @@ class AMDCore{
             }
 
         } );
+
+        /** @since 1.2.0 */
+        add_filter( "amd_password_reset_methods", function( $methods ){
+            $methods["email"] = array(
+                "id" => "email",
+                "title" => __( "Email", "material-dashboard" ),
+                "desc" => __( "Send verification code with email", "material-dashboard" ),
+                "callback" => "email",
+                "active" => true
+            );
+            $methods["phone"] = array(
+                "id" => "phone",
+                "title" => __( "Phone", "material-dashboard" ),
+                "desc" => __( "Send verification code with SMS", "material-dashboard" ),
+                "callback" => "phone",
+                "active" => false
+            );
+            return $methods;
+        } );
+
+        # Register admin bar item (since 1.2.1)
+        add_action( "admin_bar_menu", [$this, "admin_bar_site_menu"], 32 );
 
     }
 
@@ -795,9 +810,26 @@ class AMDCore{
             "db_version" => "NUMBER",
             "use_login_2fa" => "BOOL",
             "force_login_2fa" => "BOOL",
+            "use_login_otp" => "BOOL",
+            "use_email_otp" => "BOOL",
+            "prefer_otp" => "BOOL",
+            "allow_phone_login" => "BOOL",
             "display_login_reports" => "BOOL",
             "tera_wallet_support" => "BOOL",
-            "search_hint_approved" => "BOOL"
+            "search_hint_approved" => "BOOL",
+            "password_reset_enabled" => "BOOL",
+            "password_reset_methods" => "STRING",
+            "login_form_bg" => "NUMBER",
+            "register_form_bg" => "NUMBER",
+            "pr_form_bg" => "NUMBER",
+            "other_forms_bg" => "NUMBER",
+            "use_glass_morphism_forms" => "BOOL",
+            "enable_email_login_notification" => "BOOL",
+            "username_ag_priority" => "STRING",
+            "allow_only_persian_names" => "BOOL",
+            "pro_avatar_pack_prefer" => "STRING",
+            "pro_custom_avatar_pack" => "STRING",
+            "pro_custom_placeholder_avatar" => "STRING",
         ) );
 
         # Set default export variants
@@ -1060,6 +1092,30 @@ class AMDCore{
             }
         ) );
 
+        # Register login reports variants (all reports)
+        do_action( "amd_register_cleanup_variant", "login_reports", array(
+            "id" => "login_reports",
+            "title" => _x( "Login reports", "Admin", "material-dashboard" ),
+            "auto_generates" => false,
+            "callback" => function(){
+                global $amdDB;
+                $amdDB->deleteReport( ["report_key" => "login"] );
+                return [_x( "All login reports has been removed", "Admin", "material-dashboard" )];
+            }
+        ) );
+
+        # Register login reports variants (old reports)
+        do_action( "amd_register_cleanup_variant", "login_reports_old", array(
+            "id" => "login_reports_old",
+            "title" => _x( "Login reports older than 1 month", "Admin", "material-dashboard" ),
+            "auto_generates" => false,
+            "callback" => function(){
+                global $amdDB;
+                $amdDB->deleteOldReports( "login", time() - 2592000 );
+                return [_x( "Old login reports has been removed", "Admin", "material-dashboard" )];
+            }
+        ) );
+
         /**
          * Initialize cleanup variants
          * @since 1.0.1
@@ -1112,9 +1168,26 @@ class AMDCore{
             "db_version" => "1",
             "use_login_2fa" => "false",
             "force_login_2fa" => "false",
+            "use_login_otp" => "false",
+            "use_email_otp" => "false",
+            "prefer_otp" => "false",
+            "allow_phone_login" => "false",
             "display_login_reports" => "true",
             "tera_wallet_support" => "true",
-            "search_hint_approved" => "false"
+            "search_hint_approved" => "false",
+            "password_reset_enabled" => "true",
+            "password_reset_methods" => "email",
+            "login_form_bg" => "",
+            "register_form_bg" => "",
+            "pr_form_bg" => "",
+            "other_forms_bg" => "",
+            "use_glass_morphism_forms" => "false",
+            "enable_email_login_notification" => "false",
+            "username_ag_priority" => "random,phone,email",
+            "allow_only_persian_names" => "false",
+            "pro_avatar_pack_prefer" => "default",
+            "pro_custom_avatar_pack" => "",
+            "pro_custom_placeholder_avatar" => "",
         );
 
         $amdCache->setDefault( "options_data", json_encode( $data ) );
@@ -1206,7 +1279,9 @@ class AMDCore{
         } );
 
         # Change dashboard pages template
-        add_action( "template_include", function( $template ){
+        add_action( "template_include", [$this, "change_dashboard_pages_template"] );
+
+        /*add_action( "template_include", function( $template ){
             $loginPage = intval( amd_get_site_option( "login_page" ) );
             $dashboardPage = intval( amd_get_site_option( "dashboard_page" ) );
             $apiPage = intval( amd_get_site_option( "api_page" ) );
@@ -1217,8 +1292,92 @@ class AMDCore{
             }
 
             return $template;
-        } );
+        } );*/
 
+        # Alternative way for empty template bug fix
+        /*add_action( "template_include", function( $template ){
+            $loginPage = intval( amd_get_site_option( "login_page" ) );
+            $dashboardPage = intval( amd_get_site_option( "dashboard_page" ) );
+            $apiPage = intval( amd_get_site_option( "api_page" ) );
+            if( is_page() ){
+                $post = get_post();
+                if( $post ) {
+                    if( $post->ID == $apiPage ) {
+                        echo do_shortcode( "[amd-api]" );
+                    }
+                    else if( $post->ID == $loginPage ) {
+                        echo do_shortcode( "[amd-login]" );
+                    }
+                    else if( $post->ID == $dashboardPage ) {
+                        echo do_shortcode( "[amd-dashboard]" );
+                    }
+                    $template = AMD_TEMPLATES . "/template-amd-raw.php";
+                }
+            }
+
+            return $template;
+        } );*/
+
+    }
+
+    /**
+     * Change dashboard template
+     * @param string $template
+     * Default template
+     * @return string
+     * Template path
+     * @sicne 1.2.1
+     */
+    public function change_dashboard_pages_template( $template ) {
+        $loginPage = intval( amd_get_site_option( "login_page" ) );
+        $dashboardPage = intval( amd_get_site_option( "dashboard_page" ) );
+        $apiPage = intval( amd_get_site_option( "api_page" ) );
+        $is_page = is_page();
+        if( apply_filters( "amd_use_manual_raw_template", false ) ){
+            if( $is_page ){
+                $post = get_post();
+                if( $post ) {
+                    if( $post->ID == $apiPage ) {
+                        echo do_shortcode( "[amd-api]" );
+                    }
+                    else if( $post->ID == $loginPage ) {
+                        echo do_shortcode( "[amd-login]" );
+                    }
+                    else if( $post->ID == $dashboardPage ) {
+                        echo do_shortcode( "[amd-dashboard]" );
+                    }
+                    return AMD_TEMPLATES . "/template-amd-blank.php";
+                }
+            }
+        }
+
+        if( $is_page ){
+            $post = get_post();
+            if( $post and in_array( $post->ID, [ $loginPage, $dashboardPage, $apiPage ] ) )
+                $template = AMD_TEMPLATES . "/template-amd-raw.php";
+        }
+
+        return $template;
+    }
+
+    /**
+     * Add dashboard link to admin bar
+     * @param WP_Admin_Bar $wp_admin_bar
+     * @return void
+     * @since 1.2.1
+     */
+    public function admin_bar_site_menu( $wp_admin_bar ){
+        if( !amd_is_admin() )
+            return;
+        $wp_admin_bar->add_node( array(
+                "parent" => "site-name",
+                "id" => "amd-dashboard",
+                "title" => _x( "Material dashboard", "Admin", "material-dashboard" ),
+                "href" => amd_get_dashboard_url(),
+                "meta" => array(
+                    "menu_title" => _x( "Material dashboard", "Admin", "material-dashboard" ),
+                ),
+            ) );
     }
 
     /**
@@ -1229,9 +1388,12 @@ class AMDCore{
     public function initAdmin(){
 
         add_action( "admin_head", function(){
-            # @formatter off
-            ?><style>.toplevel_page_material-dashboard .wp-menu-image>img{width:21px;height:auto;padding:6px !important}</style><?php
-            # @formatter on
+            ?>
+            <!-- @formatter off -->
+            <style>.toplevel_page_material-dashboard .wp-menu-image>img{width:21px;height:auto;padding:6px !important}</style>
+            <style>.amd-order-box>.--item>.--icon,.amd-order-box>.--item,.amd-order-box{display:flex;align-items:center;justify-content:center;gap:8px}.amd-order-box{flex-direction:column;padding:16px}.amd-order-box>.--item{flex-direction:row-reverse;justify-content:space-between;background:var(--amd-wrapper-bg);padding:16px;border-radius:8px;width:100%;cursor:move}.amd-order-box>.--item>.--text{flex:1}.amd-order-box>.--item>.--icon{box-sizing:border-box;width:32px;aspect-ratio:1;background:var(--amd-primary-x-low);padding:5px;border-radius:4px;cursor:pointer;transition:all ease .3s}.amd-order-box>.--item>.--icon.waiting{opacity:.3}.amd-order-box>.--item>.--icon:hover{background:var(--amd-primary);color:#fff}</style>
+            <!-- @formatter on -->
+            <?php
         } );
 
         add_action( "admin_menu", function(){
@@ -1286,15 +1448,28 @@ class AMDCore{
                 "submenu_admin_themes"
             ] );
 
-            add_submenu_page( "material-dashboard", esc_html__( "Advanced search", "material-dashboard" ), esc_html__( "Advanced search", "material-dashboard" ), $capability, "amd-search", [
+            # Disabled since 1.2.0
+            /*add_submenu_page( "material-dashboard", esc_html__( "Advanced search", "material-dashboard" ), esc_html__( "Advanced search", "material-dashboard" ), $capability, "amd-search", [
                 $this,
                 "submenu_admin_search_engine"
-            ] );
+            ] );*/
 
             add_submenu_page( "material-dashboard", esc_html__( "Custom hooks", "material-dashboard" ), esc_html__( "Custom hooks", "material-dashboard" ), $capability, "amd-hooks", [
                 $this,
                 "submenu_admin_hooks_manager"
             ] );
+
+            # since 1.2.0
+            add_submenu_page( "material-dashboard", esc_html__( "SMS webservices", "material-dashboard" ), esc_html__( "SMS webservices", "material-dashboard" ), $capability, "amd-sms-webservices", [
+                $this,
+                "submenu_admin_sms_webservices"
+            ] );
+
+            # since 1.2.0 (not enabled)
+            /*add_submenu_page( "material-dashboard", esc_html__( "Payment gateways", "material-dashboard" ), esc_html__( "Payment gateways", "material-dashboard" ), $capability, "amd-payment-gateway", [
+                $this,
+                "submenu_admin_payment_gateways"
+            ] );*/
 
             add_submenu_page( "material-dashboard", esc_html__( "More", "material-dashboard" ), esc_html__( "More", "material-dashboard" ), $capability, "amd-more", [
                 $this,
@@ -1323,7 +1498,7 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 
         } );
 
-        # Since 1.1.0
+        # since 1.1.0
         if( apply_filters( "amd_do_admin_checkin", true ) ){
             add_action( "amd_admin_header", function(){
                 $checkin_interval = intval( amd_get_default( "checkin_interval", 30000 ) );
@@ -1332,13 +1507,13 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
                     jQuery($ => {
                         $(document).ready(function(){
                             if(typeof send_ajax === "function"){
-                                const checkin = () => {
+                                window.amd_do_checkin = () => {
                                     send_ajax({
                                         action: amd_conf.ajax.private,
                                         _checkin: true
                                     }, () => {}, () => {});
                                 }
-                                window.amd_checkin_interval = setInterval(checkin, parseInt(`<?php echo $checkin_interval; ?>`));
+                                window.amd_checkin_interval = setInterval(window.amd_do_checkin, parseInt(`<?php echo $checkin_interval; ?>`));
                             }
                         });
                     });
@@ -1763,6 +1938,28 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
     public function submenu_admin_hooks_manager(){
 
         require_once AMD_PAGES . "/smp-hooks.php";
+
+    }
+
+    /**
+     * SMS webservices page
+     * @return void
+     * @since 1.2.0
+     */
+    public function submenu_admin_sms_webservices(){
+
+        require_once AMD_PAGES . "/smp-sms-webservices.php";
+
+    }
+
+    /**
+     * Payment gateways page
+     * @return void
+     * @since 1.2.0
+     */
+    public function submenu_admin_payment_gateways(){
+
+        require_once AMD_PAGES . "/smp-payment-gateway.php";
 
     }
 

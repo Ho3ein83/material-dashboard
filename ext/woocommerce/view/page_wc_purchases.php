@@ -34,19 +34,6 @@ $maxInPage = apply_filters( "amd_ext_wc_max_orders_in_page", 10 );
 
 $thisuser = amd_get_current_user();
 
-// TODO: This method is not working anymore, use `wc_get_orders` function instead
-//$all_orders = get_posts(
-//	apply_filters(
-//		'woocommerce_my_account_my_orders_query',
-//		array(
-//			'meta_key'    => '_customer_user',
-//			'meta_value'  => get_current_user_id(),
-//			'post_type'   => wc_get_order_types( 'view-orders' ),
-//			'post_status' => array_keys( wc_get_order_statuses() ),
-//		)
-//	)
-//);
-
 $all_orders = wc_get_orders( array(
     "customer_id" => get_current_user_id(),
     "limit" => -1

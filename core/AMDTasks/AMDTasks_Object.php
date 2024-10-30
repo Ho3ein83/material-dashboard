@@ -433,7 +433,7 @@ class AMDTasks_Object {
             "user_email" => $user ? $user->email : "",
             "repeats" => $this->get_repeat(),
             "period" => $this->get_period(),
-            "period_str" => amd_convert_time_to_text( $this->get_period() ),
+            "period_str" => $this->get_period() > 0 ? amd_convert_time_to_text( $this->get_period() ) : _x( "No period", "Task manager", "material-dashboard" ),
             "time" => $this->get_time(),
             "execution_time" => $this->get_time() - time(),
             "is_visible" => $this->is( "visible", true ),

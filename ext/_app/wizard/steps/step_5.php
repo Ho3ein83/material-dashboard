@@ -18,7 +18,7 @@ foreach( $main_themes as $id => $data ){
 $primaryColor = amd_get_site_option( "primary_color", "purple" );
 $_primaryColor = amd__validate_color_code( $primaryColor );
 
-?><h1 class="--title"><?php _ex( "Primary color", "Admin", "material-dashboard" ); ?></h1>
+?><h1 class="--title"><?php echo esc_html_x( "Primary color", "Admin", "material-dashboard" ); ?></h1>
 
 <div style="width:60%;margin:auto">
     <div class="__option_grid">
@@ -26,7 +26,7 @@ $_primaryColor = amd__validate_color_code( $primaryColor );
             <div class="-sub-item">
                 <label for="cp-purple" class="clickable">
                     <span class="color-badge" style="background:var(--amd-color-purple)"></span>
-					<?php _ex( "Purple", "Admin", "material-dashboard" ); ?>
+					<?php echo esc_html_x( "Purple", "Admin", "material-dashboard" ); ?>
                 </label>
             </div>
             <div class="-sub-item">

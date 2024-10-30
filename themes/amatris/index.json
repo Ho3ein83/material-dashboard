@@ -9,7 +9,10 @@
   "context": "material-theme",
   "properties": {
     "supports": {
-      "night_mode": true
+      "night_mode": true,
+      "multilingual": true,
+      "image_background": true,
+      "glass_morphism_forms": true
     }
   },
   "author": "Amatris"

@@ -1065,6 +1065,25 @@ svg.iconhub > polyline:not(.--exclude) {
     padding: 0;
 }
 
+.badge.--circle {
+    box-sizing: border-box;
+    display: inline-flex;
+    width: max-content;
+    height: auto;
+    aspect-ratio: 1;
+    min-width: unset !important;
+    padding: 10px !important;
+}
+.badge.--tab {
+    position: absolute;
+    top: 0;
+    margin: 0 !important;
+    height: 100%;
+    border-radius: 4px 0 0 4px;
+}
+body.rtl .badge.--tab { left: 0 }
+body.ltr .badge.--tab { right: 0 }
+
 .badge.--sm {
     min-width: 50px;
     padding: 4px 14px;
@@ -1234,7 +1253,7 @@ svg.iconhub > polyline:not(.--exclude) {
 .flex-ratio-1 {
     display: flex;
     flex-wrap: nowrap;
-    align-content: center;
+    align-items: center;
     justify-content: center;
 }
 

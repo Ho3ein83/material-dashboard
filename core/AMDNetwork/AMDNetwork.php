@@ -111,11 +111,11 @@ class AMDNetwork{
 				$password = !empty( $data["password"] ) ? $data["password"] : "";
 				$remember = !empty( $data["remember"] ) ? $data["remember"] : false;
 
-				global /** @var AMDSilu $amdSilu */
-				$amdSilu;
+				global $amdSilu;
 
 				if( !empty( $phone ) ){
-					$user_phone = str_replace( " ", "", $phone );
+//					$user_phone = str_replace( " ", "", $phone );
+					$user_phone = amd_apply_phone_format( $phone );
 					$user = amd_get_user_by_meta( "phone", $user_phone );
 					$isPhone = true;
 				}
@@ -129,7 +129,7 @@ class AMDNetwork{
 
 					$isPhone = false;
 					$user = null;
-					if( !empty( $userData["user"] ) and $userData["user"] ){
+					if( !empty( $userData["user"] ) ){
 						$user = $userData["user"];
 						$isPhone = ( $userData["by"] == "phone" );
 					}
@@ -182,15 +182,6 @@ class AMDNetwork{
 				if( is_wp_error( $login ) )
 					wp_send_json_error( [ "msg" => __( "Your login information is incorrect or an error has occurred. Please try again", "material-dashboard" ) ] );
 
-				/*if( !empty( $_SESSION["redirect_pending"] ) ){
-					$redirectURL = sanitize_url( $_SESSION["redirect_pending"] );
-					$_SESSION["redirect_pending"] = null;
-					unset( $_SESSION["redirect_pending"] );
-				}
-				else{
-					$redirectURL = amd_get_dashboard_page();
-				}*/
-
                 $redirectURL = amd_get_login_redirect_url( amd_get_dashboard_url() );
                 $redirectURL = amd_parse_url( $redirectURL );
                 amd_reset_login_redirect_record();
@@ -203,11 +194,12 @@ class AMDNetwork{
 
 				$data = $r["register"];
 
-				$firstname = $data["firstname"] ?? "";
-				$lastname = $data["lastname"] ?? "";
+				$firstname = trim( preg_replace( "/\s+/", " ",  $data["firstname"] ?? "" ) );
+				$lastname = trim( preg_replace( "/\s+/", " ",  $data["lastname"] ?? "" ) );
 				$email = sanitize_email( $data["email"] ?? "" );
 				$username = $data["username"] ?? "";
 				$password = $data["password"] ?? "";
+				$vCode = $data["vCode"] ?? "";
 				$phone = $data["phone"] ?? "";
 				$phone = amd_apply_phone_format( $phone );
 				$login_after_registration = (bool) ( $data["login_after_registration"] ?? false );
@@ -221,8 +213,7 @@ class AMDNetwork{
 				 */
                 do_action( "amd_register_validate_custom_fields", $custom_fields );
 
-				global /** @var AMDSilu $amdSilu */
-				$amdSilu;
+				global $amdSilu;
 
 				$phone_field = amd_get_site_option( "phone_field" ) == "true";
 				$phone_field_required = amd_get_site_option( "phone_field_required" ) == "true";
@@ -283,7 +274,20 @@ class AMDNetwork{
 					}
 				}
 
-				$result = $amdSilu->registerUser( $email, $username, $password, $login_after_registration );
+                $pause = apply_filters( "amd_pause_registration", false, array(
+                    "firstname" => $firstname,
+                    "lastname" => $lastname,
+                    "email" => $email,
+                    "username" => $username,
+                    "password" => $password,
+                    "vCode" => $vCode,
+                    "phone" => $phone,
+                ) );
+
+                if( !empty( $pause ) )
+                    wp_send_json_error( array_merge( $pause, ["pause" => true] ) );
+
+				$result = $amdSilu->registerUser( $email, $username, $password, $login_after_registration, $phone );
 
 				$success = $result["success"];
 				$errors = $result["errors"];
@@ -301,8 +305,12 @@ class AMDNetwork{
 				update_user_meta( $uid, "locale", $locale );
 
 				// Set user meta (AMD plugin meta)
-				if( $phone_field )
-					amd_set_user_meta( $uid, "phone", $phone );
+				if( $phone_field ) {
+                    amd_set_user_meta( $uid, "phone", $phone );
+                    $is_phone_verified = intval( amd_get_temp( "phone_verified_$phone" ) );
+                    if( $is_phone_verified AND $is_phone_verified >= time() )
+                        amd_set_user_meta( $uid, "phone_verified", time() );
+                }
 				amd_set_user_meta( $uid, "registration", time() );
 				amd_set_user_meta( $uid, "_init", "*" );
 				amd_set_user_meta( $uid, "signup_method", "direct" );
@@ -363,47 +371,81 @@ class AMDNetwork{
 
 				$data = $r["reset_password"];
 				$email = $data["email"] ?? "";
+				$phone = $data["phone"] ?? "";
+                $phone = amd_apply_phone_format( $phone );
+				$message_method = $data["message_method"] ?? "email";
 				$vCode = $data["vcode"] ?? "";
 				$new_password = $data["new_password"];
 
-				if( !empty( $email ) ){
-					$user = get_user_by( "email", $email );
+                $continue = false;
+                $user = null;
+
+                global $amdSilu;
+				if( !empty( $email ) AND $message_method == "email" ){
+                    $user = $amdSilu->getUser( "email", $email, true );
 					if( !$user OR is_wp_error( $user ) )
 						wp_send_json_error( [ "msg" => __( "Email not found", "material-dashboard" ) ] );
-					if( !empty( $vCode ) ){
-						if( !empty( $new_password ) ){
-							if( strlen( $new_password ) < 8 )
-								wp_send_json_error( [ "msg" => __( "Password must contain at least 8 characters", "material-dashboard" ) ] );
-							$success = amd_change_password( $user->ID, $new_password, apply_filters( "amd_notify_password_change", true ) );
-							if( $success )
-								wp_send_json_success( [ "msg" => __( "Your password has been changed", "material-dashboard" ) ] );
-							else
-								wp_send_json_success( [ "msg" => __( "Failed", "material-dashboard" ) ] );
-						}
-						else{
-							$valid = amd_is_verification_code_valid( $user->ID, $vCode );
-							if( !$valid )
-								wp_send_json_error( [ "msg" => __( "Entered verification code is not correct or has been expired", "material-dashboard" ) ] );
-							wp_send_json_success( [ "msg" => __( "Please enter your new password", "material-dashboard" ) ] );
-						}
-					}
-					else{
-						$vCode = amd_regenerate_verification_code( $user->ID );
-						if( !$vCode )
-							wp_send_json_error( [ "msg" => __( "Failed", "material-dashboard" ) ] );
-
-						global /** @var AMDWarner $amdWarn */
-						$amdWarn;
-
-						$message = apply_filters( "amd_new_verification_code_message", $user->ID, $vCode );
-						$sent = $amdWarn->sendEmail( $user->user_email, __( "Reset password", "material-dashboard" ), $message );
-
-						if( !$sent )
-							wp_send_json_error( [ "msg" => __( "An error has occurred while sending email", "material-dashboard" ) ] );
-
-						wp_send_json_success( [ "msg" => __( "Verification code has been sent to your email", "material-dashboard" ) ] );
-					}
+                    $continue = "email";
 				}
+                else if( !empty( $phone ) AND $message_method == "phone" ){
+                    $user = $amdSilu->getUserByMeta( "phone", $phone );
+                    if( empty( $user ) OR !$user instanceof AMDUser )
+                        wp_send_json_error( [ "msg" => __( "No user found with this phone number", "material-dashboard" ) ] );
+                    $continue = "phone";
+                }
+
+                if( $continue AND $user ){
+                    if( !empty( $vCode ) ){
+                        if( !empty( $new_password ) ){
+                            if( strlen( $new_password ) < 8 )
+                                wp_send_json_error( [ "msg" => __( "Password must contain at least 8 characters", "material-dashboard" ) ] );
+                            $success = amd_change_password( $user->ID, $new_password, apply_filters( "amd_notify_password_change", true ) );
+                            if( $success )
+                                wp_send_json_success( [ "msg" => __( "Your password has been changed", "material-dashboard" ) ] );
+                            else
+                                wp_send_json_success( [ "msg" => __( "Failed", "material-dashboard" ) ] );
+                        }
+                        else{
+                            $valid = amd_is_verification_code_valid( $user->ID, $vCode );
+                            if( !$valid )
+                                wp_send_json_error( [ "msg" => __( "Entered verification code is not correct or has been expired", "material-dashboard" ) ] );
+                            wp_send_json_success( [ "msg" => __( "Please enter your new password", "material-dashboard" ) ] );
+                        }
+                    }
+                    else{
+                        $vCode = amd_regenerate_verification_code( $user->ID );
+                        if( !$vCode )
+                            wp_send_json_error( [ "msg" => __( "Failed", "material-dashboard" ) ] );
+
+                        global $amdWarn;
+
+                        $message = apply_filters( "amd_new_verification_code_message", $user->ID, $vCode );
+
+                        $sent = false;
+                        $send_without_pattern = true;
+                        if( $continue == "phone" ){
+                            # Send message by pattern if pattern exist, otherwise send it normally
+                            $pattern_send = amd_send_message_by_pattern( $user->phone, "password_reset_verification", ["firstname" => $user->getSafeName(), "code" => $vCode] );
+                            $sent = $pattern_send > 0;
+                            if( $pattern_send === false || $pattern_send > 0 )
+                                $send_without_pattern = false;
+                        }
+
+                        if( $send_without_pattern ) {
+                            $sent = $amdWarn->sendMessage( array(
+                                "email" => $user->email,
+                                "phone" => $user->phone,
+                                "subject" => __( "Reset password", "material-dashboard" ),
+                                "message" => $message
+                            ), ( $continue === "phone" ) ? "sms" : "email" );
+                        }
+
+                        if( !$sent )
+                            wp_send_json_error( [ "msg" => $continue === "phone" ? __( "An error has occurred while sending SMS", "material-dashboard" ) : __( "An error has occurred while sending email", "material-dashboard" ) ] );
+
+                        wp_send_json_success( [ "msg" => $continue === "phone" ? __( "Verification code has been sent to your phone", "material-dashboard" ) : __( "Verification code has been sent to your email", "material-dashboard" ) ] );
+                    }
+                }
 
 				wp_send_json_error( [ "msg" => __( "An error has occurred", "material-dashboard" ) ] );
 
@@ -454,11 +496,15 @@ class AMDNetwork{
 			}
             
             else if( !empty( $r["2fa_submit"] ) ){
+
+                $use_login_otp = amd_get_site_option( "use_login_otp", "false" ) == "true";
+                if( $use_login_otp )
+                    wp_send_json_error( [ "msg" => __( "Failed", "material-dashboard" ) ] );
                 
                 $code = $r["2fa_submit"];
                 $token = $r["token"] ?? "";
                 
-                if( !empty( $code ) AND !empty( $token ) ){
+                if( !empty( $token ) ){
 	                $temp = amd_get_temp( "2fa_token_$token" );
                     $exp = explode( ",", $temp );
                     if( $exp[0] == $code ){
@@ -489,13 +535,17 @@ class AMDNetwork{
 
             else if( !empty( $r["2fa_resend"] ) ){
 
+                $use_login_otp = amd_get_site_option( "use_login_otp", "false" ) == "true";
+                if( $use_login_otp )
+                    wp_send_json_error( [ "msg" => __( "Failed", "material-dashboard" ) ] );
+
 	            $token = $r["2fa_resend"];
 
 	            $temp = amd_get_temp( "2fa_token_$token" );
 	            $exp = explode( ",", $temp );
 	            $u = amd_get_user_by( "id", $exp[1] ?? 0 );
 
-                if( $u AND !empty( $token ) ){
+                if( $u ){
 	                $temp = amd_get_temp( "2fa_token_{$token}_resend", false );
 	                $_expire = $temp->expire ?? 0;
 	                $expire = $_expire > 0 ? $_expire - time() : 0;
@@ -525,6 +575,96 @@ class AMDNetwork{
                 }
 
 	            wp_send_json_error( ["msg" => __( "Failed", "material-dashboard" )] );
+
+            }
+
+            else if( !empty( $r["otp"] ) ){
+
+                $use_login_otp = amd_get_site_option( "use_login_otp", "false" ) == "true";
+
+                if( !$use_login_otp )
+                    wp_send_json_error( [ "msg" => __( "OTP is disabled, try logging in with password", "material-dashboard" ) ] );
+
+                if( amd_login_attempts_reached() )
+                    wp_send_json_error( [ "msg" => __( "Too many attempts, please try again later", "material-dashboard" ) ] );
+
+                $data = $r["otp"];
+
+                $login = $data["login"] ?? "";
+                $phone = amd_apply_phone_format( $data["phone"] ?? "" );
+                $code = $data["code"] ?? "";
+                $resend_request = $data["resend"] ?? false;
+                $remember = $data["remember"] ?? false;
+
+                if( empty( $login ) AND empty( $phone ) )
+                    wp_send_json_error( ["msg" => __( "Please fill out all fields correctly", "material-dashboard" )] );
+
+                $user = null;
+                if( !empty( $phone ) ){
+                    $user = amd_get_user_by_meta( "phone", $phone );
+                    if( !$user OR !$user instanceof AMDUser )
+                        wp_send_json_error( ["msg" => __( "Phone number you entered is not registered", "material-dashboard" )] );
+                }
+                else if( !empty( $email ) ){
+                    $user = amd_get_user_by( "email", $email );
+                    if( !$user OR !$user instanceof AMDUser )
+                        wp_send_json_error( ["msg" => __( "Username or email does not exist", "material-dashboard" )] );
+                }
+
+                if( $user instanceof AMDUser ){
+
+                    $otp = $user->get_otp( $code );
+                    $otp_code = $otp["code"];
+                    $otp_verified = $otp["verify"];
+                    $otp_key = $otp["key"];
+                    $otp_is_new = $otp["is_new"];
+                    $otp_resend = $otp["resend"];
+                    $resend_time_left = max( $otp_resend - time(), 0 );
+
+                    if( empty( $code ) OR $resend_request ){
+                        if( $otp_is_new ){
+                            if( $user->send_otp( $otp_code ) )
+                                wp_send_json_success( ["msg" => __( "Verification code has been sent", "material-dashboard" ), "resend" => $resend_time_left] );
+                            else
+                                amd_delete_temp( $otp_key );
+                        }
+                        else if( $resend_request OR $resend_time_left <= 0 ){
+                            if( $resend_time_left > 0 )
+                                wp_send_json_success( ["msg" => __( "Cannot send verification code, try again later", "material-dashboard" ), "resend" => $resend_time_left] );
+
+                            if( $user->send_otp( $otp_code ) ) {
+                                /**
+                                 * The number of seconds that users can request OTP resend
+                                 * @since 1.2.0
+                                 */
+                                $resend_time = apply_filters( "amd_otp_resend_interval", 60 );
+                                amd_set_temp( $otp_key, time() + $resend_time );
+                                wp_send_json_success( [
+                                    "msg" => __( "Verification code has been sent", "material-dashboard" ),
+                                    "resend" => $resend_time
+                                ] );
+                            }
+                        }
+                        else{
+                            wp_send_json_success( ["msg" => __( "Verification code has been already sent", "material-dashboard" ), "resend" => $resend_time_left] );
+                        }
+                    }
+                    else if( $otp_verified ){
+                        global $amdSilu;
+                        if( $amdSilu->usl( $user, $remember ) ){
+                            $redirectURL = amd_get_login_redirect_url( amd_get_dashboard_url() );
+                            $redirectURL = amd_parse_url( $redirectURL );
+                            amd_reset_login_redirect_record();
+                            wp_send_json_success( ["msg" => __( "Logging in", "material-dashboard" ), "url" => $redirectURL] );
+                        }
+                    }
+
+                    if( $code )
+                        wp_send_json_error( ["msg" => __( "Entered verification code is not correct or has been expired", "material-dashboard" )] );
+
+                    wp_send_json_error( ["msg" => __( "Cannot send verification code, try again later", "material-dashboard" )] );
+
+                }
 
             }
 
@@ -777,17 +917,44 @@ class AMDNetwork{
 			do_action( "amd_handle_admin_ajax", $r, $unfilteredRequest );
 
 			if( isset( $r["repair_db"] ) ){
-				global /** @var AMD_DB $amdDB */
+
+                global /** @var AMD_DB $amdDB */
 				$amdDB;
-				$amdDB->init( true );
+
+                $amdDB->init( true );
+
                 $amdDB->repairTables();
-				$amdDB->repairData( amd_get_default_options() );
+
+                $amdDB->repairData( amd_get_default_options() );
 
 				/**
 				 * On database repair
                  * @since 1.0.5
 				 */
                 do_action( "amd_repair_database" );
+
+                if( !empty( $r["fix_collation"] ) ){
+
+                    global $amdDB;
+
+                    $collation = $r["fix_collation"];
+
+                    $success = false;
+                    foreach( apply_filters( "amd_database_language_collations", [] ) as $item ){
+                        if( !empty( $item["collation"] ) AND $collation == $item["collation"] ){
+                            $charset = $item["charset"] ?? "utf8mb4";
+                            foreach( $amdDB->getTables() as $table )
+                                $amdDB->collateTableAndColumns( $table, $collation, $charset );
+                            $success = true;
+                        }
+                    }
+
+                    if( $success )
+                        wp_send_json_success( ["msg" => __( "Database language changed successfully", "material-dashboard" )] );
+
+                    wp_send_json_error( ["msg" => __( "Cannot change database language, please try again", "material-dashboard" )] );
+
+                }
 
 				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ) ] );
 			}
@@ -1171,12 +1338,20 @@ class AMDNetwork{
 
 				$id = $r["get_atc_url"];
 
+                if( strpos( $id, "," ) !== false ){
+                    $ids = explode( ",", $id );
+                    $urls = [];
+                    foreach( $ids as $atc_id )
+                        $urls[$atc_id] = wp_get_attachment_url( $atc_id );
+                    wp_send_json_success( ["msg" => "", "url" => "", "urls" => $urls] );
+                }
+
 				$url = wp_get_attachment_url( $id );
 
 				if( $url )
-					wp_send_json_success( [ "msg" => "", "url" => $url ] );
+					wp_send_json_success( [ "msg" => "", "url" => $url, "urls" => [$id => $url] ] );
 
-				wp_send_json_success( [ "msg" => __( "Failed", "material-dashboard" ), "url" => "" ] );
+				wp_send_json_success( [ "msg" => __( "Failed", "material-dashboard" ), "url" => "", "urls" => [] ] );
 
 			}
 
@@ -1191,7 +1366,7 @@ class AMDNetwork{
 					$success = amd_add_todo( "admin_note", $note, "pending", AMD_DIRECTORY );
 
 				if( $success )
-					wp_send_json_success( [ "msg" => __( "Saved", "material-dashboard" ) ] );
+					wp_send_json_success( [ "msg" => empty( $note ) ? __( "Note cleared", "material-dashboard" ) : __( "Saved", "material-dashboard" ) ] );
 
 				wp_send_json_error( [ "msg" => __( "Not saved", "material-dashboard" ) ] );
 

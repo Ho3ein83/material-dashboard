@@ -23,11 +23,26 @@ $defaultSettings = array(
 );
 
 ?>
+
+<?php
+/** @since 1.2.1 */
+do_action( "amd_settings_before_all_cards" );
+?>
+
 <!-- Optimizer -->
 <div class="amd-admin-card --setting-card" data-ts="optimizer">
+    <?php amd_dump_admin_card_keywords( ["optimize", "بهینه", "بهینه‌ساز"] ); ?>
     <h3 class="--title"><?php echo esc_html_x( "Optimizer", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_optimizer_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_optimizer_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="optimizer">
@@ -44,15 +59,32 @@ $defaultSettings = array(
                     <p class="color-primary text-justify"><?php echo esc_html_x( "By enabling this item, WordPress header won't be printed in dashboard pages. This can make dashboard performance better but your custom scripts, theme styles, page builders resources, etc. will not work in dashboard anymore.", "Admin", "material-dashboard" ); ?></p>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_optimizer_items" );
+            ?>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_optimizer_content" );
+        ?>
     </div>
 </div>
 
 <!-- Seo -->
 <div class="amd-admin-card --setting-card" data-ts="seo">
+    <?php amd_dump_admin_card_keywords( ["سیو", "google", "گوگل", "search engine", "موتور جستجو"] ); ?>
     <h3 class="--title"><?php echo esc_html_x( "Seo", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_seo_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_seo_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="indexing">
@@ -69,15 +101,32 @@ $defaultSettings = array(
                     <p class="color-primary text-justify"><?php echo esc_html_x( "If you enable this item dashboard page will not show in search engines results, however it's not recommended to let dashboard page be in search results.", "Admin", "material-dashboard" ); ?></p>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_seo_items" );
+            ?>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_seo_content" );
+        ?>
     </div>
 </div>
 
-<!-- Force SSL -->
+<!-- URL & addresses -->
 <div class="amd-admin-card --setting-card" data-ts="ssl">
+    <?php amd_dump_admin_card_keywords( ["secure", "امن", "امنیت", "security"] ); ?>
     <h3 class="--title"><?php echo esc_html_x( "URL and addresses", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_url_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_url_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="force-ssl">
@@ -94,15 +143,32 @@ $defaultSettings = array(
                     <p class="color-primary text-justify"><?php echo esc_html_x( "Force clients to use https instead of http. Please consider that this plugin will not change your .htaccess file ant it's only a WordPress redirect", "Admin", "material-dashboard" ); ?>.</p>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_url_items" );
+            ?>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_url_content" );
+        ?>
     </div>
 </div>
 
 <!-- Allow avatar image upload -->
 <div class="amd-admin-card --setting-card" data-ts="avatar">
+    <?php amd_dump_admin_card_keywords( ["پروفایل", "profile", "picture"] ); ?>
     <h3 class="--title"><?php echo esc_html_x( "Avatar image", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_avatar_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_avatar_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="avatar-upload">
@@ -119,15 +185,32 @@ $defaultSettings = array(
                     <p class="color-primary text-justify"><?php echo esc_html_x( "Let users to upload their custom avatar picture. Avatar pictures will be cropped in 1:1 ratio (square image) and they will be converted to png to prevent users to upload harmful or broken files", "Admin", "material-dashboard" ); ?>.</p>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_avatar_items" );
+            ?>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_avatar_content" );
+        ?>
     </div>
 </div>
 
-<!-- Fast loading & content settings -->
+<!-- Content settings -->
 <div class="amd-admin-card --setting-card" data-ts="lazyload">
+    <?php amd_dump_admin_card_keywords( ["load", "lazy loading", "بارگیری", "optimize", "optimizer", "بهینه", "بهینه ساز"] ); ?>
     <h3 class="--title"><?php echo esc_html_x( "Content", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_content_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_content_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="fast-loading">
@@ -144,15 +227,32 @@ $defaultSettings = array(
                     <p class="color-primary text-justify"><?php echo esc_html_x( "By enabling fast loading dashboard pages will not be refreshed and contents will be loaded with AJAX. This item can reduce your site traffic and users data usage, also makes your dashboard faster", "Admin", "material-dashboard" ); ?>.</p>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_content_items" );
+            ?>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_content_content" );
+        ?>
     </div>
 </div>
 
 <!-- Change email -->
 <div class="amd-admin-card --setting-card" data-ts="change_email">
+    <?php amd_dump_admin_card_keywords( ["email"] ); ?>
     <h3 class="--title"><?php echo esc_html_x( "Change email", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_email_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_email_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="change-email">
@@ -169,15 +269,32 @@ $defaultSettings = array(
                     <p class="color-primary text-justify"><?php echo esc_html_x( "By changing email, users downloads and purchases won't be lost. If you are using 'Easy Digital Downloads' or 'WooCommerce' plugins users data won't be lost, however we can't say that about your other plugins, please make sure that your site operations are not depended on their emails.", "Admin", "material-dashboard" ); ?>.</p>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_email_items" );
+            ?>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_email_content" );
+        ?>
     </div>
 </div>
 
 <!-- Woocommerce -->
 <div class="amd-admin-card --setting-card" data-ts="woocommerce">
+    <?php amd_dump_admin_card_keywords( ["woocommerce", "shop", "فروشگاه"] ); ?>
     <h3 class="--title"><?php echo esc_html_x( "Woocommerce", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_woocommerce_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_woocommerce_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item <?php echo $tera_wallet_available ? '' : 'waiting'; ?>">
                     <label for="terawallet-support">
@@ -197,23 +314,34 @@ $defaultSettings = array(
                     <?php endif; ?>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_woocommerce_items" );
+            ?>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_woocommerce_content" );
+        ?>
     </div>
 </div>
 
+<?php
+/** @since 1.2.1 */
+do_action( "amd_settings_after_all_cards" );
+?>
+
 <script>
-    (function () {
-        $amd.applyInputsDefault(<?php echo json_encode( $defaultSettings ); ?>)
-        $amd.addEvent("on_settings_saved", () => {
-            return {
-                "optimizer": $("#optimizer").is(":checked") ? "true" : "false",
-                "indexing": $("#indexing").is(":checked") ? "no-index" : "index",
-                "force_ssl": $("#force-ssl").is(":checked") ? "true" : "false",
-                "change_email_allowed": $('#change-email').is(":checked") ? "true" : "false",
-                "avatar_upload_allowed": $('#avatar-upload').is(":checked") ? "true" : "false",
-                "use_lazy_loading": $('#fast-loading').is(":checked") ? "true" : "false",
-                "tera_wallet_support": $("#terawallet-support").is(":checked") ? "true" : "false",
-            }
-        });
-    }());
+    $amd.applyInputsDefault(<?php echo json_encode( $defaultSettings ); ?>)
+    $amd.addEvent("on_settings_saved", () => {
+        return {
+            "optimizer": $("#optimizer").is(":checked") ? "true" : "false",
+            "indexing": $("#indexing").is(":checked") ? "no-index" : "index",
+            "force_ssl": $("#force-ssl").is(":checked") ? "true" : "false",
+            "change_email_allowed": $('#change-email').is(":checked") ? "true" : "false",
+            "avatar_upload_allowed": $('#avatar-upload').is(":checked") ? "true" : "false",
+            "use_lazy_loading": $('#fast-loading').is(":checked") ? "true" : "false",
+            "tera_wallet_support": $("#terawallet-support").is(":checked") ? "true" : "false",
+        }
+    });
 </script>

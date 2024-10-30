@@ -21,6 +21,8 @@ if( $isLoggedIn ){
 	}
 }
 
+global $amdCache;
+
 ?>function send_ajax(data, doOnSuccess, doOnError, xhrF = null) {
     if(xhrF === null)
         xhrF = () => new window.XMLHttpRequest();
@@ -108,6 +110,7 @@ var amd_conf = {
         dashboard: "amd_dash_ajax_handler",
         api: "_api_handler"
     },
+    cache_prefix: `<?php echo esc_js( $amdCache::PREFIX ); ?>`,
     api_url: `<?php echo amd_get_api_url(); ?>`,
     login_url: `<?php echo amd_get_login_page(); ?>`,
     dashboard_url: `<?php echo amd_get_dashboard_page(); ?>`,

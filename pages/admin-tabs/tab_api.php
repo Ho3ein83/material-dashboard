@@ -13,7 +13,15 @@ $defaultSettings = array(
 <div class="amd-admin-card --setting-card">
     <h3 class="--title"><?php echo esc_html_x( "API", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_before_api_content" );
+        ?>
         <div class="__option_grid">
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_before_api_items" );
+            ?>
             <div class="-item">
                 <div class="-sub-item">
                     <label for="api-enabled">
@@ -30,7 +38,15 @@ $defaultSettings = array(
                     <p class="color-blue"><?php echo esc_html_x( "Develop your own application and connect it with your dashboard", "Admin", "material-dashboard" ); ?>. <?php echo amd_doc_url( "", true, "(" . esc_html_x( "Documentation", "Admin", "material-dashboard" ) . ")" ) ?></p>
                 </div>
             </div>
+            <?php
+                /** @since 1.2.0 */
+                do_action( "amd_settings_after_api_items" );
+            ?>
         </div>
+        <?php
+            /** @since 1.2.0 */
+            do_action( "amd_settings_after_api_content" );
+        ?>
     </div>
 </div>
 

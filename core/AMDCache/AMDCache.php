@@ -125,6 +125,41 @@ class AMDCache{
 		$this->addStyle( 'dashboard:cropper', AMD_MOD . '/cropper/cropper.css', "1.5.11" );
 		$this->addScript( 'dashboard:cropper', AMD_MOD . '/cropper/cropper.js', "1.5.11" );
 
+        # Dashboard: Persian date (since 1.2.0)
+        $this->addScript( 'dashboard:persian-date', AMD_MOD . '/persian-date/persian-date.min.js', "1" );
+        $this->setScriptEnabled( 'dashboard:persian-date' );
+
+        # Dashboard: Persian datepicker (since 1.2.0)
+        $this->addScript( 'dashboard:persian-datepicker', AMD_MOD . '/persian-date/persian-datepicker.js', "1" );
+        $this->setScriptEnabled( 'dashboard:persian-datepicker', false );
+
+        # Dashboard: Persian datepicker (since 1.2.0)
+        $this->addStyle( 'dashboard:persian-datepicker', AMD_MOD . '/persian-date/persian-datepicker.min.css', "1" );
+        $this->setStyleEnabled( 'dashboard:persian-datepicker' );
+
+        # Dashboard: QR code generator (since 1.2.0)
+        $this->addScript( 'dashboard:qr_code', AMD_MOD . '/qr-code-styling/qr-code-styling.min.js', "1" );
+        $this->setScriptEnabled( 'dashboard:qr_code', false );
+
+        # Dashboard: HTML to canvas (since 1.2.0)
+        $this->addScript( 'dashboard:html2canvas', AMD_MOD . '/html2canvas/html2canvas.min.js', "1.4.1" );
+        $this->setScriptEnabled( 'dashboard:html2canvas', false );
+
+        # Dashboard: jsPDF (since 1.2.0)
+        $this->addScript( 'dashboard:jspdf', AMD_MOD . '/jsPDF/jspdf.umd.min.js', "2.5.1" );
+        $this->setScriptEnabled( 'dashboard:jspdf', false );
+
+        # Dashboard: ChartJS (since 1.2.1)
+        $this->addScript( 'dashboard:chartjs', AMD_MOD . '/chartjs/chart.js', "4.3.0" );
+        $this->setScriptEnabled( 'dashboard:chartjs', false );
+
+        # Admin: Coloris module (since 1.2.1)
+        $this->addScript( 'admin:chartjs', AMD_MOD . '/chartjs/chart.js', "4.3.0" );
+
+        # Dashboard: Markdown parser (since 1.2.0)
+        $this->addScript( 'dashboard:marked', AMD_MOD . '/marked/marked.min.js', "12.0.1" );
+        $this->setScriptEnabled( 'dashboard:marked', false );
+
         # Dashboard: Quill JS editor
 		$this->addStyle( 'global:quill', AMD_MOD . '/quill-editor/quill.snow.css', "1.0.0" );
 		$this->addScript( 'global:quill', AMD_MOD . '/quill-editor/quill.js', "1.0.0" );
@@ -502,9 +537,10 @@ class AMDCache{
 	public function addStyle( $id, $url, $ver = "unknown" ){
 
 		$this->css[$id] = array(
-			'id' => $id,
-			'url' => $url,
-			'ver' => $ver
+			"id" => $id,
+			"url" => $url,
+			"ver" => $ver,
+            "enabled" => true
 		);
 
 	}
@@ -525,11 +561,70 @@ class AMDCache{
 	public function addScript( $id, $url, $ver = "unknown" ){
 
 		$this->js[$id] = array(
-			'id' => $id,
-			'url' => $url,
-			'ver' => $ver
+			"id" => $id,
+			"url" => $url,
+			"ver" => $ver,
+            "enabled" => true
 		);
 
+	}
+
+    /**
+     * Enable or disable registered script
+     * @param string $script_id
+     * Script ID
+     * @param bool $enabled
+     * True for enable, false for disable
+     *
+     * @return void
+     * @since 1.2.0
+     */
+    public function setScriptEnabled( $script_id, $enabled=true ){
+        if( !empty( $this->js[$script_id] ) )
+		    $this->js[$script_id]["enabled"] = boolval( $enabled );
+	}
+
+    /**
+     * Enable or disable registered stylesheet
+     * @param string $style_id
+     * Stylesheet ID
+     * @param bool $enabled
+     * True for enable, false for disable
+     *
+     * @return void
+     * @since 1.2.0
+     */
+    public function setStyleEnabled( $style_id, $enabled=true ){
+        if( !empty( $this->css[$style_id] ) )
+		    $this->css[$style_id]["enabled"] = boolval( $enabled );
+	}
+
+    /**
+     * Check if specific style is enabled or not
+     * @param string $script_id
+     * Script ID
+     *
+     * @return bool
+     * @since 1.3.0
+     */
+    public function isScriptEnabled( $script_id ){
+        if( !empty( $this->js[$script_id] ) )
+		    return boolval( $this->js[$script_id]["enabled"] );
+        return false;
+	}
+
+    /**
+     * Check if specific style is enabled or not
+     * @param string $style_id
+     * Style ID
+     *
+     * @return bool
+     * @since 1.3.0
+     */
+    public function isStyleEnabled( $style_id ){
+        if( !empty( $this->css[$style_id] ) )
+		    return boolval( $this->css[$style_id]["enabled"] );
+        return false;
 	}
 
 	/**
@@ -543,15 +638,17 @@ class AMDCache{
 	 */
 	public function dumpStyles( $scope = null ){
 
-		if( !is_array( $this->css ) OR empty( $this->css ) )
+		if( !is_array( $this->css ) or empty( $this->css ) )
 			return;
 
 		foreach( $this->css as $id => $data ){
-			if( !empty( $scope ) AND !amd_starts_with( $id, "$scope:" ) )
+			if( !empty( $scope ) and !amd_starts_with( $id, "$scope:" ) )
 				continue;
-			if( empty( $scope ) AND strpos( $id, ":" ) !== false )
+			if( empty( $scope ) and strpos( $id, ":" ) !== false )
 				continue;
-			$v = $data['ver'];
+            if( !( $data["enabled"] ?? true ) )
+                continue;
+			$v = $data["ver"];
 			# @formatter off
 ?>
     <link rel="stylesheet" href="<?php echo esc_url( $data['url'] . ( !empty( $v ) ? '?ver=' . $v : '' ) ); ?>">
@@ -579,6 +676,8 @@ class AMDCache{
 				continue;
 			if( empty( $scope ) AND strpos( $id, ":" ) !== false )
 				continue;
+            if( !( $data["enabled"] ?? true ) )
+                continue;
 			$v = $data['ver'];
 			# @formatter off
 ?>
@@ -678,7 +777,7 @@ class AMDCache{
 	 */
 	public function getDefault( $key, $default = "" ){
 
-		return isset( $this->defaults[$key] ) ? $this->defaults[$key] : $default;
+		return $this->defaults[$key] ?? $default;
 
 	}
 
@@ -742,10 +841,6 @@ class AMDCache{
 
 	}
 
-	public function isDashboard(){
-
-
-
-    }
+	public function isDashboard(){}
 
 }

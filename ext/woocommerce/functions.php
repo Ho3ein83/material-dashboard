@@ -119,25 +119,40 @@ function amd_ext_wc_get_cart(){
  * Escape status code to HTML
  * @param string $status
  * Status code
+ * @param bool $get
+ * Whether to get the status or print the span tag (since 1.2.0)
  *
- * @return void
+ * @return string[]
  * @since 1.0.0
  */
-function amd_ext_wc_esc_status_html( $status ){
+function amd_ext_wc_esc_status_html( $status, $get = false ){
 
-	?>
-	<?php if( $status == "completed" ): ?>
-		<span class="tiny-text color-green">(<?php echo esc_html_x( "completed", "Purchase status", "material-dashboard" ); ?>)</span>
-	<?php elseif( $status == "cancelled" ): ?>
-		<span class="tiny-text color-red">(<?php echo esc_html_x( "cancelled", "Purchase status", "material-dashboard" ); ?>)</span>
-	<?php elseif( $status == "failed" ): ?>
-		<span class="tiny-text color-red">(<?php echo esc_html_x( "failed", "Purchase status", "material-dashboard" ); ?>)</span>
-	<?php elseif( $status == "processing" ): ?>
-		<span class="tiny-text color-blue">(<?php echo esc_html_x( "processing", "Purchase status", "material-dashboard" ); ?>)</span>
-	<?php else: ?>
-		<span class="tiny-text">(<?php echo strtolower( wc_get_order_status_name( $status ) ); ?>)</span>
-	<?php endif; ?>
-	<?php
+    if( $status == "completed" ) {
+        $s = esc_html_x( "completed", "Purchase status", "material-dashboard" );
+        $c = "color-green";
+    }
+    else if( $status == "cancelled" ) {
+        $s = esc_html_x( "cancelled", "Purchase status", "material-dashboard" );
+        $c = "color-red";
+    }
+    else if( $status == "failed" ) {
+        $s = esc_html_x( "failed", "Purchase status", "material-dashboard" );
+        $c = "color-red";
+    }
+    else if( $status == "processing" ) {
+        $s = esc_html_x( "processing", "Purchase status", "material-dashboard" );
+        $c = "color-blue";
+    }
+    else{
+        $s = wc_get_order_status_name( $status );
+        $c = "";
+    }
+
+    if( !$get ){
+        ?><span class="tiny-text <?php echo esc_attr( $c ); ?>"><?php echo esc_html( $s ); ?></span><?php
+    }
+
+    return [$s, $c];
 
 }
 

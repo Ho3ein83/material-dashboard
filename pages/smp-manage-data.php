@@ -10,17 +10,22 @@ if( !$API_OK )
 
 $tabs = array(
 	"import" => array(
-		"title" => esc_html_x( "Restore", "Admin", "material-dashboard" ),
+		"title" => _x( "Restore", "Admin", "material-dashboard" ),
 		"icon"  => "import",
 		"page"  => AMD_PAGES . '/admin-tabs/tab_md_import.php',
 	),
 	"export" => array(
-		"title" => esc_html_x( "Backup", "Admin", "material-dashboard" ),
+		"title" => _x( "Backup", "Admin", "material-dashboard" ),
 		"icon"  => "backup",
 		"page"  => AMD_PAGES . '/admin-tabs/tab_md_export.php',
 	),
+    "usage" => array(
+		"title" => _x( "Data usage", "Source usage", "material-dashboard" ),
+		"icon"  => "chart",
+		"page"  => AMD_PAGES . '/admin-tabs/tab_md_usage.php',
+	),
     "cleanup" => array(
-		"title" => esc_html_x( "Cleanup", "Admin", "material-dashboard" ),
+		"title" => _x( "Cleanup", "Admin", "material-dashboard" ),
 		"icon"  => "cleanup",
 		"page"  => AMD_PAGES . '/admin-tabs/tab_md_cleanup.php',
 	)

@@ -17,9 +17,7 @@ function amd_hbdash_ajax_fail_message(){
 	<?php
 	$html = ob_get_clean();
 	$html = apply_filters( "amd_ajax_fail_message", $html );
-	$html = sprintf( $html, esc_html__( "An error has occurred", "material-dashboard" ), esc_html__( "This page is unavailable or your internet connection interrupted.", "material-dashboard" ), esc_html__( "try again", "material-dashboard" ) );
-
-	return $html;
+    return sprintf( $html, esc_html__( "An error has occurred", "material-dashboard" ), esc_html__( "This page is unavailable or your internet connection interrupted.", "material-dashboard" ), esc_html__( "try again", "material-dashboard" ) );
 }
 
 /**
@@ -39,6 +37,9 @@ function amd_hbdash_ajax_handler( $r ){
 		$void = !empty( $data["_void"] ) ? $data["_void"] : "home";
 		$params = !empty( $data["params"] ) ? $data["params"] : [];
 
+        if( !amd_is_account_valid() )
+            $void = "__account_validation";
+
 		do_action( "amd_lazy_init", $void, $params );
 
 		foreach( $params as $key => $value ){
@@ -49,7 +50,7 @@ function amd_hbdash_ajax_handler( $r ){
 		global /** @var AMDDashboard $amdDashboard */
 		$amdDashboard;
 
-		$lazy = $amdDashboard->getLazyPage( $void, $data );
+        $lazy = $amdDashboard->getLazyPage( $void, $data );
 		$title = $lazy["title"];
 		$html = $lazy["content"];
 		$redirect = $lazy["redirect"];

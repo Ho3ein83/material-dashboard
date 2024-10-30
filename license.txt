@@ -1,6 +1,6 @@
 Amatris material dashboard, Amatris original software
 
-© Copyright 2023, amatris.ir
+© Copyright 2024, amatris.ir
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -23,6 +23,7 @@ $apiPage_flag = false;
 <!-- @formatter on -->
 <!-- Login & registration page -->
 <div class="amd-admin-card --setting-card">
+    <?php amd_dump_admin_card_keywords( ["login", "حساب کاربری", "user account"] ); ?>
     <h3 class="--title"><?php echo esc_html_x( "Login & registration page", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">
@@ -81,6 +82,7 @@ $apiPage_flag = false;
 
 <!-- Dashboard page -->
 <div class="amd-admin-card --setting-card">
+    <?php amd_dump_admin_card_keywords( ["dashboard", "حساب کاربری", "user account"] ); ?>
     <h3 class="--title"><?php echo esc_html_x( "Dashboard page", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">
@@ -139,6 +141,7 @@ $apiPage_flag = false;
 
 <!-- API page -->
 <div class="amd-admin-card --setting-card">
+    <?php amd_dump_admin_card_keywords( ["api", "حساب کاربری", "user account"] ); ?>
     <h3 class="--title"><?php echo esc_html_x( "API page", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">

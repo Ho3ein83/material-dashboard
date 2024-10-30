@@ -50,7 +50,13 @@ $notes = $order->get_customer_order_notes();
 $only_downloadable = true;
 ?>
 <div class="row">
-    <div class="col-lg-6 margin-auto">
+    <div class="col-lg-8 margin-auto">
+        <?php if( amd_is_admin() ): ?>
+        <div class="text-center">
+            <a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>" class="btn" target="_blank"><?php esc_html_e( "Edit", "material-dashboard" ); ?></a>
+        </div>
+        <div class="h-10"></div>
+        <?php endif; ?>
         <div class="amd-table" style="max-width:800px;min-width:300px;margin:auto">
             <table>
                 <tr>
@@ -89,10 +95,11 @@ $only_downloadable = true;
         <div class="h-20"></div>
         <div class="amd-card-list">
             <h3 class="color-primary"><?php esc_html_e( "Products", "material-dashboard" ); ?></h3>
+            <?php /** @var WC_Order_Item_Product $item */ ?>
 			<?php foreach( $order_items as $item_id => $item ): ?>
 				<?php
 				if( !apply_filters( 'woocommerce_order_item_visible', true, $item ) )
-					return;
+					continue;
 				/** @var WC_Product $product */
 				$product = $item->get_product();
 				$is_visible = $product && $product->is_visible();
@@ -128,6 +135,13 @@ $only_downloadable = true;
                 </div>
 			<?php endforeach; ?>
         </div>
+        <?php
+            /**
+             * Before order details section
+             * @sicne 1.2.0
+             */
+            do_action( "amd_ext_wc_before_order_details_section", $order );
+        ?>
 		<?php if( !$only_downloadable ): ?>
             <div class="h-20"></div>
             <div class="amd-card text-center">
@@ -137,50 +151,108 @@ $only_downloadable = true;
 						<?php foreach( $order->get_order_item_totals() as $key => $total ): ?>
                             <div class="-item --center">
                                 <div class="-sub-item">
-                                    <h3 class="color-primary"><?php echo esc_html( $total['label'] ); ?></h3>
+                                    <h3 class="color-primary"><?php echo esc_html( $total["label"] ); ?></h3>
                                 </div>
-                                <div class="-sub-item"><?php echo ( 'payment_method' === $key ) ? esc_html( $total['value'] ) : wp_kses_post( $total['value'] ); ?></div>
+                                <div class="-sub-item"><?php echo ( "payment_method" === $key ) ? esc_html( $total["value"] ) : wp_kses_post( $total["value"] ); ?></div>
                             </div>
 						<?php endforeach; ?>
                         <div class="-item --center">
                             <div class="-sub-item">
-                                <h3 class="color-primary"><?php esc_html_e( 'Billing address', 'woocommerce' ); ?></h3>
+                                <h3 class="color-primary"><?php esc_html_e( "Billing address", "woocommerce" ); ?></h3>
                             </div>
                             <div class="-sub-item">
-                                <address><?php echo $order->get_formatted_billing_address( esc_html__( 'N/A', 'woocommerce' ) ); ?></address>
+                                <address><?php echo $order->get_formatted_billing_address( esc_html__( "N/A", "woocommerce" ) ); ?></address>
                             </div>
                         </div>
                         <div class="-item --center">
                             <div class="-sub-item">
-                                <h3 class="color-primary"><?php esc_html_e( 'Shipping address', 'woocommerce' ); ?></h3>
+                                <h3 class="color-primary"><?php esc_html_e( "Shipping address", "woocommerce" ); ?></h3>
                             </div>
                             <div class="-sub-item">
-                                <address><?php echo $order->get_formatted_shipping_address( esc_html__( 'N/A', 'woocommerce' ) ); ?></address>
+                                <address><?php echo $order->get_formatted_shipping_address( esc_html__( "N/A", "woocommerce" ) ); ?></address>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 		<?php endif; ?>
+        <?php
+            /**
+             * After order details section
+             * @sicne 1.2.0
+             */
+            do_action( "amd_ext_wc_after_order_details_section", $order );
+        ?>
+        <?php
+            /**
+             * Before downloads section
+             * @sicne 1.2.0
+             */
+            do_action( "amd_ext_wc_before_downloads_section", $order );
+        ?>
 		<?php if( $show_downloads ): ?>
             <div class="h-20"></div>
             <div class="amd-card text-center">
                 <h3 class="--title-2 color-primary"><?php esc_html_e( "Downloads", "material-dashboard" ); ?></h3>
                 <div class="--content">
-					<?php foreach( $downloads as $download ): ?>
-						<?php
-						$product_name = $download["product_name"];
-						$product_url = $download["product_url"];
-						$download_name = $download["download_name"];
-						$download_url = $download["download_url"];
-						?>
-                        <a class="btn btn-text ma-8 --low"
-                           href="<?php echo esc_url( $download_url ); ?>"><?php echo esc_html( $product_name ) . ": " . esc_html( $download_name ); ?></a>
-					<?php endforeach; ?>
+                    <div class="amd-table" style="max-width:800px;min-width:300px;margin:auto">
+                        <table>
+                            <tr>
+                                <th style="white-space:nowrap"><?php esc_html_e( "File name", "material-dashboard" ); ?></th>
+                                <th style="white-space:nowrap"><?php esc_html_e( "Remaining downloads", "material-dashboard" ); ?></th>
+                                <th style="white-space:nowrap"><?php esc_html_e( "Expiration", "material-dashboard" ); ?></th>
+                                <th style="white-space:nowrap"><?php esc_html_e( "Download", "material-dashboard" ); ?></th>
+                            </tr>
+                            <?php foreach( $downloads as $download ): ?>
+                                <?php
+                                $product_name = $download["product_name"];
+                                $product_url = $download["product_url"];
+                                $download_name = $download["download_name"];
+                                $download_url = $download["download_url"];
+                                $downloads_remaining = $download["downloads_remaining"];
+                                if( strlen( $downloads_remaining ) <= 0 )
+                                    $downloads_remaining = null;
+                                $expires = $download["access_expires"];
+                                ?>
+                                <tr>
+                                    <td><p class="ellipsis" style="max-width:250px"><?php echo esc_html( $download_name ); ?></p></td>
+                                    <td>
+                                        <?php if( $downloads_remaining === null ): ?>
+                                        <span class="badge --sm">&infin;</span>
+                                        <?php else: ?>
+                                        <span class="badge --sm <?php echo esc_attr( $downloads_remaining > 1 ? ( $downloads_remaining > 3 ? "bg-green-im" : "bg-orange-im" ) : "bg-red-im" ); ?>"><?php echo esc_html( $downloads_remaining ); ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <span>
+                                        <?php
+                                        if( class_exists( "WC_DateTime" ) AND $expires instanceof WC_DateTime )
+                                            echo $expires->format( "Y/m/d" ) . "<br>" . $expires->format( "H:i" );
+                                        else
+                                            esc_html_e( "No expiration", "material-dashboard" );
+                                        ?>
+                                        </span>
+                                    </td>
+                                    <?php if( $downloads_remaining === null || $downloads_remaining > 0 ): ?>
+                                    <td><a class="btn btn-text btn-sm ma-8 --low _download_file_" href="<?php echo esc_url( $download_url ); ?>" target="_blank"><?php esc_html_e( "Download", "material-dashboard" ); ?></a></td>
+                                    <?php else: ?>
+                                    <td><button type="button" class="btn btn-text btn-sm ma-8 --red --low"><?php _amd_icon( "block" ); ?></button></td>
+                                    <?php endif; ?>
+                                </tr>
+                            <?php endforeach; ?>
+                        </table>
+                    </div>
                 </div>
             </div>
 		<?php endif; ?>
-		<?php if( $show_purchase_note AND $notes ): ?>
+        <?php
+            /**
+             * After downloads section
+             * @sicne 1.2.0
+             */
+            do_action( "amd_ext_wc_after_downloads_section", $order );
+        ?>
+		<?php if( $show_purchase_note and $notes ): ?>
             <div class="h-20"></div>
             <h3 class="text-center"><?php esc_html_e( "Notes", "material-dashboard" ); ?></h3>
             <div class="row">
@@ -206,4 +278,5 @@ $only_downloadable = true;
 <div class="h-100"></div>
 <!-- @formatter off -->
 <script>(function(){dashboard.clearFloatingButtons();dashboard.addFloatingButtons("back",{text:_t("back"),args:["white", "full"],attrs:{"data-lazy-query":"","data-query-toRemove":"view"}});dashboard.renderFloatingButtons()}());</script>
+<script>$("._download_file_").click(()=>dashboard.lazyReload())</script>
 <!-- @formatter on -->

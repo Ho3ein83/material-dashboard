@@ -227,7 +227,7 @@ class AMDFirewallBrowser{
 	 */
 	public function translate( $text ){
 
-		return $this->translation[$text] ?: $text;
+		return $this->translation[$text] ?? $text;
 
 	}
 

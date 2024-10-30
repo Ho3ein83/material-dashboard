@@ -31,7 +31,7 @@ class AMDTasks {
             $engine = $amdDB->sanitizeEngine();
 
 			$amdDB->registerTable( "tasks", array(
-				"id" => "INT NOT NULL AUTO_INCREMENT",
+				"id" => "BIGINT NOT NULL AUTO_INCREMENT",
 				"task_user" => "INT(255) NOT NULL",
 				"task_key" => "VARCHAR(64) NOT NULL",
 				"task_title" => "VARCHAR(64) NOT NULL",

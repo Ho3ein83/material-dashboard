@@ -1,4 +1,11 @@
 <?php ob_start(); ?>
+<input type="password" name="_password_ignore" style="width:0;height:0;border:0;padding:0;opacity:0">
+<label class="ht-input">
+    <input type="password" data-field="current_password" value="" placeholder="" required>
+    <span><?php esc_html_e( "Current password", "material-dashboard" ); ?></span>
+	<?php _amd_icon( "show_password", null, [], [ "class" => "clickable -pt --hide-password" ] ); ?>
+	<?php _amd_icon( "hide_password", null, [], [ "class" => "clickable -pt --show-password" ] ); ?>
+</label>
 <label class="ht-input">
     <input type="password" data-field="password" value="" placeholder="" required>
     <span><?php esc_html_e( "New password", "material-dashboard" ); ?></span>
@@ -26,20 +33,23 @@
     "_attrs" => 'data-form="change-password"'
 ) ); ?>
 <script>
-    (function() {
+    (function(){
         let $card = $("#change-password-card");
         let form = new AMDForm("change-password-card");
         form.on("submit", () => {
             let data = form.getFieldsData();
             let _engine = dashboard.getApiEngine();
             _engine.clean();
-            _engine.put("change_password", data.password.value);
+            _engine.put("change_password", {
+                current_password: data.current_password.value,
+                new_password: data.password.value,
+            });
             _engine.on.start = () => $card.cardLoader();
             _engine.on.end = (resp, error) => {
                 $card.cardLoader(false);
                 if(!error) {
-                    form.dismiss();
                     if(resp.success) {
+                        form.dismiss();
                         $amd.alert(_t("change_password"), resp.data.msg, {
                             icon: "success",
                             onConfirm: () => {
@@ -47,7 +57,6 @@
                                 location.reload();
                             }
                         });
-
                     }
                     else{
                         $amd.alert(_t("change_password"), resp.data.msg, {
@@ -66,7 +75,7 @@
         form.on("invalid_code", d => {
             let {field, code} = d;
             let id = field.id;
-            if(id === "password") {
+            if(id === "password" || id === "old_password") {
                 if(code === 4 || code === 1)
                     dashboard.toast(_t("password_8"));
             }

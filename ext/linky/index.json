@@ -1,0 +1,10 @@
+{
+  "name": "Linky",
+  "description": "Allow users to invite their friends and build up their network",
+  "thumbnail": "{EXT_URL}/thumbnail.png",
+  "version": "1.0.0",
+  "since": "1.2.0",
+  "compatible": ">= 1.2.0",
+  "url": "{DOC_URL}?e=linky",
+  "author": "Amatris"
+}

@@ -72,7 +72,7 @@ var AMDDashboard = (function() {
             user: {}
         }, c);
 
-        var $sidebar = null, $navbar = null, $loader = null, $wrapper = null, $content, $after_content = null, $before_content = null;
+        var $sidebar = null, $navbar = null, $loader = null, $wrapper = null, $content = null, $after_content = null, $before_content = null;
         var thisuser = null, _api_engine = null;
         var actions = {}, keymap = {}, keymap_lower = {}, keyEvents = [], keyEvents2 = {};
         var _floating_buttons = {}, _checkin_interval;
@@ -343,6 +343,9 @@ var AMDDashboard = (function() {
         }
 
         this.switchTheme = (mode = "toggle") => {
+            let v = $amd.doEvent("allow_theme_change", {theme: mode});
+            if(v && typeof v["allowed"] !== "undefined" && !v["allowed"])
+                return;
             let $b = $("body");
             if(mode === "light") {
                 $b.removeClass("dark");
@@ -434,7 +437,8 @@ var AMDDashboard = (function() {
 
         this.init = () => {
 
-            this.switchTheme(_this.getTheme());
+            if(!$("body").hasClass("forced-ui-mode"))
+                this.switchTheme(_this.getTheme());
 
             if(typeof amd_conf.tooltip_mode !== "undefined")
                 conf.tooltip_mode = amd_conf.tooltip_mode;
@@ -530,6 +534,7 @@ var AMDDashboard = (function() {
                         return;
                     let query = $amd.queryToArray();
                     query["lang"] = locale;
+                    $amd.setCookie(amd_conf.cache_prefix + "locale", locale, "7 day");
                     location.href = $amd.arrayToQuery(query);
                     return;
                 }
@@ -665,14 +670,25 @@ var AMDDashboard = (function() {
                 handleKeys(e);
             });
 
-            $(window).on("load", _this.resume());
+            $(window).on("load", () => {
+                if('backdropFilter' in document.documentElement.style) $("body").addClass("backdrop-supported");
+                else $("body").removeClass("backdrop-supported");
+                _this.resume();
+            });
 
             _this.resetCheckin();
 
-            _this.addLazyEvent("success", () => _this.awake());
+            _this.addLazyEvent("success", () => {
+                _this.awake();
+                if(typeof HBTooltip !== "undefined"){
+                    let $e = new HBTooltip().getTooltip();
+                    if(typeof $e === "object")
+                        $e.html("").fadeOut(0);
+                }
+            });
 
             if(this.hasQueryParam("lang")) {
-                $content.html(_t("wait_td"));
+                if($content) $content.html(_t("wait_td"));
                 this.removeQueryParam("lang", true);
             }
             else {

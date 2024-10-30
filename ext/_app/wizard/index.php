@@ -58,15 +58,15 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 		<?php amd_wp_head_alternate(); ?>
 <!--    <link rel="stylesheet" href="--><?php //echo esc_url( AMD_CSS . '/fonts/fonts.css.php' ); ?><!--">-->
+        <?php do_action( "amd_config_script" ); ?>
 		<?php
-		$amdCache->dumpStyles( "icon" );
-		$amdCache->dumpStyles( "global" );
-		$amdCache->dumpStyles( "admin" );
-		$amdCache->dumpScript( "icon" );
-		$amdCache->dumpScript( "admin" );
-		$amdCache->dumpScript( "global" );
+            $amdCache->dumpStyles( "icon" );
+            $amdCache->dumpStyles( "global" );
+            $amdCache->dumpStyles( "admin" );
+            $amdCache->dumpScript( "icon" );
+            $amdCache->dumpScript( "admin" );
+            $amdCache->dumpScript( "global" );
 		?>
-		<?php do_action( "amd_config_script" ); ?>
     <link rel="stylesheet" href="<?php echo esc_url( AMD_CSS . '/vars.css' ); ?>">
 	<?php endif; ?>
     <!-- @formatter off -->

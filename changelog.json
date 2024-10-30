@@ -133,8 +133,61 @@
       "Some security issues fixed",
       "Bugs fixed"
     ],
-    "version_name": "1.1.0",
-    "version_code": 11,
+    "version_name": "1.1.2",
+    "version_code": 12,
     "last_change": "2024-01-31"
+  },
+  "1.1.3": {
+    "desc": "Bugs fixed, cores improved",
+    "changes": [
+      "Database improved",
+      "Translate Persian and Arabic numbers in some fields like email and phone number",
+      "Persian date picker added",
+      "Phone number field autofill improved",
+      "Bugs fixed"
+    ],
+    "version_name": "1.1.3",
+    "version_code": 13,
+    "last_change": "2024-07-20"
+  },
+  "1.2.0": {
+    "desc": "New minor version",
+    "changes": [
+      "SMS webservice panel added",
+      "Downloads access management feature updated for managing downloads limit and expiration",
+      "You can now force users to write their names with Persian or Arabic letters",
+      "You can now use phone number, email and random generated values for username auto-generate",
+      "Invitation feature added",
+      "Markdown module added",
+      "User picker feature added",
+      "Date picker feature added",
+      "QR code generator core added",
+      "Admin settings search feature added",
+      "OTP feature added",
+      "New icons added",
+      "Appearance and performance changes",
+      "Some security issues fixed",
+      "Cores improved",
+      "Bugs fixed"
+    ],
+    "version_name": "1.2.0",
+    "version_code": 14,
+    "last_change": "2024-08-31"
+  },
+  "1.2.1": {
+    "desc": "Bugs fixed",
+    "changes": [
+      "Reminder feature added to to-do list",
+      "Raw template mode added for more compatibility with themes",
+      "User experience improved",
+      "Some UI parts improved",
+      "New icons added",
+      "Some security issues fixed",
+      "Cores improved",
+      "Bugs fixed"
+    ],
+    "version_name": "1.2.1",
+    "version_code": 15,
+    "last_change": "2024-09-26"
   }
 }

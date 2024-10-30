@@ -194,7 +194,7 @@ class AMDWarner{
 		?>
         <div class="<?php echo esc_attr( $class ); ?> <?php echo esc_attr( "$type size-$size align-$align" ); ?>" id="<?php echo esc_attr( "amd-box-$id" ); ?>">
 			<?php echo amd_icon( $icon ); ?>
-            <p><?php echo wp_kses( $text, amd_allowed_tags_with_attr( "br,span,a,p,button" ) ); ?></p>
+            <div class="--content"><p><?php echo wp_kses( $text, amd_allowed_tags_with_attr( "br,span,a,p,button" ) ); ?></p></div>
 			<?php if( $closable ): ?>
                 <span class="--close" data-close-box="<?php echo esc_attr( $id ); ?>"><?php _amd_icon( "close" ); ?></span>
 			<?php endif; ?>
@@ -263,18 +263,29 @@ class AMDWarner{
      * <li><code>message [STRING]</code> (required) <br><b>Message text</b></li>
      * <li><code>phone [STRING]</code> (only required for sending SMS) <br><b>Target user phone number</b></li>
      * <li><code>emailBreakLine [BOOL]</code> (optional, only available in emails) <br><b>Whether to replace break lines (\n) with HTML `br` tag</b></li>
+     * <li><code>user [AMDUser] `since 1.2.0`</code> (optional) <br><b>you can pass user object to retrieve user phone and email automatically</b></li>
      * </ul>
 	 * @param string $methods
 	 * Message sending method(s) (e.g: "email", "sms", "email,sms")
-	 * @param false|int $schedule
+	 * @param bool|int $schedule
      * Pass a number to schedule message to send it, or pass false to send it immediately.
      * <br>The number is the number of seconds that you want to wait until sending message, e.g: 3600 equals to 1 hour
+     * <br>If you pass true, it will send the message as soon as possible after someone checked-in
 	 *
 	 * @return bool
 	 * True on success, false on failure
 	 * @since 1.0.5
 	 */
 	public function sendMessage( $data, $methods="email,sms", $schedule=false ){
+
+        if( !empty( $data["user"] ) ){
+            $u = $data["user"];
+            if( $u instanceof AMDUser ){
+                $data["email"] = $u->email;
+                if( !empty( $u->phone ) )
+                    $data["phone"] = $u->phone;
+            }
+        }
 
         if( $schedule === true ){
 
@@ -326,7 +337,6 @@ class AMDWarner{
 
         }
         else if( $methods == "sms" ){
-
 	        /**
 	         * Handle SMS method
 	         * @since 1.0.6

@@ -25,16 +25,41 @@ $admin_note = amd_get_todo_list( [ "todo_key" => "admin_note" ], true );
 $admin_note = amd_decrypt_aes( json_decode( $admin_note ), AMD_DIRECTORY );
 
 $new_user_offset = apply_filters( "amd_new_user_offset", 3 );
-$max_online_users = apply_filters( "amd_show_max_online_users_offset", 4 );
+$max_online_users = apply_filters( "amd_show_max_online_users_offset", intval( $_GET["max_online_users"] ?? 10 ) );
 
 $all_users = amd_get_all_users();
 $newest_users = amd_get_newest_users();
 $online_users = amd_get_online_users();
+$online_users_count = count( $online_users );
+
+$templates = [];
+foreach( glob( AMD_TEMPLATES . "/*.php", GLOB_BRACE ) as $file ){
+    $meta = amd_extract_php_file_meta( $file );
+    $info = $meta["info"] ?? [];
+    $name = trim( $info["Template Name"] ?? "" );
+    $basename = basename( $file );
+    if( empty( $name ) )
+        continue;
+    $templates[$basename] = [ "name" => _x( $name, "Template Name", "material-dashboard" ), "file" => $basename, "path" => $file ];
+}
+
+$manual_raw_template = apply_filters( "amd_use_manual_raw_template", false );
+
+global $amdLoader;
+
+$_active_theme = $amdLoader->getActiveTheme();
+$active_theme = $amdLoader->getTheme( $_active_theme );
+$active_theme_info = $active_theme["info"] ?? [];
+$themes = $amdLoader->getThemes();
+$themes_count = count( $themes );
+
+$extensions = $amdLoader->getExtensions();
+$extensions_count = count( $extensions );
 
 ?>
 <script>var network=new AMDNetwork();network.setAction(amd_conf.ajax.private);</script>
 <div class="row">
-    <div class="col-lg-9">
+    <div class="col-lg-12">
         <h1><?php esc_html_e( "Amatris Material Dashboard", "material-dashboard" ); ?></h1>
         <div class="amd-card-columns c3">
 
@@ -126,6 +151,10 @@ $online_users = amd_get_online_users();
                 <h3 class="--title"><?php echo esc_html_x( "Statistics", "Admin", "material-dashboard" ); ?></h3>
                 <div class="--content">
                     <div class="__option_grid">
+                        <?php
+                            /** @since 1.2.0 */
+                            do_action( "amd_admin_before_users_statistics" );
+                        ?>
                         <div class="-item">
                             <div class="-sub-item"><?php echo esc_html_x( "Total users", "Admin", "material-dashboard" ); ?></div>
                             <div class="-sub-item"><?php echo count( $all_users ); ?></div>
@@ -134,15 +163,33 @@ $online_users = amd_get_online_users();
                             <div class="-sub-item"><?php echo esc_html_x( "Online users", "Admin", "material-dashboard" ); ?></div>
                             <div class="-sub-item"><?php echo count( $online_users ) > 0 ?: 1; ?></div>
                         </div>
+                        <?php
+                            /** @since 1.2.0 */
+                            do_action( "amd_admin_between_users_statistics" );
+                        ?>
                         <div class="-item">
                             <div class="-sub-item"><?php echo esc_html_x( "New users", "Admin", "material-dashboard" ); ?></div>
                             <div class="-sub-item"><?php echo count( $newest_users ); ?></div>
 							<?php if( count( $newest_users ) > 0 ): ?>
                                 <div class="-sub-item --full">
                                     <div class="amd-admin-badges">
+                                        <?php
+                                        $new_users_counter = 0;
+
+                                        /**
+                                         * Limit new users display on front
+                                         * @since 1.2.0
+                                         */
+                                        $new_users_limit = apply_filters( "amd_admin_statistics_new_users_limit", 10 );
+                                        ?>
 										<?php foreach( $newest_users as $user ): ?>
+                                            <?php
+                                            if( $new_users_counter >= $new_users_limit )
+                                                break;
+                                            ?>
                                             <a href="<?php echo esc_url( $user->getProfileURL() ); ?>" target="_blank"
                                                class="--badge"><?php echo esc_html( $user->fullname ); ?></a>
+                                        <?php $new_users_counter++; ?>
 										<?php endforeach; ?>
                                     </div>
                                 </div>
@@ -152,36 +199,57 @@ $online_users = amd_get_online_users();
                                 </div>
 							<?php endif; ?>
                         </div>
+                        <?php
+                            /** @since 1.2.0 */
+                            do_action( "amd_admin_after_users_statistics" );
+                        ?>
                     </div>
                 </div>
             </div>
 
             <!-- Online users -->
             <div class="amd-admin-card">
-                <h3 class="--title"><?php echo esc_html_x( "Online users", "Admin", "material-dashboard" ); ?></h3>
+                <h3 class="--title"><?php echo esc_html( sprintf( _n( "%s online user", "%s online users", $online_users_count, "material-dashboard" ), $max_online_users ) ); ?></h3>
                 <div class="--content">
-                    <div class="amd-user-cards">
-                        <div>
-                            <div class="--image"><img src="<?php echo esc_url( $thisuser->getProfile() ); ?>" alt=""></div>
-                            <div class="--image --big"><img src="<?php echo esc_url( $thisuser->getProfile() ); ?>" alt=""></div>
-                            <p class="--name color-primary"
-                               title="<?php echo esc_attr( $thisuser->fullname ); ?>"><?php echo esc_html( $thisuser->fullname ); ?></p>
-                            <span class="color-low"><?php echo esc_html( $thisuser->username ); ?></span>
-                        </div>
-						<?php $counter = 1; ?>
-						<?php foreach( $online_users as $user ): ?>
-							<?php if( $user->ID == $thisuser->ID OR $counter > $max_online_users )
-								continue;
-							$counter++; ?>
-                            <div>
-                                <div class="--image"><img src="<?php echo esc_url( $user->profile ); ?>" alt=""></div>
-                                <div class="--image --big"><img src="<?php echo esc_url( $user->profile ); ?>" alt=""></div>
-                                <p class="--name color-primary"
-                                   title="<?php echo esc_attr( $user->fullname ); ?>"><?php echo esc_html( $user->fullname ); ?></p>
-                                <span class="color-low"><?php echo esc_html( $user->username ); ?></span>
+                    <form action="<?php echo esc_url( admin_url( "admin.php" ) ); ?>" method="get" class="text-center">
+                        <input type="hidden" name="page" value="material-dashboard">
+                        <label><?php echo sprintf( esc_html_x( "Show %s online users", "Admin", "material-dashboard" ), '<input type="number" name="max_online_users" class="amd-admin-input" style="max-width:80px" value="' . esc_attr( $max_online_users ) . '" />' ); ?></label>
+                        <div class="h-10"></div>
+                        <button type="submit" class="amd-admin-button --sm --primary --text"><?php esc_html_e( "Show", "material-dashboard" ); ?></button>
+                    </form>
+                    <div class="h-10"></div>
+                    <div class="flex-align" style="flex-direction:column;flex-wrap:wrap;gap:8px;">
+                        <div class="amd-order-box exclude" style="padding:0;width:100%">
+                            <div class="--item">
+                                <a href="<?php echo esc_url( $thisuser->getProfileURL() ); ?>" target="_blank" class="--icon -down" style="width:64px;padding:0;overflow:hidden">
+                                    <img src="<?php echo esc_url( $thisuser->getProfile() ); ?>" alt="" style="width:100%;height:100%;object-fit:cover">
+                                </a>
+                                <span class="small-text-im font-title --text" style="padding-inline-start:8px"><?php echo esc_attr( $thisuser->fullname ); ?> <span class="tiny-text color-primary"><?php esc_html_e( "You", "material-dashboard" ); ?></span></span>
                             </div>
-						<?php endforeach; ?>
+                        </div>
+                        <?php $counter = 2; ?>
+                        <?php
+                        /** @var AMDUser $user */
+                        foreach( $online_users as $user ): ?>
+                            <?php
+                            if( $user->ID == $thisuser->ID )
+                                continue;
+                            if( $counter > $max_online_users )
+                                break;
+                            $counter++;
+                            $fullname = $user->fullname;
+                            ?>
+                            <div class="amd-order-box exclude" style="padding:0;width:100%">
+                                <div class="--item">
+                                    <a href="<?php echo esc_url( $thisuser->getProfileURL() ); ?>" target="_blank" class="--icon -down" style="width:64px;padding:0;overflow:hidden">
+                                        <img src="<?php echo esc_url( $user->profile ); ?>" alt="" style="width:100%;height:100%;object-fit:cover">
+                                    </a>
+                                    <span class="small-text-im font-title --text" style="padding-inline-start:8px"><?php echo esc_attr( $user->fullname ); ?> <a href="<?php echo esc_url( $user->getProfileURL() ); ?>" target="_blank" class="tiny-text color-primary"><?php echo esc_html( $user->username ); ?></a></span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
+                    <div class="h-10"></div>
 					<?php if( $counter < count( $online_users ) ): ?>
                         <p class="text-center color-primary">+<?php echo esc_html( sprintf( esc_html_x( "more %s items", "Admin", "material-dashboard" ), count( $online_users ) - $counter ) ); ?></p>
 					<?php endif; ?>
@@ -190,10 +258,18 @@ $online_users = amd_get_online_users();
 
             <!-- Plugin info -->
             <div class="amd-admin-card">
-                <h3 class="--title"><?php echo esc_html_x( "Material dashboard", "Admin", "material-dashboard" ); ?></h3>
+                <h3 class="--title">
+                    <?php echo esc_html_x( "Material dashboard", "Admin", "material-dashboard" ); ?>
+                    <?php if( function_exists( "adp_plugin" ) ): ?>
+                    <span class="badge --sm offset b3">
+                        <?php _amd_icon( "star" ); ?>
+                        <?php esc_html_e( "Premium", "material-dashboard" ); ?>
+                    </span>
+                    <?php endif; ?>
+                </h3>
                 <div class="--content">
                     <div class="__option_grid">
-						<?php if( $plugin_name AND $plugin_uri ): ?>
+						<?php if( $plugin_name and $plugin_uri ): ?>
                             <div class="-item">
                                 <div class="-sub-item"><?php echo esc_html_x( "Plugin", "Admin", "material-dashboard" ); ?></div>
                                 <div class="-sub-item">
@@ -210,11 +286,92 @@ $online_users = amd_get_online_users();
                                    target="_blank"><?php echo esc_html( $plugin_version ); ?></a>
                             </div>
                         </div>
+                        <?php if( function_exists( "adp_plugin" ) ): ?>
+                            <div class="-item">
+                                <div class="-sub-item"><?php echo esc_html_x( "Premium version", "Admin", "material-dashboard" ); ?></div>
+                                <div class="-sub-item">
+                                    <a href="https://www.zhaket.com/web/dashboard-pro-plugin"
+                                       class="amd-admin-button --sm --primary --text"
+                                       target="_blank" rel="noreferrer"><?php echo esc_html( adp_plugin()["Version"] ?? "N/A" ); ?></a>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                         <div class="-item">
                             <div class="-sub-item"><?php echo esc_html_x( "Contact us", "Admin", "material-dashboard" ); ?></div>
                             <div class="-sub-item">
                                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=amd-more' ) ); ?>"
                                    class="amd-admin-button --sm --primary --text"><?php esc_html_e( "Support", "material-dashboard" ); ?></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates -->
+            <div class="amd-admin-card">
+                <h3 class="--title"><?php echo esc_html_x( "Templates", "Admin", "material-dashboard" ); ?></h3>
+                <div class="--content">
+                    <div class="__option_grid">
+                        <?php foreach( $templates as $template ): ?>
+                            <div class="-item">
+                                <div class="-sub-item"><?php echo esc_html( $template["name"] ?? "" ); ?></div>
+                                <div class="-sub-item"><code><?php echo esc_html( $template["file"] ?? "" ); ?></code></div>
+                            </div>
+                        <?php endforeach; ?>
+                        <div class="-item">
+                            <div class="-sub-item">
+                                <span><?php esc_html_e( "Raw template mode", "material-dashboard" ); ?></span>
+                                <br>
+                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=material-dashboard&' . ( $manual_raw_template ? 'amd-disable-raw-template' : 'amd-enable-raw-template' ) ) ); ?>"><?php esc_html_e( $manual_raw_template ? "Disable" : "Enable", "material-dashboard" ); ?></a>
+                            </div>
+                            <div class="-sub-item"><span class="badge --sm <?php echo $manual_raw_template ? 'bg-green' : 'bg-red'; ?>"><?php echo esc_html_x( $manual_raw_template ? "Enabled" : "Disabled", "Admin", "material-dashboard" ); ?></span></div>
+                            <div class="-sub-item --full">
+                                <div class="h-10"></div>
+                                <span class="tiny-text color-primary"><?php echo esc_html_x( "If you have problem with loading dashboard pages or your theme is not compatible with this plugin, you can enable this mode to bypass your theme template for dashboard page without any conflict.", "Admin", "material-dashboard" ); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modules & Theme -->
+            <div class="amd-admin-card">
+                <h3 class="--title"><?php echo esc_html_x( "Extensions & Themes", "Admin", "material-dashboard" ); ?></h3>
+                <div class="--content">
+                    <div class="__option_grid">
+                        <div class="-item">
+                            <div class="-sub-item"><?php echo esc_html_x( "Available themes", "Admin", "material-dashboard" ); ?></div>
+                            <div class="-sub-item"><?php echo esc_html( $themes_count ); ?></div>
+                        </div>
+                        <div class="-item">
+                            <div class="-sub-item"><?php echo esc_html_x( "Active theme", "Admin", "material-dashboard" ); ?></div>
+                            <div class="-sub-item"><span class="badge --sm bg-blue"><?php echo esc_html( $active_theme_info["name"] ?? "" ); ?></span></div>
+                        </div>
+                        <div class="-item">
+                            <div class="-sub-item"><?php echo esc_html_x( "Available extensions", "Admin", "material-dashboard" ); ?></div>
+                            <div class="-sub-item"><?php echo esc_html( $extensions_count ); ?></div>
+                        </div>
+                        <div class="-item">
+                            <div class="-sub-item"><?php echo esc_html_x( "Active extensions", "Admin", "material-dashboard" ); ?></div>
+                            <div class="-sub-item"><span class="_active_extensions_count"></span></div>
+                            <div class="-sub-item --full">
+                                <div class="h-10"></div>
+                                <div class="flex-align" style="flex-wrap:wrap">
+                                    <?php
+                                    $active_extensions = 0;
+                                    foreach( $extensions as $extension ){
+                                        $info = $extension["info"] ?? [];
+                                        $is_active = $extension["is_active"] ?? false;
+                                        $is_private = $extension["private"] ?? false;
+                                        $name = $info["name"] ?? "";
+                                        if( empty( $name ) || $is_active !== true || $is_private )
+                                            continue;
+                                        $active_extensions++;
+                                        ?><span class="badge --sm bg-blue"><?php echo esc_html( $name ); ?></span><?php
+                                    }
+                                    ?>
+                                    <script>$("._active_extensions_count").html(parseInt(`<?php echo wp_json_encode( $active_extensions ); ?>`));</script>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -233,6 +390,7 @@ $online_users = amd_get_online_users();
     </div>
 </div>
 <!-- @formatter off -->
+<style>.amd-order-box>.--item{padding:8px;cursor:initial !important}</style>
 <style>.amd-user-cards,.amd-user-cards>div{display:flex;flex-wrap:wrap;align-items:center;justify-content:center}  .amd-user-cards{display:flex;flex-wrap:wrap;align-items:center;justify-content:center}  .amd-user-cards>div{position:relative;flex-direction:column;background:var(--amd-wrapper-fg);padding:8px 16px;margin:4px;border-radius:10px;border:1px solid rgba(var(--amd-primary-rgb),.2)}  .amd-user-cards .--image{position:relative;width:32px;height:auto;display:flex;aspect-ratio:1}  .amd-user-cards .--image.--big{display:none}  .amd-user-cards .--image.--show+.--big{display:flex;position:absolute;width:100px;animation:amd_zoom ease .1s 1}  @keyframes amd_zoom{0%{width:32px}100%{width:100px}}  .amd-user-cards .--image:not(.--big):before{content:' ';position:absolute;display:block;width:10px;height:10px;border-radius:5px;background:var(--amd-color-green);bottom:0;left:0;animation:amd_blink ease 2s infinite}  @keyframes amd_blink{0%{opacity:1}30%{opacity:0}70%{opacity:0}100%{opacity:1}}  .amd-user-cards .--image>img{width:100%;height:100%;object-fit:cover;border-radius:50%}  .amd-user-cards .--name{margin:0;max-width:80px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}</style>
 <script>let clear;$(document).on("mouseover", ".amd-user-cards .--image", function(){let $el=$(this);$el.addClass("--show")});$(document).on("mouseleave", ".amd-user-cards .--image", function(){let $el=$(this);clear=setTimeout(()=>$el.removeClass("--show"),700)});$(document).on("mouseover", ".amd-user-cards .--image.--big", function(){clearTimeout(clear)});$(document).on("mouseleave", ".amd-user-cards .--image.--big", function(){clearTimeout(clear);let $el=$(this),$prev=$(this).prev();$el.attr("style", "transition:opacity ease .2s;opacity:0");setTimeout(()=>{$el.removeAttr("style");$prev.removeClass("--show")},110)});</script>
 <!-- @formatter on -->
@@ -246,16 +404,7 @@ $online_users = amd_get_online_users();
             network.on.start = () => $card.cardLoader();
             network.on.end = (resp, error) => {
                 $card.cardLoader(false);
-                if(!error) {
-                    $amd.alert(resp.data.msg, "", {
-                        icon: resp.success ? "success" : "error"
-                    });
-                }
-                else {
-                    $amd.alert(_t("error"), "", {
-                        icon: "error"
-                    });
-                }
+                $amd.toast(!error ? (resp.data.msg || _t("failed")) : _t("error"));
             }
             network.post();
         }

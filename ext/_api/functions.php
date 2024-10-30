@@ -24,7 +24,7 @@ function amd_ext__api_handler_all( $r ){
 		if( !$_thisuser )
 			amd_send_api_error( array(
 				"error_code" => "invalid_user",
-				"msg" => esc_html_x( "User not found", "Admin", "material-dashboard" )
+				"msg" => _x( "User not found", "Admin", "material-dashboard" )
 			) );
 
 		if( isset( $r["logout"] ) ){
@@ -67,19 +67,19 @@ function amd_ext__api_handler_all( $r ){
 				if( $target_email != $user->email ){
 					if( !amd_validate( $target_email, "%email%" ) ){
 						$toasts[] = array(
-							"text" => esc_html__( "Entered email is invalid", "material-dashboard" ),
+							"text" => __( "Entered email is invalid", "material-dashboard" ),
 							"timeout" => 4000
 						);
 					}
 					else if( !$change_email_allowed ){
 						$toasts[] = array(
-							"text" => esc_html__( "You can't change your email address", "material-dashboard" ),
+							"text" => __( "You can't change your email address", "material-dashboard" ),
 							"timeout" => 4000
 						);
 					}
 					else if( email_exists( $target_email ) ){
 						$toasts[] = array(
-							"text" => esc_html__( "This email is already in use", "material-dashboard" ),
+							"text" => __( "This email is already in use", "material-dashboard" ),
 							"timeout" => 4000
 						);
 					}
@@ -91,18 +91,17 @@ function amd_ext__api_handler_all( $r ){
 						# Create new action request and add it to temps (expires after 3600 seconds / 1 hour )
 						$action_url = amd_make_action_url( "change_email", $user->ID . "_" . amd_generate_string_pattern( "[all:8]" ), $target_email );
 
-						global /** @var AMDWarner $amdWarn */
-						$amdWarn;
+						global $amdWarn;
 
 						$message = apply_filters( "amd_change_email_message", $user->ID, $target_email, sanitize_url( $action_url ) );
 
 						# Send confirmation email to user
-						$sent = $amdWarn->sendEmail( $user->email, esc_html__( "Change your email", "material-dashboard" ), $message );
+						$sent = $amdWarn->sendEmail( $user->email, __( "Change your email", "material-dashboard" ), $message );
 
 						if( $sent ){
 							$email_pending = $target_email;
 							$toasts[] = array(
-								"text" => esc_html__( "Email change confirmation sent to your email", "material-dashboard" ),
+								"text" => __( "Email change confirmation sent to your email", "material-dashboard" ),
 								"timeout" => 5000
 							);
 						}
@@ -112,7 +111,7 @@ function amd_ext__api_handler_all( $r ){
 			}
 
 			amd_send_api_success( array(
-				"msg" => esc_html__( "Success", "material-dashboard" ),
+				"msg" => __( "Success", "material-dashboard" ),
 				"toasts" => $toasts,
 				"email_pending" => $email_pending
 			) );
@@ -127,7 +126,7 @@ function amd_ext__api_handler_all( $r ){
 			$custom_fields = amd_sanitize_array_fields( $custom_fields );
 
 			if( empty( $custom_fields ) )
-				wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+				wp_send_json_error( ["msg" => __( "Failed", "material-dashboard" )] );
 
 			/**
 			 * Validate fields before continue the registration
@@ -141,7 +140,7 @@ function amd_ext__api_handler_all( $r ){
 			 */
 			do_action( "amd_save_user_custom_fields", $uid, $custom_fields );
 
-			wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+			wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ) ] );
 
 		}
 
@@ -165,27 +164,27 @@ function amd_ext__api_handler_all( $r ){
 			$temp = $temps[0] ?? null;
 
 			if( empty( $temp->temp_value ) )
-				amd_send_api_error( ["msg" => esc_html__( "No email change request found", "material-dashboard" )] );
+				amd_send_api_error( ["msg" => __( "No email change request found", "material-dashboard" )] );
 
 			# Create new action request and add it to temps with (expires after 3600 seconds / 1 hour )
 			$action_url = amd_make_action_url_without_temp( "change_email", explode( ":", $temp->temp_key )[1] ?? "" );
 
-			global /** @var AMDWarner $amdWarn */
-			$amdWarn;
+			global $amdWarn;
 
 			$message = apply_filters( "amd_change_email_message", $user->ID, $temp->temp_value, $action_url );
 
 			# Send confirmation email to user
-			$sent = $amdWarn->sendEmail( $user->email, esc_html__( "Change your email", "material-dashboard" ), $message );
+			$sent = $amdWarn->sendEmail( $user->email, __( "Change your email", "material-dashboard" ), $message );
 
+            $toasts = [];
 			if( $sent )
 				$toasts[] = array(
-					"text" => esc_html__( "Email change confirmation sent to your email", "material-dashboard" ),
+					"text" => __( "Email change confirmation sent to your email", "material-dashboard" ),
 					"timeout" => 5000
 				);
 
 			amd_send_api_success( array(
-				"msg" => esc_html__( "Success", "material-dashboard" ),
+				"msg" => __( "Success", "material-dashboard" ),
 				"toasts" => $toasts
 			) );
 
@@ -208,14 +207,14 @@ function amd_ext__api_handler_all( $r ){
 			$extension = amd_guess_extension_from_mime_type( $mime );
 
 			if( empty( $extension ) OR !in_array( $mime, $allowed_formats ) AND !in_array( $extension, $allowed_formats ) )
-				amd_send_api_error( ["msg" => esc_html__( "Image format is not allowed", "material-dashboard" )] );
+				amd_send_api_error( ["msg" => __( "Image format is not allowed", "material-dashboard" )] );
 
 			$image_data = base64_decode( $image );
 			$size = intval( floor( strlen( rtrim( $image, "=" ) ) * 0.75 ) );
 			$max_size = apply_filters( "amd_max_avatar_upload_size", 1024*1024*2 );
 
 			if( $size > $max_size )
-				amd_send_api_error( ["msg" => sprintf( esc_html__( "Uploaded image is too large. Max size is %s", "material-dashboard" ), size_format( $max_size ) )] );
+				amd_send_api_error( ["msg" => sprintf( __( "Uploaded image is too large. Max size is %s", "material-dashboard" ), size_format( $max_size ) )] );
 
 			$avatars_path = amd_get_avatars_path();
 			if( !file_exists( $avatars_path ) )
@@ -230,10 +229,10 @@ function amd_ext__api_handler_all( $r ){
                 # since 1.1.1
                 do_action( "amd_avatar_updated", $user );
 
-				amd_send_api_success( ["msg" => esc_html__( "Avatar image changed", "material-dashboard" ), "url" => amd_merge_url_query( amd_avatar_url( $user->secretKey ), "cache=" . time() ) ] );
+				amd_send_api_success( ["msg" => __( "Avatar image changed", "material-dashboard" ), "url" => amd_merge_url_query( amd_avatar_url( $user->secretKey ), "cache=" . time() ) ] );
 			}
 
-			amd_send_api_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+			amd_send_api_error( ["msg" => __( "Failed", "material-dashboard" )] );
 
 		}
 
@@ -243,6 +242,25 @@ function amd_ext__api_handler_all( $r ){
 
 			$avatar = $r["change_avatar"];
 
+            if( preg_match( "/^https?:\/\/.*/", $avatar ) ){
+
+                # since 1.2.0
+                if( apply_filters( "amd_is_avatar_url_allowed", false, $avatar ) ){
+
+                    amd_set_user_meta( $user->ID, "avatar", $avatar );
+
+                    # since 1.1.1
+                    do_action( "amd_avatar_updated", $user );
+
+                    amd_send_api_success( ["msg" => __( "Avatar image changed", "material-dashboard" ), "url" => $avatar] );
+
+                }
+                else{
+                    wp_send_json_error( ["msg" => __( "This avatar is not available or something went wrong", "material-dashboard" )] );
+                }
+
+            }
+
 			if( in_array( $avatar, ["_EMPTY_", "placeholder", $user->secretKey] ) ){
 
 				amd_set_user_meta( $user->ID, "avatar", $avatar );
@@ -250,7 +268,7 @@ function amd_ext__api_handler_all( $r ){
                 # since 1.1.1
                 do_action( "amd_avatar_updated", $user );
 
-				amd_send_api_success( ["msg" => esc_html__( "Avatar image changed", "material-dashboard" ), "url" => amd_merge_url_query( amd_avatar_url( $avatar ), "cache=" . time() ) ] );
+				amd_send_api_success( ["msg" => __( "Avatar image changed", "material-dashboard" ), "url" => amd_merge_url_query( amd_avatar_url( $avatar ), "cache=" . time() ) ] );
 
 			}
 
@@ -267,30 +285,38 @@ function amd_ext__api_handler_all( $r ){
 				$avatar_path = is_dir( $avatars_path ) ? "$avatars_path/$avatar_file" : $avatar_file;
 
 			if( !file_exists( $avatar_path ) )
-				wp_send_json_error( ["msg" => esc_html__( "This avatar is not available or something went wrong", "material-dashboard" )] );
+				wp_send_json_error( ["msg" => __( "This avatar is not available or something went wrong", "material-dashboard" )] );
 
 			amd_set_user_meta( $user->ID, "avatar", "$path_id:$avatar_file" );
 
             # since 1.1.1
             do_action( "amd_avatar_updated", $user );
 
-			amd_send_api_success( ["msg" => esc_html__( "Avatar image changed", "material-dashboard" ), "url" => sanitize_url( amd_merge_url_query( amd_avatar_url( "$path_id:$avatar_file" ), "cache=" . time() ) ) ] );
+			amd_send_api_success( ["msg" => __( "Avatar image changed", "material-dashboard" ), "url" => sanitize_url( amd_merge_url_query( amd_avatar_url( "$path_id:$avatar_file" ), "cache=" . time() ) ) ] );
 
 		}
 
 		else if( !empty( $r["change_password"] ) ){
 
-			$new_password = $r["change_password"];
+            $data = $r["change_password"];
+			$current_password = $data["current_password"] ?? "";
+			$new_password = $data["new_password"] ?? "";
+
+            if( strlen( $current_password ) < 8 || strlen( $new_password ) < 8 )
+                wp_send_json_error( ["msg" => __( "Password must be at least 8 characters", "material-dashboard" )] );
+
+            global $amdSilu;
+
+            if( !$amdSilu->checkPassword( null, $current_password ) )
+                wp_send_json_error( ["msg" => __( "Entered password doesn't match your current password", "material-dashboard" )] );
 
 			$user = $_thisuser;
 
-			global /** @var AMDSilu $amdSilu */
-			$amdSilu;
 
 			$error = $amdSilu->changePassword( $user->ID, $new_password );
 
 			if( empty( $error ) )
-				wp_send_json_success( ["msg" => esc_html__( "Your password has changed successfully", "material-dashboard" )] );
+				wp_send_json_success( ["msg" => __( "Your password has changed successfully", "material-dashboard" )] );
 
 			wp_send_json_error( ["msg" => $error] );
 
@@ -332,6 +358,119 @@ function amd_ext__api_handler_all( $r ){
 			wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
 
 		}
+
+        else if( !empty( $r["__validate"] ) ){
+
+            $data = $r["__validate"];
+            $user = amd_get_current_user();
+
+            if( !empty( $data["phone"] ) ){
+                $phone = amd_apply_phone_format( $data["phone"] );
+                if( amd_validate_phone_number( $phone ) ){
+                    if( amd_get_user_by_meta( "phone", $phone ) instanceof AMDUser )
+                        wp_send_json_error( ["msg" => __( "This phone number is already in use", "material-dashboard" )] );
+                    amd_set_user_meta( $user->ID, "phone", $phone );
+                    $is_phone_verified = intval( amd_get_temp( "phone_verified_$phone" ) );
+                    if( $is_phone_verified AND $is_phone_verified >= time() )
+                        amd_set_user_meta( $user->ID, "phone_verified", time() );
+                    wp_send_json_success( ["msg" => __( "Success", "material-dashboard" )] );
+                }
+            }
+
+            /**
+             * Validate the user information
+             * @since 1.2.0
+             */
+            do_action( "amd_validate_user_information", $user, $data );
+
+            wp_send_json_error( ["msg" => __( "Failed", "material-dashboard" )] );
+
+        }
+
+        else if( !empty( $r["search_product"] ) ){
+
+            if( !class_exists( "WooCommerce" ) )
+                wp_send_json_error( ["msg" => __( "WooCommerce plugin is not available", "material-dashboard" )] );
+
+            $query = $r["search_product"];
+            $keywords = explode( " ", $query );
+
+            /**
+             * Search limit
+             * @sicne 1.2.0
+             */
+            $limit = apply_filters( "amd_product_search_limits", $r["search_limit"] ?? 20 );
+
+            $posts = get_posts( array(
+                "post_type" => "product",
+                "numberposts" => 50
+            ) );
+
+            if( empty( $posts ) )
+                wp_send_json_error( ["msg" => _x( "No results found", "Search results", "material-dashboard" )] );
+
+            $results = [];
+            $counter = 0;
+            foreach( $posts as $post ){
+                if( $counter >= $limit )
+                    break;
+                if( $post instanceof WP_Post ) {
+                    $title = $post->post_title;
+                    $content = wp_kses( $post->post_content, [] );
+                    $excerpt = wp_kses( $post->post_excerpt, [] );
+                    $add = false;
+                    foreach( $keywords as $keyword ){
+                        if( strpos( "$title\n$content\n$excerpt", $keyword ) !== false ){
+                            $add = true;
+                            break;
+                        }
+                    }
+                    if( $add ){
+                        if( $data = amd_export_post_data( $post ) ) {
+                            $results[$post->ID] = $data;
+                            $counter++;
+                        }
+                    }
+                }
+            }
+
+            wp_send_json_success( ["msg" => __( "Success", "material-dashboard" ), "results" => $results] );
+
+        }
+
+        else if( !empty( $r["get_posts"] ) ){
+
+            if( !class_exists( "WooCommerce" ) )
+                wp_send_json_error( ["msg" => __( "WooCommerce plugin is not available", "material-dashboard" )] );
+
+            $products = explode( ",", $r["get_posts"] );
+
+            $post_type = $r["type"] ?? null;
+
+            $posts = [];
+            foreach( $products as $product_id ){
+                $p = get_post( $product_id );
+                if( $p instanceof WP_Post ) {
+                    if( $post_type AND $post_type != $p->post_type )
+                        continue;
+                    $posts[] = $p;
+                }
+            }
+
+            if( empty( $posts ) )
+                wp_send_json_error( ["msg" => _x( "No results found", "Search results", "material-dashboard" )] );
+
+            $results = [];
+            foreach( $posts as $post ){
+                if( $post instanceof WP_Post ) {
+                    if( $data = amd_export_post_data( $post ) )
+                        $results[$post->ID] = $data;
+                }
+            }
+
+            wp_send_json_success( ["msg" => __( "Success", "material-dashboard" ), "results" => $results] );
+
+        }
 
 	}
 
