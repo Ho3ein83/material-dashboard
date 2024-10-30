@@ -257,7 +257,7 @@ class AMDWarner{
 	 * @param array $data
      * Message data
 	 * @param string $methods
-     * Message sending methods (e.g: "email", "sms", "email,sms")
+     * Message sending method(s) (e.g: "email", "sms", "email,sms")
 	 *
 	 * @return bool
      * True on success, false on failure
@@ -276,7 +276,7 @@ class AMDWarner{
 
         if( $methods == "email" ){
 
-            $to = $data["email"] ?? null;
+            $to = $data["email"] ?? ( $data["to"] ?? "" );
             $subject = $data["subject"] ?? null;
             $message = $data["message"] ?? null;
 
@@ -289,12 +289,24 @@ class AMDWarner{
             return self::sendEmail( $to, $subject, $message, $headers, $attachments );
 
         }
+        else if( $methods == "sms" ){
+
+	        /**
+	         * Handle SMS method
+	         * @since 1.0.6
+	         */
+            $result = apply_filters( "amd_send_sms", $data );
+
+            return $result === true;
+
+        }
 
 		/**
 		 * Handle other methods
          * @since 1.0.5
 		 */
-        $success = apply_filters( "amd_send_message_with_method", $data, $method );
+        $success = apply_filters( "amd_send_message_with_method", $data, $methods );
+
         if( $success === true )
             return true;
 

@@ -293,8 +293,10 @@ add_filter( "amd_action_change_email", function( $scope ){
 
 	$success = $amdSilu->changeEmail( $uid, $temp );
 
-	if( $success )
-		amd_clean_temps_keys( "change_email:($user->ID)_(.*){8}" );
+	if( $success ){
+        amd_delete_user_meta( $user->ID, "email_verified" );
+        amd_clean_temps_keys( "change_email:($user->ID)_(.*){8}" );
+    }
 
 	return !$success ? $failed : array(
 		"error" => false,
@@ -449,19 +451,27 @@ add_action( "amd_init_sidebar_items", function(){
 		),
 	) );
 
-    if( amd_is_admin() ){
+    $am_i_admin = amd_is_admin();
+
+    /**
+      * Check if user has access to admin panel
+      * @since 1.0.6
+      */
+    if( apply_filters( "amd_can_i_access_admin_dashboard", $am_i_admin ) ){
+
         do_action( "amd_add_dashboard_sidebar_menu", array(
-		"admin" => array(
-			"text" => esc_html__( "WP admin", "material-dashboard" ),
-			"comment" => esc_html__( "This item is only visible for admins and normal users won't see it", "material-dashboard" ),
-			"icon" => "tools",
-			"void" => null,
-			"url" => admin_url( "admin.php?page=material-dashboard" ),
-			"priority" => 20,
-			"turtle" => "blank",
-			"attributes" => ["target" => "_blank"]
-		)
-	) );
+            "admin" => array(
+                "text" => esc_html__( "WP admin", "material-dashboard" ),
+                "comment" => esc_html__( "This item is only visible for admins and normal users won't see it", "material-dashboard" ),
+                "icon" => "tools",
+                "void" => null,
+                "url" => admin_url( $am_i_admin ? "admin.php?page=material-dashboard" : "" ),
+                "priority" => 20,
+                "turtle" => "blank",
+                "attributes" => ["target" => "_blank"]
+            )
+	    ) );
+
     }
 
     # Add dashboard navbar item (Left side)

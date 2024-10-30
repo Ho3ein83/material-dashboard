@@ -1460,11 +1460,15 @@ body.ltr .tab-items > .item {
 
 .amd-message-box > .--item > .-box {
     flex: 1;
-    background: var(--amd-primary-x-low);
+    background: var(--amd-wrapper-fg);
     margin: 0 8px;
     width: 50px;
     padding: 8px 16px;
     border-radius: 12px;
+}
+
+.amd-message-box.--mine > .--item > .-box {
+    background: rgba(var(--amd-color-green-rgb), .1);
 }
 
 .amd-message-box > .--item > .-box > .-name {

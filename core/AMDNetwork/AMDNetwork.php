@@ -776,7 +776,7 @@ class AMDNetwork{
 						if( is_array( $action ) ){
 							$type = $action["type"] ?? null;
 							$filter = $action["filter"] ?? null;
-							if( !empty( $filter ) and is_callable( $filter ) )
+							if( !empty( $filter ) AND is_callable( $filter ) )
 								$value = call_user_func( $filter, $value );
 							$allowed = amd_compile_data_type( $type, $value );
 						}

@@ -5,7 +5,7 @@
  * Description: The best material dashboard for WordPress! If you want to delete this plugin, delete its data from cleanup menu first.
  * Plugin URI: https://amatris.ir/amd
  * Author: Hossein
- * Version: 1.0.5
+ * Version: 1.0.6
  * Requires at least: 5.2
  * Requires PHP: 7.4.0
  * Tested up to: 6.2

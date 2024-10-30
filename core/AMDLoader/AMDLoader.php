@@ -343,6 +343,7 @@ class AMDLoader{
 		$translateContext = $json->context ?? $dir;
 		$deprecated = $json->deprecated ?? false;
 		$requirements = $json->requirements ?? "";
+		$text_domain = $json->text_domain ?? "material-dashboard";
 		$extURL = plugins_url( $dir, $path );
 		$url = amd_replace_constants( $url );
 		$thumb = $json->thumbnail ?? "";
@@ -363,13 +364,14 @@ class AMDLoader{
 		return array(
 			"directory" => $dir,
 			"info" => array(
-				"name" => esc_html_x( $name, $translateContext, "material-dashboard" ),
-				"description" => esc_html_x( $desc, $translateContext, "material-dashboard" ),
+				"name" => esc_html_x( $name, $translateContext, "$text_domain" ),
+				"description" => esc_html_x( $desc, $translateContext, "$text_domain" ),
 				"version" => $ver,
 				"url" => $url,
 				"thumbnail" => $thumb,
 				"requirements" => $req,
-				"author" => esc_html_x( $author, $translateContext, "material-dashboard" )
+				"text_domain" => $text_domain,
+				"author" => esc_html_x( $author, $translateContext, "$text_domain" )
 			),
 			"json" => $json,
 			"index" => $index_php,

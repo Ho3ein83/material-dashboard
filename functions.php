@@ -1073,8 +1073,8 @@ function amd_change_password( $uid, $new_password, $notice = false ){
 /**
  * Get user automatically
  *
- * @param int|string $user
- * The part of user information, like username, email, user ID and phone number
+ * @param int|string|WP_User $part
+ * Any information about user like email, user ID, phone number or username or even WP user object
  *
  * @return AMDUser|null
  * AMDUser on user found, otherwise null
@@ -4645,14 +4645,16 @@ function amd_log( $data, $append = false, $trace = false, $breakLine="\n" ){
 	$path = apply_filters( "amd_logs_path", ABSPATH . "amd_logs.txt" );
 
 	if( $data === true )
-		$data = "TRUE";
+		$data = "True";
+    else if( $data === false )
+		$data = "False";
+    else
+	    $data = var_export( $data, true );
 
-    if( is_bool( $data ) )
-		$content = $data ? "TRUE" : "FALSE";
+    if( is_int( $data ) )
+		$content = "$data";
 	else if( is_string( $data ) )
 		$content = strlen( $data ) > 0 ? $data : "[EMPTY_STRING]";
-	else if( is_numeric( $data ) )
-		$content = "$data";
 	else if( is_null( $data ) )
 		$content = "NULL";
 	else if( is_callable( $data ) )

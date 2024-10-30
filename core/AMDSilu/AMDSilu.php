@@ -155,6 +155,9 @@ class AMDSilu{
 			$simpleUser->secretKey = $secret;
 		}
 
+		# Initialize user
+		$simpleUser->init();
+
 		global /** @var AMDFirewall $amdWall */
 		$amdWall;
 
@@ -628,8 +631,8 @@ class AMDSilu{
 	/**
 	 * Guess user automatically and get user data array
 	 *
-	 * @param string $part
-	 * Any information about user like email, user ID, phone number or username
+	 * @param int|string|WP_User $part
+	 * Any information about user like email, user ID, phone number or username or even WP user object
 	 *
 	 * @return array|null[]
 	 * User data array, e.g:

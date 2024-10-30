@@ -102,10 +102,17 @@ class AMDUser{
 
 	/**
 	 * Whether user is valid or not
-	 * @var false
+	 * @var bool
 	 * @since 1.0.0
 	 */
 	public $isValid;
+
+	/**
+	 * User extra information
+	 * @var array
+	 * @since 1.0.6
+	 */
+	public $extra;
 
 	/**
 	 * Simple user object
@@ -125,6 +132,21 @@ class AMDUser{
 		$this->secretKey = "";
 		$this->serial = "";
 		$this->isValid = false;
+	}
+
+	/**
+	 * Initialize user
+	 * @return void
+	 * @since 1.0.6
+	 */
+	public function init(){
+
+		/**
+		 * Get user extra information
+		 * @since 1.0.6
+		 */
+		$this->extra = apply_filters( "amd_simple_user_extra", [], $this );
+
 	}
 
 	/**
@@ -256,6 +278,42 @@ class AMDUser{
 		$temp = amd_get_temp( "checkin_" . $this->ID );
 
 		return (bool) $temp;
+	}
+
+	/**
+	 * Check if specified role(s) is included in user roles
+	 * @param string|array $role_s
+	 * Single role string or array listed roles items
+	 *
+	 * @return bool
+	 * @since 1.0.6
+	 */
+	public function compareRoles( $role_s ){
+
+		if( is_string( $role_s ) )
+			$role_s = [$role_s];
+
+		if( !is_array( $role_s ) )
+			return false;
+
+		foreach( $role_s as $role ){
+			if( in_array( $role, $this->wpUser->roles ) )
+				return true;
+		}
+
+		return false;
+
+	}
+
+	/**
+	 * Check if this object belongs to current user or not
+	 * @return bool
+	 * @since 1.1.2
+	 */
+	public function isCurrentUser(){
+
+		return $this->ID == get_current_user_id();
+
 	}
 
 }

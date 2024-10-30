@@ -59,7 +59,7 @@ class AMD_DB {
 	 * @var int
 	 * @since 1.0.5
 	 */
-	const db_version = 1;
+	const db_version = 2;
 
 	/**
 	 * Tables SQL structure
@@ -214,6 +214,12 @@ class AMD_DB {
 			}
 
 		}
+
+		/**
+		 * Repair database tables
+		 * @since 1.0.6
+		 */
+		do_action( "amd_repair_database_tables" );
 
 	}
 
@@ -789,16 +795,18 @@ class AMD_DB {
 	 *
 	 * @param string $tableName
 	 * Table name
+	 * @param bool $force
+	 * Whether to guess table name or return empty string, default is `false`
 	 *
 	 * @return string
 	 * Table name or empty string for undefined tables
 	 * @since 1.0.0
 	 */
-	public function getTable( $tableName ){
+	public function getTable( $tableName, $force=false ){
 
 		self::init();
 
-		return $this->tables[$tableName] ?? "";
+		return $this->tables[$tableName] ?? ( $force ? $this->prefix . $tableName : "" );
 
 	}
 
