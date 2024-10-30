@@ -1,0 +1,1062 @@
+<?php
+
+# Stop it here if extension is not loaded from WordPress
+defined( 'ABSPATH' ) OR die();
+
+# Extension constants
+define( 'AMD_EXT__APP_PATH', __DIR__ );
+define( 'AMD_EXT__APP_WIZARD', AMD_EXT__APP_PATH . DIRECTORY_SEPARATOR . 'wizard' );
+
+/**
+ * Just for translations and extension availability check
+ * @return void
+ */
+function amd_ext__app(){ }
+
+/**
+ * Admin and fronted init hook
+ * @return void
+ */
+function amd_ext__app_init(){
+
+	# Register country codes
+	do_action( "amd_add_country_code", array(
+		"IR" => array(
+			"name" => "ایران",
+			"flag" => AMD_IMG . "/flags/iran-flag.png",
+			"digit" => "98",
+			"format" => "XXX-XXX-XXXX"
+		),
+		"US" => array(
+			"name" => "United states",
+			"flag" => AMD_IMG . "/flags/usa-flag.png",
+			"digit" => "1",
+			"format" => "XXX-XXX-XXXX"
+		)
+	) );
+
+	# Default country code
+	$cc = apply_filters( "amd_country_codes", [] );
+	amd_set_default( "country_code", current( $cc ) );
+
+    # Checking interval
+    amd_set_default( "checkin_interval", 30000 );
+
+}
+
+# Init
+add_action( "admin_init", "amd_ext__app_init" );
+add_action( "amd_dashboard_init", "amd_ext__app_init" );
+
+# Mark user as online
+add_action( "amd_checkin", function(){
+
+    $user = amd_get_current_user();
+
+    if( !$user ) return;
+
+    $interval = intval( amd_get_default( "checkin_interval", 30000 ) ) / 1000;
+
+    amd_set_temp( "checkin_" . $user->ID, time(), $interval );
+
+    amd_set_user_meta( $user->ID, "last_seen", time() );
+
+} );
+
+# Mark as offline if user is online
+add_action( "amd_checkout", function(){
+
+    $user = amd_get_current_user();
+
+    if( !$user ) return;
+
+    amd_delete_temp( "checkin_" . $user->ID );
+
+} );
+
+# Load wizard page
+add_action( "admin_init", function(){
+
+    $_get = amd_sanitize_get_fields( $_GET );
+
+	$page = !empty( $_get["page"] ) ? $_get["page"] : "";
+
+	if( $page == "amd-wizard" ){
+
+		if( !current_user_can( 'manage_options' ) )
+			return;
+
+		if( defined( 'DOING_AJAX' ) && DOING_AJAX )
+			return;
+
+		set_current_screen();
+
+		remove_action( 'admin_print_styles', 'gutenberg_block_editor_admin_print_styles' );
+
+		amd_ext__app_dump_wizard_page();
+
+		exit();
+
+	}
+
+} );
+
+# Set dashboard cards
+add_action( "amd_add_dashboard_card", function( $data ){
+
+	global /** @var AMDDashboard $amdDashboard */
+	$amdDashboard;
+
+	$amdDashboard->registerCard( $data );
+
+} );
+
+# Get dashboard cards
+add_filter( "amd_get_dashboard_cards", function( $filter ){
+
+	global /** @var AMDDashboard $amdDashboard */
+	$amdDashboard;
+
+	return $amdDashboard->getCards( $filter, true );
+
+} );
+
+# Set dashboard sidebar menu item
+add_action( "amd_add_dashboard_sidebar_menu", function( $data ){
+
+	global /** @var AMDDashboard $amdDashboard */
+	$amdDashboard;
+
+	$amdDashboard->addMenuItem( "sidebar_menu", $data );
+
+} );
+
+# Get dashboard sidebar menu items
+add_filter( "amd_get_dashboard_sidebar_menu", function( $void ){
+
+	global /** @var AMDDashboard $amdDashboard */
+	$amdDashboard;
+
+	return $amdDashboard->getMenu( "sidebar_menu", $void );
+
+} );
+
+# Block users for a while after too many attempts for admin login
+add_filter( "amd_login_too_many_attempts_expire", function(){
+	return intval( amd_get_site_option( "login_attempts_time", "10" ) );
+} );
+
+# Block users after attempting n times for admin login
+add_filter( "amd_login_too_many_attempts_limit", function(){
+	return intval( amd_get_site_option( "login_attempts", "10" ) );
+} );
+
+# "new verification code" message
+add_filter( "amd_new_verification_code_message", function( $uid, $code ){
+	$user = amd_get_user( $uid );
+	if( !$user )
+		return "";
+
+	return sprintf( esc_html__( "Dear %s, your verification code for password reset is: %s", "material-dashboard" ), $user->firstname, "\n$code" );
+}, 10, 2 );
+
+# "password changed" message
+add_filter( "amd_password_changed_message", function( $uid ){
+	$user = amd_get_user( $uid );
+	if( !$user )
+		return "";
+
+	return sprintf( esc_html__( "Dear %s, your password has been changed at %s.\nPlease let us know if you didn't change it.", "material-dashboard" ), $user->firstname, amd_true_date( "Y/m/d H:i" ) );
+} );
+
+# "change email" message
+add_filter( "amd_change_email_message", function( $uid, $new_email, $url ){
+	$user = amd_get_user( $uid );
+	if( !$user )
+		return "";
+    $a_tag = '<br><a class="link --fill" href="' . esc_url( $url ) . '">' . esc_html__( "Change email", "material-dashboard" ) . '</a>';
+	return sprintf( esc_html__( "Dear %s, you have requested for changing your email, if you want to change it to %s please click on the below link. %s", "material-dashboard" ), $user->firstname, "<p style='margin:8px' class='color-primary'>$new_email</p>", $a_tag );
+}, 10, 3 );
+
+# "email changed" message
+add_filter( "amd_email_changed_message", function( $uid, $new_email ){
+	$user = amd_get_user( $uid );
+	if( !$user )
+		return "";
+
+	return sprintf( esc_html__( "Dear %s, your email address has been changed successfully", "material-dashboard" ), $user->firstname );
+}, 10, 2 );
+
+# Set dashboard navbar items
+add_action( "amd_add_dashboard_navbar_item", function( $side, $data ){
+
+	global /** @var AMDDashboard $amdDashboard */
+	$amdDashboard;
+
+	$amdDashboard->addNavItem( $side, $data );
+
+}, 10, 2 );
+
+# Get dashboard sidebar menu items
+add_filter( "amd_get_dashboard_navbar_item", function( $filter ){
+
+	global /** @var AMDDashboard $amdDashboard */
+	$amdDashboard;
+
+	return $amdDashboard->getNav( $filter );
+
+} );
+
+# Set dashboard quick options
+add_action( "amd_add_dashboard_quick_options", function( $data ){
+
+	global /** @var AMDDashboard $amdDashboard */
+	$amdDashboard;
+
+	$amdDashboard->addMenuItem( "quick_options", $data );
+
+} );
+
+# Get dashboard sidebar quick options
+add_filter( "amd_get_dashboard_quick_options", function(){
+
+	global /** @var AMDDashboard $amdDashboard */
+	$amdDashboard;
+
+	return $amdDashboard->getMenu( "quick_options" );
+
+} );
+
+# Change email operation
+add_filter( "amd_action_change_email", function( $scope ){
+
+	$failed = array(
+		"error" => true,
+		"title" => esc_html__( "An error has occurred", "material-dashboard" ),
+		"text" => esc_html__( "The address you are looking for is not valid or has been expired", "material-dashboard" )
+	);
+
+	if( empty( $scope ) )
+		return $failed;
+
+	$uid = explode( "_", $scope )[0];
+
+	$user = amd_get_user_by( "ID", $uid );
+
+	if( !$user )
+		return $failed;
+
+	$temp = amd_get_temp( "change_email:" . $scope );
+
+	if( empty( $temp ) )
+		return $failed;
+
+	if( !amd_validate( $temp, "%email%" ) OR email_exists( $temp ) )
+		return array(
+			"error" => true,
+			"title" => esc_html__( "An error has occurred", "material-dashboard" ),
+			"text" => esc_html__( "Requested email address is not valid or cannot be changed", "material-dashboard" )
+		);
+
+	global /** @var AMDSilu $amdSilu */
+	$amdSilu;
+
+	$success = $amdSilu->changeEmail( $uid, $temp );
+
+	if( $success )
+		amd_clean_temps_keys( "change_email:($user->ID)_(.*){8}" );
+
+	return !$success ? $failed : array(
+		"error" => false,
+		"title" => esc_html__( "Your email has changed", "material-dashboard" ),
+		"text" => esc_html__( "Your email has been changed successfully", "material-dashboard" )
+	);
+
+} );
+
+# Block user from login page for a while after too many attempts to login
+add_filter( "amd_action_too_many_attempts", function(){
+
+	$failed = array(
+		"error" => true,
+		"title" => esc_html__( "An error has occurred", "material-dashboard" ),
+		"text" => esc_html__( "The address you are looking for is not valid or has been expired", "material-dashboard" )
+	);
+
+	$data = amd_login_attempts_reached( true );
+	// $max_attempts = $data["max_attempts"] ?? 0;
+	// $attempts = $data["attempts"] ?? 0;
+	$expire = $data["expire"] ?? 0;
+	$reached = $data["reached"] ?? false;
+	// $ip_address = $data["ip_address"] ?? "";
+
+    if( !$reached ){
+        wp_safe_redirect( amd_get_login_page() );
+        exit();
+    }
+
+	$success = true;
+
+	return !$success ? $failed : array(
+		"error" => false,
+		"title" => esc_html__( "Too many attempts", "material-dashboard" ) . "!",
+        "text" => "",
+        "btn_text" => esc_html__( "Back to site", "material-dashboard" ),
+        "btn_url" => get_site_url()
+	);
+
+} );
+
+add_action( "amd_action_content_too_many_attempts", function(){
+
+    $data = amd_login_attempts_reached( true );
+	// $max_attempts = $data["max_attempts"] ?? 0;
+	// $attempts = $data["attempts"] ?? 0;
+	$expire = $data["expire"] ?? 0;
+	$reached = $data["reached"] ?? false;
+	// $ip_address = $data["ip_address"] ?? "";
+
+    if( $reached ){
+        esc_html_e( "You can login to your account again in", "material-dashboard" );
+    ?>
+        <br><span id="many-attempts-timer"><span>
+        <script>
+            let expire = parseInt(`<?php echo $expire - time() + 5; ?>`);
+            if(!isNaN(expire)) {
+                let $el = $("#many-attempts-timer");
+                let diff = expire;
+                let timer = setInterval(() => {
+                    if(diff > 0){
+                        let ss = diff % 60;
+                        let mm = parseInt(diff / 60 % 60);
+                        let hh = parseInt(diff / 3600);
+                        if(hh > 0) $el.html(`${hh.toString().addZero()}:${mm.toString().addZero()}:${ss.toString().addZero()}`);
+                        else $el.html(`${mm.toString().addZero()}:${ss.toString().addZero()}`);
+                    }
+                    else{
+                        clearInterval(timer);
+                        location.reload();
+                    }
+                    diff--;
+                }, 1000);
+            }
+        </script>
+    <?php
+    }
+
+} );
+
+# Icon-card: date text
+add_filter( "amd_ic_date_text", function(){
+    return amd_true_date( "l j F" );
+} );
+
+# Icon-card: date sub-text
+add_filter( "amd_ic_date_subtext", function(){
+    return amd_true_date( "Y/m/d" );
+} );
+
+# Initialize registered hooks
+add_action( "amd_dashboard_init", function(){
+
+	# Add dashboard cards (icon cards)
+	do_action( "amd_add_dashboard_card", array(
+		"ic_date" => array(
+			"type" => "icon_card",
+			"title" => esc_html__( "Date", "material-dashboard" ),
+			"text" => apply_filters( "amd_ic_date_text", "" ),
+			"subtext" => apply_filters( "amd_ic_date_subtext", "" ),
+			"footer" => '<span class="__live_clock"></span>',
+			"icon" => "calendar_1",
+			"color" => "red",
+			"priority" => 1
+		)
+	) );
+
+	# Add dashboard sidebar item
+	do_action( "amd_add_dashboard_sidebar_menu", array(
+		"dashboard" => array(
+			"text" => esc_html__( "Dashboard", "material-dashboard" ),
+			"icon" => "dashboard",
+			"void" => "home",
+			"url" => "?void=home",
+			"priority" => 3
+		),
+		"account" => array(
+			"text" => esc_html__( "Account", "material-dashboard" ),
+			"icon" => "person",
+			"void" => "account",
+			"url" => "?void=account",
+			"priority" => 4
+		),
+	) );
+
+	# Add dashboard navbar item (Left side)
+	do_action( "amd_add_dashboard_navbar_item", "left", array(
+		"toggle_sidebar" => array(
+			"icon" => "menu",
+			"tooltip" => esc_html__( "Toggle sidebar", "material-dashboard" ),
+			"attributes" => [
+				"data-toggle-sidebar" => ""
+			],
+			"extraClass" => "no-desktop"
+		),
+		"translate" => array(
+			"icon" => "translate",
+			"tooltip" => esc_html__( "Language", "material-dashboard" ),
+			"attributes" => [
+				"data-change-locale" => ""
+			]
+		)
+	) );
+
+    if( amd_theme_support( "night_mode" ) ){
+
+        do_action( "amd_add_dashboard_navbar_item", "left", array(
+            "theme_dark" => array(
+                "icon" => "dark_mode",
+                "tooltip" => esc_html__( "Dark mode", "material-dashboard" ),
+                "attributes" => [
+                    "data-switch-theme" => "dark"
+                ],
+                "extraClass" => "no-dark"
+            ),
+            "theme_light" => array(
+                "icon" => "light_mode",
+                "tooltip" => esc_html__( "Light mode", "material-dashboard" ),
+                "attributes" => [
+                    "data-switch-theme" => "light"
+                ],
+                "extraClass" => "no-light"
+            ),
+	    ) );
+
+    }
+
+	# Add dashboard navbar item (Right side)
+	do_action( "amd_add_dashboard_navbar_item", "right", array(
+		"account" => array(
+			"icon" => "account",
+			"tooltip" => esc_html__( "Account", "material-dashboard" ),
+			"url" => "?void=account",
+			"turtle" => "lazy"
+		)
+	) );
+
+	# Add dashboard quick options
+	do_action( "amd_add_dashboard_quick_options", array(
+		"logout" => array(
+			"icon" => "logout",
+			"tooltip" => esc_html__( "Logout", "material-dashboard" ),
+			"attributes" => [
+				"data-action" => "logout"
+			]
+		)
+	) );
+
+	# Let users know when they passwords changes
+	add_filter( "amd_notify_password_change", "__return_true" );
+
+	# Register login page as auth page
+	add_action( "amd_auth_login", function(){
+
+		require_once( AMD_DASHBOARD . '/login.php' );
+
+	} );
+
+	# Register registration page as auth page
+	add_action( "amd_auth_register", function(){
+
+		require_once( AMD_DASHBOARD . '/register.php' );
+
+	} );
+
+	# Register password reset page as auth page
+	add_action( "amd_auth_reset-password", function(){
+
+        require_once( AMD_DASHBOARD . '/reset-password.php' );
+
+	} );
+
+    # Dashboard page
+	add_action( "amd_auth_dashboard", function(){
+
+        require_once( AMD_DASHBOARD . '/reset-password.php' );
+
+	} );
+
+	# Redirect to dashboard
+	add_action( "amd_dashboard_redirect", function(){
+
+        wp_safe_redirect( is_user_logged_in() ? amd_get_dashboard_page() : amd_get_login_page() );
+		exit();
+
+	} );
+
+	# Action handler
+	add_action( "amd_auth_action", function(){
+
+		require_once( AMD_DASHBOARD . '/action.php' );
+
+	} );
+
+	# If registration is enabled ('users_can_register' in site options equals to '1')
+	if( amd_can_users_register() ){
+		# Register new sign-in method for new users registration
+		do_action( "amd_register_sign_in_method", "_register", array(
+			"name" => esc_html__( "Create new account", "material-dashboard" ),
+			"icon" => amd_icon( "add_user" ),
+			"action" => "register"
+		) );
+	}
+
+	# Quick options in auth pages
+	add_action( "amd_auth_quick_option", function(){
+		?>
+		<a href="javascript: void(0)" data-tooltip="<?php printf( esc_html__( "Back to %s", "material-dashboard" ), get_bloginfo( 'name' ) ); ?>" data-change-locale="">
+			<?php _amd_icon( "home" ); ?>
+        </a>
+        <?php if( amd_is_multilingual( true ) ): ?>
+        <a href="javascript: void(0)" data-tooltip="<?php esc_attr_e( "Language", "material-dashboard" ); ?>" data-change-locale="">
+			<?php _amd_icon( "translate" ); ?>
+        </a>
+        <?php endif; ?>
+        <?php if( amd_theme_support( "night_mode" ) ): ?>
+        <a href="javascript: void(0)" class="no-dark" data-tooltip="<?php esc_attr_e( "Dark mode", "material-dashboard" ); ?>"
+           data-switch-theme="dark">
+			<?php _amd_icon( "dark_mode" ); ?>
+        </a>
+        <a href="javascript: void(0)" class="no-light" data-tooltip="<?php esc_attr_e( "Light mode", "material-dashboard" ); ?>"
+           data-switch-theme="light">
+			<?php _amd_icon( "light_mode" ); ?>
+        </a>
+        <?php endif; ?>
+		<?php
+	} );
+
+} );
+
+add_action( "amd_dashboard_start", function(){
+
+    $optimizer = amd_get_site_option( "optimizer", "true" );
+
+    add_filter( "amd_use_optimizer", $optimizer == "true" ? "__return_true" : "__return_false" );
+
+} );
+
+add_action( "amd_dashboard_start", function(){
+
+    $optimize = apply_filters( "amd_use_optimizer", true );
+
+    amd_add_element_class( "body", $optimize ? ["optimized"] : ["not_optimized"] );
+
+} );
+
+# Dashboard and login page header
+add_action( "amd_dashboard_header", function(){
+	global /** @var AMDCache $amdCache */
+	$amdCache;
+	$API_URL = amd_get_api_url();
+	$current_locale = get_locale();
+    $indexing = amd_get_site_option( "indexing", "no-index" );
+    $optimize = apply_filters( "amd_use_optimizer", true );
+    if( $optimize ){
+    ?>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=7">
+        <?php if( $indexing == "no-index" ): ?>
+            <meta name="robots" content="noindex,nofollow">
+        <?php endif; ?>
+
+    <?php
+    }
+    else{
+        wp_head();
+    }
+	?>
+    <!-- @formatter off -->
+    <?php amd_wp_head_alternate(); ?>
+
+<!-- Dashboard -->
+	<link rel="stylesheet" href="<?php echo esc_url( amd_merge_url_query( $API_URL, "stylesheets=_fonts&locale=$current_locale&ver=1.0.0" ) ); ?>">
+	<link rel="stylesheet" href="<?php echo esc_url( amd_merge_url_query( $API_URL, 'stylesheets=_components,_dashboard&dummy=1' ) ); ?>">
+    <?php
+    if( amd_is_dashboard_page() )
+        $amdCache->dumpStyles( "dashboard" );
+    ?>
+    <!-- Icon pack -->
+    <?php $amdCache->dumpStyles( "icon" ); ?>
+    <!-- Global -->
+    <?php $amdCache->dumpStyles( "global" ); ?>
+	<!-- Frontend -->
+    <?php $amdCache->dumpStyles(); ?>
+
+	<!-- Dashboard -->
+	<script src="<?php echo esc_url( amd_merge_url_query( $API_URL, 'scripts=_config&ver=1.0.0' ) ); ?>"></script>
+	<!-- Icon pack -->
+    <?php $amdCache->dumpScript( "icon" ); ?>
+    <?php
+    if( amd_is_dashboard_page() )
+        $amdCache->dumpScript( "dashboard" );
+    ?>
+	<!-- Global -->
+    <?php $amdCache->dumpScript( "global" ); ?>
+	<!-- Frontend -->
+    <?php $amdCache->dumpScript(); ?>
+	<script src="<?php echo AMD_JS . '/dashboard.js'; ?>"></script>
+	<!-- @formatter on -->
+
+    <!-- Inline -->
+        <style>.amd-lr-form {
+            position: relative;
+            width: 85%;
+            max-width: 500px;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 64px auto;
+            text-align: center;
+            background: var(--amd-wrapper-fg)
+        }
+
+        .amd-lr-form > .--title {
+            font-family: var(--amd-title-font);
+            color: var(--amd-title-color);
+            font-size: 26px;
+            margin: 0
+        }
+
+        .amd-lr-form > .--sub-title {
+            font-family: var(--amd-font-family);
+            color: rgba(var(--amd-title-color-rgb), .9);
+            font-size: 16px;
+            font-weight: normal;
+            margin: 0
+        }
+
+        .amd-lr-form > .--logo {
+            width: 100px;
+            height: 100px;
+            margin: auto
+        }
+
+        .amd-lr-form > .--logo > img {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            object-fit: contain
+        }
+
+        .amd-lr-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            margin: 8px
+        }
+
+        .amd-lr-buttons > .btn {
+            flex: 0 0 100%;
+            font-size: 16px;
+            height: 50px;
+            line-height: 50px;
+            border-radius: 8px;
+            margin: 4px
+        }
+
+        .amd-lr-buttons > .btn:not(.btn-text) {
+            box-shadow: 0 0 8px rgba(var(--amd-primary-rgb), .2)
+        }
+
+        .amd-login-methods, .amd-login-methods > .item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center
+        }
+
+        body.ltr .amd-login-methods, body.ltr .amd-login-methods > .item {
+            flex-direction: row-reverse
+        }
+
+        .amd-login-methods > .item {
+            position: relative;
+            flex-wrap: nowrap;
+            background: rgba(var(--amd-primary-rgb), .2);
+            color: var(--amd-primary);
+            border-radius: 8px;
+            width: 100%;
+            height: 55px;
+            margin: 5px;
+            cursor: var(--amd-pointer);
+            transition: all ease .2s
+        }
+
+        .amd-login-methods > .item:hover {
+            background: var(--amd-primary);
+            color: #fff;
+            box-shadow: 0 0 8px rgba(var(--amd-primary-rgb), .2)
+        }
+
+        .amd-login-methods > .item > ._icon_ {
+            position: absolute;
+            font-size: 24px;
+            height: 24px;
+            width: auto;
+            fill: currentColor;
+            left: 4px;
+            padding: 8px;
+            margin: 0 4px;
+            border-radius: 8px;
+        }
+
+        .amd-login-methods > .item > span {
+            font-size: 15px;
+            margin: 0 4px;
+            display: inline-block;
+            white-space: nowrap;
+            text-align: center;
+            overflow: hidden;
+            animation: text_close ease 1s;
+            animation-iteration-count: 1
+        }
+
+        .divider {
+            position: relative;
+            margin: 32px 0
+        }
+
+        .divider:before {
+            content: ' ';
+            display: block;
+            width: 100%;
+            height: 1px;
+            border-bottom: 2px dashed rgba(var(--amd-text-color-rgb), .2);
+            clip-path: polygon(0px -200%, 0px 200%, 34.60% 658.83%, 35% -200%, 65% -200%, 65% 200%, 100% 200%, 100% -200%);
+        }
+
+        .divider.--more:after {
+            content: '<?php _e( "More", "material-dashboard" );?>';
+            color: rgba(var(--amd-text-color-rgb), .8)
+        }
+
+        .divider:after {
+            display: block;
+            position: absolute;
+            font-size: 16px;
+            width: 110px;
+            text-align: center;
+            top: -10px;
+            left: calc(50% - 55px)
+        }
+
+        .amd-opt-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: start;
+            margin: 8px
+        }
+
+        .amd-opt-grid > div {
+            display: block;
+            flex: 1;
+            color: rgba(var(--amd-text-color-rgb), .9);
+            padding-inline-start: 8px
+        }
+
+        .amd-opt-grid > div:first-child {
+            text-align: start
+        }
+
+        .amd-opt-grid > div:last-child {
+            text-align: end
+        }
+
+        .amd-form-log {
+            color: var(--amd-wrapper-fg);
+            font-size: 15px;
+            padding: 16px;
+            border-radius: 9px;
+            margin: 16px 8px;
+            font-weight: bold
+        }
+
+        .amd-form-log > a {
+            color: var(--amd-wrapper-fg);
+            text-decoration: underline
+        }</style>
+    <?php if( amd_is_login_page() ): ?>
+        <!-- @formatter off -->
+        <style>.amd-quick-options{display:flex;flex-wrap:wrap;flex-direction:row-reverse;align-items:center;justify-content:center;height:40px;position:absolute;top:0;left:0;margin:8px}.amd-quick-options>a{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;color:rgba(var(--amd-text-color-rgb),.9);margin:4px;text-decoration:none;width:24px;height:auto;aspect-ratio:1;padding:8px;border-radius:4px;background:transparent;transition:background-color ease .3s,color ease .2s}.amd-quick-options>a:hover{background:rgba(var(--amd-primary-rgb),.2);color:var(--amd-primary)}.amd-quick-options>a>.mi{font-size:24px}.amd-quick-options>a>.bi{font-size:18px}.amd-quick-options>a>svg.iconhub{width:20px;height:auto}@media(min-width:993px){.amd-quick-options{opacity:.3;transition:opacity ease .3s;}.amd-quick-options:hover{opacity:1}}</style>
+        <style>@media(max-width:993px){.ht-input-row{margin:8px}}</style>
+        <!-- @formatter on -->
+        <script>
+        $(document).on("click", "[data-auth]", function(e) {
+            let auth = $(this).attr("data-auth");
+            if(auth){
+                let allowed = true;
+                if(typeof e.isDefaultPrevented !== "undefined")
+                    allowed = !e.isDefaultPrevented();
+                else if(typeof e.defaultPrevented !== "undefined")
+                    allowed = !e.defaultPrevented;
+                let v = $amd.doEvent("amd_auth", { auth, e });
+                if(v === null){
+                    if(typeof dashboard !== "undefined")
+                            dashboard.suspend();
+                    $amd.openQuery("auth=" + auth);
+                }
+                else{
+                    let allow = typeof v.allow === "undefined" ? true : v.allow;
+                    if(allow){
+                        let url = v.url || "";
+                        if(url !== "#"){
+                            if(typeof dashboard !== "undefined")
+                                dashboard.suspend();
+                            $amd.openQuery(url || ("auth=" + auth));
+                        }
+                    }
+                }
+            }
+        });
+        </script>
+    <?php endif; ?>
+	<?php
+} );
+
+# Firewall AES encryption nonce
+add_filter( "amd_firewall_aes_nonce", function(){
+
+	/*
+	 * DO NOT CHANGE IT
+	 * if you override this hook and change nonce value
+	 * every encoded string in your database (which added by this plugin) will be lost for good!
+	 * change it only if you know what you are doing, or you have no data to be worried about.
+	 */
+
+	return "K0qk6pdtdv2ZmPdv";
+} );
+
+# Allow users to change their email
+/*
+ * NOTE: By changing email, users downloads and purchases won't be lost!
+ * If you are using 'Easy Digital Downloads' or 'WooCommerce' plugins users data
+ * won't be lost, however we can't say that about your other plugins, please make sure
+ * that your site users data are not depended on their emails.
+ */
+add_filter( "amd_change_email_allowed", function(){
+    return amd_get_site_option( "change_email_allowed", "false" ) == "true";
+} );
+
+# Register new avatar
+add_action( "amd_add_avatar", function( $path ){
+
+	global /** @var AMDCache $amdCache */
+	$amdCache;
+
+	$amdCache->setScopeGroup( "avatars", $path );
+
+} );
+
+# Unregister new avatar
+add_action( "amd_remove_avatar", function( $path ){
+
+	global /** @var AMDCache $amdCache */
+	$amdCache;
+
+	$amdCache->removeScopeGroup( "avatars", $path );
+
+} );
+
+# Get registered avatars
+add_filter( "amd_get_avatars", function(){
+
+	global /** @var AMDCache $amdCache */
+	$amdCache;
+
+	return $amdCache->getScopeGroup( "avatars" );
+
+} );
+
+# Check if current user is admin
+add_filter( "amd_is_admin", function(){
+
+	if( !is_user_logged_in() )
+		return false;
+
+	return amd_get_current_user()->isAdmin();
+
+} );
+
+# Replace user avatar picture with dashboard default
+add_filter( "get_avatar", function( $avatar, $id_or_email, $size, $default, $alt ) {
+
+    $change = apply_filters( "amd_change_admin_panel_avatar", true );
+
+    if( !$change )
+        return $avatar;
+
+    $user = amd_get_user_by( "ID|email", $id_or_email );
+
+	return $user ? "<img class=\"avatar avatar-$size\" src=\"$user->profile\" width=\"$size\" height=\"$size\" alt=\"$alt\"/>" : $avatar;
+
+}, 2, 5 );
+
+# Check if custom avatar upload is allowed
+add_filter( "amd_is_avatar_upload_allowed", function(){
+    return amd_get_site_option( "avatar_upload_allowed", "true" ) == "true";
+} );
+
+# Register avatars
+function amd_ext__app_register_avatars(){
+	do_action( "amd_add_avatar", [ "amd_default" => AMD_ASSETS_PATH . "/images/avatars/flat" ] );
+}
+
+add_action( "amd_api_init", "amd_ext__app_register_avatars" );
+add_action( "amd_dashboard_init", "amd_ext__app_register_avatars" );
+
+# Initialize dashboard
+add_action( "amd_dashboard_init", function(){
+
+	# Account card
+	do_action( "amd_add_dashboard_card", array(
+		"acc_avatar" => array(
+			"page" => AMD_DASHBOARD . '/cards/acc_avatar.php',
+			"type" => "acc_card",
+			"priority" => 10
+		),
+		"acc_personal_info" => array(
+			"page" => AMD_DASHBOARD . '/cards/acc_personal.php',
+			"type" => "acc_card",
+			"priority" => 10
+		),
+		"change_phone" => array(
+			"page" => AMD_DASHBOARD . '/cards/acc_change_phone.php',
+			"type" => "acc_card",
+			"priority" => 10
+		),
+		"acc_change_password" => array(
+			"page" => AMD_DASHBOARD . '/cards/acc_change_password.php',
+			"type" => "acc_card",
+			"priority" => 10
+		),
+	) );
+
+} );
+
+add_filter( "amd_welcome_alert_title", function( $thisuser ){
+    return esc_html__( "Welcome", "material-dashboard" );
+} );
+
+add_filter( "amd_welcome_alert_text", function( $thisuser ){
+    return sprintf( esc_html__( "Hello dear %s! Thanks for subscribing to our site, we hope you enjoy using it.", "material-dashboard" ), $thisuser->firstname );
+} );
+
+# Before home page content
+add_action( "amd_before_page_home", function(){
+
+    $thisuser = amd_get_current_user();
+
+    # Show welcome message
+    if( apply_filters( "amd_welcome_message_enabled", true ) AND amd_get_user_meta( $thisuser->ID, "welcome_pending" ) == "true" ){
+        # @formatter off
+        ?><script>$amd.alert(`<?php echo apply_filters( "amd_welcome_alert_title", $thisuser ); ?>`, `<?php echo apply_filters( "amd_welcome_alert_text", $thisuser ) ?>`);</script><?php
+        # @formatter on
+        amd_delete_user_meta( $thisuser->ID, "welcome_pending" );
+    }
+
+} );
+
+/**
+ * Set emails header template
+ *
+ * @param string $to
+ * Email receptors
+ * @param string $subject
+ * Email subject
+ * @param string $message
+ * Email message
+ *
+ * @return false|string
+ * @since 1.0.0
+*/
+function amd_ext__app_email_head( $to, $subject, $message ){
+
+    $blog_name = get_bloginfo( "name" );
+
+    $dash = amd_get_dash_logo();
+    $dash_logo_url = $dash["url"];
+    $image_url = apply_filters( "amd_email_header_image", $dash_logo_url );
+    ob_start();
+    # @formatter off
+    ?><!DOCTYPE HTML>
+    <html>
+        <head>
+            <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+            <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+            <meta http-equiv="X-UA-Compatible" content="ie=edge">
+            <style>.content,.link{border-radius:6px}body{font-family:arial,verdana,georgia,"Times New Roman",courier,sans-serif;text-align:center;font-size:18px;line-height:30px;background:#f6f6f6}.h1,h1{font-size:24px;color:#030023;margin:8px 0}.h2,h2{font-size:16px;color:#250bd0;margin:8px 0}a{color:#2e93d9;text-decoration:none}.link{display:inline-block;font-size:15px;background:rgba(79,105,234,.2);color:#4f69ea;padding:8px 18px;margin:8px}.link.--fill{color:#fff;background:#4f69ea}.content{width:90%;max-width:700px;margin:24px auto 12px;background:#fff;padding:16px;border:1px solid #eaeaea}.color-primary{color:#250BD0}</style>
+        </head>
+        <body>
+        <img src="<?php echo esc_attr( $image_url ); ?>" alt="<?php echo esc_attr( $blog_name ); ?>" style="width:130px;margin:24px auto 8px">
+        <div class="content" dir="auto">
+            <p class="h2"><?php echo wp_kses( $blog_name, amd_allowed_tags_with_attr( "br,span,a" ) ); ?></p>
+            <p class="h1"><?php echo esc_html( $subject ); ?></p>
+            <div style="height:20px"></div>
+    <?php
+    # @formatter on
+    return ob_get_clean();
+}
+add_filter( "amd_email_head", "amd_ext__app_email_head", 10, 3 );
+
+/**
+ * Set emails content template
+ *
+ * @param string $to
+ * Email receptors
+ * @param string $subject
+ * Email subject
+ * @param string $message
+ * Email message
+ *
+ * @return false|string
+ * @since 1.0.0
+*/
+function amd_ext__app_email_content( $to, $subject, $message ){
+
+    return $message;
+
+}
+add_filter( "amd_email_content", "amd_ext__app_email_content", 10, 3 );
+
+/**
+ * Set emails footer template
+ * 
+ * @param string $to
+ * Email receptors
+ * @param string $subject
+ * Email subject
+ * @param string $message
+ * Email message
+ * 
+ * @return false|string
+ * @since 1.0.0
+ */
+function amd_ext__app_email_foot( $to, $subject, $message ){
+    $domain = amd_replace_url( "%domain%" );
+    ob_start();
+    ?>
+                <div style="height:20px"></div>
+                <a class="link" href="<?php echo esc_url( get_site_url() ); ?>"><?php echo esc_html( ucfirst( $domain ) ); ?></a>
+            </div>
+        </body>
+    </html>
+    <?php
+    return ob_get_clean();
+}
+add_filter( "amd_email_foot", "amd_ext__app_email_foot", 10, 3 );
+
+# Change email content type
+add_filter( "wp_mail_content_type", function(){
+    return "text/html";
+});

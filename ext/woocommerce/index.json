@@ -1,0 +1,13 @@
+{
+  "name": "WooCommerce support",
+  "description": "Manage WooCommerce transactions, payments and tracking them",
+  "thumbnail": "{EXT_URL}/thumbnail.png?ver=1.0.0",
+  "url": "{DOC_URL}?e=woocommerce",
+  "version": "1.0.0",
+  "compatible": "1.0.0",
+  "context": "wc",
+  "requirements": {
+    "WooCommerce": "class:WooCommerce"
+  },
+  "author": "Amatris"
+}

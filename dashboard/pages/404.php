@@ -1,0 +1,1 @@
+<?php amd_load_template( "page_404" ); ?>
