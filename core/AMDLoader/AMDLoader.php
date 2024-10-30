@@ -425,6 +425,7 @@ class AMDLoader{
 		$thumb = amd_replace_constants( $thumb );
 		$thumb = preg_replace( "/\{THEME_PATH}/", $path, $thumb );;
 		$thumb = preg_replace( "/\{THEME_URL}/", $themeURL, $thumb );;
+		$thumb = preg_replace( "/\{LOCALE}/", get_locale(), $thumb );;
 		$author = $json->author ?? "";
 		$properties = $json->properties ?? (object) [];
 		$isPremium = $json->is_premium ?? false;
@@ -815,7 +816,7 @@ class AMDLoader{
 
 		/**
 		 * Override part path
-		 * @sicne 1.0.4
+		 * @since 1.0.4
 		 */
 		$page_path = apply_filters( "amd_part_{$part}_path", $page_path );
 
@@ -856,7 +857,7 @@ class AMDLoader{
 
 		/**
 		 * Override part path
-		 * @sicne 1.0.4
+		 * @since 1.0.4
 		 */
 		$page_path = apply_filters( "amd_part_{$part}_path", $page_path );
 

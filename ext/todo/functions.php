@@ -63,7 +63,7 @@ add_filter( "amd_ext_todo_authorize_required_for_edit", "amd_ext_todo_authorize_
  * Non-sanitized request data (<b>Note: this is only available in 1.0.5 version and above!</b>)
  *
  * @return void
- * @sicne 1.0.0
+ * @since 1.0.0
  */
 function amd_ajax_target_ext_todo( $r, $unfilteredRequest ){
 
@@ -245,7 +245,7 @@ function amd_ajax_target_ext_todo( $r, $unfilteredRequest ){
  *
  * @return array
  * @see AMDUser::serial
- * @sicne 1.0.0
+ * @since 1.0.0
  */
 function amd_ext_todo_tasks( $serial, $salt=null ){
 

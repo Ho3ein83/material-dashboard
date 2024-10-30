@@ -107,6 +107,6 @@ if( empty( $row_cards ) OR !is_array( $row_cards ) )
     do_action( "amd_home_after_cards" );
 ?>
 
-<div class="h-100"></div>
+<?php amd_front_spacer( 100 ); ?>
 
 <?php # @formatter on ?>

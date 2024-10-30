@@ -19,7 +19,7 @@ class AMDTasks {
 	/**
 	 * Initialize hooks
 	 * @return void
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function initHooks(){
 
@@ -87,7 +87,7 @@ class AMDTasks {
 	/**
 	 * Run all queued tasks
 	 * @return void
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function runQueuedTasks(){
 
@@ -280,7 +280,7 @@ class AMDTasks {
 	 *
 	 * @return bool
 	 * True on success, false on failure
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function deleteTasks( $where ){
 
@@ -299,7 +299,7 @@ class AMDTasks {
 	 *
 	 * @return bool
 	 * True on success, false on failure
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function deleteTaskByID( $id ){
 
@@ -314,7 +314,7 @@ class AMDTasks {
 	 *
 	 * @return bool
 	 * True on success, false on failure
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function deleteTasksByKey( $key ){
 

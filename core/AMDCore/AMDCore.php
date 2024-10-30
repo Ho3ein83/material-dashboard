@@ -9,14 +9,14 @@ class AMDCore{
 	 * Themes data array
 	 * <br><b>More dashboard themes and templates are available in premium version</b>
 	 * @var array[]
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	protected $themes;
 
 	/**
 	 * Sign-in methods
 	 * @var array[]
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	protected $signMethods;
 
@@ -57,7 +57,7 @@ class AMDCore{
 	/**
 	 * Init hooks & filters
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function initHooks(){
 
@@ -717,7 +717,7 @@ class AMDCore{
 	/**
 	 * Initialize registered hooks & filters
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function initRegisteredHooks(){
 
@@ -1140,7 +1140,7 @@ class AMDCore{
 	/**
 	 * Init shortcodes
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function initShortcodes(){
 
@@ -1240,7 +1240,7 @@ class AMDCore{
 	/**
 	 * Init admin menu
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function initAdmin(){
 
@@ -1299,12 +1299,32 @@ class AMDCore{
 
 		} );
 
+		# Admin stylesheet which loads from API stylesheet request
+		add_action( "amd_api_admin_stylesheet", function(){
+			# @formatter off
+			echo /** @lang CSS */ ".amd-table{max-width:100%;overflow-x:auto;border-radius:8px;-ms-overflow-style:none;scrollbar-width:none;background:var(--amd-wrapper-bg)}
+.amd-table::-webkit-scrollbar{display:none}
+.amd-table>table{width:100%;border-collapse:collapse}
+.amd-table>table tr>th{font-family:var(--amd-title-font),sans-serif;background:rgba(var(--amd-primary-rgb),.7);color:var(--amd-wrapper-fg);text-align:start;font-size:var(--amd-size-lg);height:30px;padding:8px 16px}
+.amd-table>table tr>th{color:#fff}
+body.rtl .amd-table>table tr>th:first-child{border-top-right-radius:8px}
+body.rtl .amd-table>table tr>th:last-child{border-top-left-radius:8px}
+body.ltr .amd-table>table tr>th:first-child{border-top-left-radius:8px}
+body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
+.amd-table>table tr>td{text-align:start;font-size:var(--amd-size-md);color:var(--amd-text-color);height:30px;padding:8px 16px;background-color:transparent;transition:background-color ease .2s}
+.amd-table>table tr:nth-child(even)>td{background-color:rgba(var(--amd-wrapper-fg-rgb),.2)}
+.amd-table>table tr:nth-child(odd)>td{background-color:var(--amd-wrapper-fg)}
+.amd-table>table tr:hover>td{background-color:rgba(var(--amd-primary-rgb),.08);}";
+			# @formatter on
+
+		} );
+
 	}
 
 	/**
 	 * Run main core
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function run(){
 
@@ -1320,7 +1340,7 @@ class AMDCore{
 	/**
 	 * Initialize
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function initialize(){
 
@@ -1346,7 +1366,7 @@ class AMDCore{
 	/**
 	 * Load API page
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function loadAPI(){
 
@@ -1357,7 +1377,7 @@ class AMDCore{
 	/**
 	 * Initialize
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function init(){
 
@@ -1389,7 +1409,7 @@ class AMDCore{
 	 * Whether to replace theme (if exist) or not
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function registerTheme( $id, $name, $scope, $data, $overwrite = false ){
 
@@ -1420,7 +1440,7 @@ class AMDCore{
 	 * Property new value. e.g: "#fff"
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function editTheme( $id, $scope, $name, $newValue ){
 
@@ -1442,7 +1462,7 @@ class AMDCore{
 	 * Whether to get method data or only check existing
 	 *
 	 * @return array|bool|null
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function signMethodExists( $id, $get = false ){
 
@@ -1456,7 +1476,7 @@ class AMDCore{
 	/**
 	 * Get registered sign-in methods
 	 * @return array[]
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getSignInMethods(){
 
@@ -1479,7 +1499,7 @@ class AMDCore{
 	 * Method data
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function registerSignInMethod( $id, $data ){
 
@@ -1497,7 +1517,7 @@ class AMDCore{
 	 * Method ID. e.g: "google"
 	 *
 	 * @return void
-	 * @sicne 1.0.3
+	 * @since 1.0.3
 	 */
 	public function removeSignInMethod( $id ){
 
@@ -1550,7 +1570,7 @@ class AMDCore{
 	 *
 	 * @return array[]
 	 * Theme data
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getThemes( $override = true ){
 
@@ -1584,7 +1604,7 @@ class AMDCore{
 	/**
 	 * Get theme variables for CSS
 	 * @return array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getThemeColors(){
 
@@ -1600,7 +1620,7 @@ class AMDCore{
 	/**
 	 * Load admin dashboard
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function page_admin_dashboard(){
 
@@ -1611,7 +1631,7 @@ class AMDCore{
 	/**
 	 * Load dashboard settings page
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function submenu_admin_settings(){
 
@@ -1622,7 +1642,7 @@ class AMDCore{
 	/**
 	 * Load appearance page
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function submenu_admin_appearance(){
 
@@ -1633,7 +1653,7 @@ class AMDCore{
 	/**
 	 * Load manage data page
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function submenu_admin_manage_data(){
 
@@ -1644,7 +1664,7 @@ class AMDCore{
 	/**
 	 * Security page
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function submenu_admin_security(){
 
@@ -1666,7 +1686,7 @@ class AMDCore{
 	/**
 	 * Themes page
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function submenu_admin_themes(){
 
@@ -1677,7 +1697,7 @@ class AMDCore{
     /**
 	 * Support page
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function submenu_admin_more(){
 
@@ -1689,7 +1709,7 @@ class AMDCore{
 	 * It's only for error prevention, the wizard page is already loaded in '_app' extension
 	 * @return void
 	 * @see amd_ext__app_dump_wizard_page()
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function admin_wizard_page(){ }
 
@@ -1700,7 +1720,7 @@ class AMDCore{
 	 * Variants data
 	 *
 	 * @return array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function cleanup( $variants ){
 
@@ -1731,7 +1751,7 @@ class AMDCore{
 	 * User ID, pass null to get current user
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function editUserFields( $u = null ){
 

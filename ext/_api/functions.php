@@ -137,7 +137,7 @@ function amd_ext__api_handler_all( $r ){
 
 			/**
 			 * Save user custom fields
-			 * @sicne 1.0.5
+			 * @since 1.0.5
 			 */
 			do_action( "amd_save_user_custom_fields", $uid, $custom_fields );
 
@@ -289,9 +289,9 @@ function amd_ext__api_handler_all( $r ){
 
 			/**
 			 * Allow users change phone number
-			 * @sicne 1.0.4
+			 * @since 1.0.4
 			 */
-			$allow_change_phone_number = apply_filters( "amd_allow_change_phone_number", false );
+			$allow_change_phone_number = apply_filters( "amd_allow_change_phone_number", true );
 
 			if( !$allow_change_phone_number )
 				wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );

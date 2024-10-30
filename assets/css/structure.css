@@ -912,9 +912,9 @@ svg.iconhub > polyline:not(.--exclude) {
     font-size: 18px
 }
 
-.font-title {
-    font-family: var(--amd-title-font)
-}
+.font-title { font-family: var(--amd-title-font) }
+.font-text { font-family: var(--amd-font-family) }
+.font-text-im { font-family: var(--amd-font-family) !important }
 
 .w-bold {
     font-weight: bold
@@ -1280,3 +1280,18 @@ svg.iconhub > polyline:not(.--exclude) {
 .icon-title.--green > ._icon_ { background: var(--amd-color-green) }
 .icon-title.--blue > ._icon_ { background: var(--amd-color-blue) }
 .icon-title.--orange > ._icon_ { background: var(--amd-color-orange) }
+
+/* Quill editor */
+.ql-direction-rtl {
+    direction: rtl;
+    text-align: inherit;
+}
+.ql-align-center {
+    text-align: center;
+}
+.ql-align-justify {
+    text-align: justify;
+}
+.ql-align-right {
+    text-align: right;
+}

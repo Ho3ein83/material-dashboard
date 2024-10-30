@@ -11,7 +11,7 @@ define( 'AMD_EXT_EDD_VIEW', AMD_EXT_EDD_PATH . '/view' );
 /**
  * Just for translations and extension availability check
  * @return void
- * @sicne 1.0.0
+ * @since 1.0.0
  */
 function amd_ext_edd(){
 	_x( "Amatris", "edd", "material-dashboard" );
@@ -22,7 +22,7 @@ function amd_ext_edd(){
 /**
  * Check if extension is ready and requirements are installed
  * @return bool
- * @sicne 1.0.0
+ * @since 1.0.0
  */
 function amd_ext_edd_ready(){
 	return class_exists( "EDD_Requirements_Check" );

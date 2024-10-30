@@ -26,7 +26,7 @@ class AMDComponent {
 	/**
 	 * Component data
 	 * @var mixed
-	 * @sicne 1.0.5
+	 * @since 1.0.5
 	 */
 	private $data;
 

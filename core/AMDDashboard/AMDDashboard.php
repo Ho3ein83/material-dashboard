@@ -8,21 +8,21 @@ class AMDDashboard{
 	/**
 	 * Dashboard home page cards
 	 * @var array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	protected $cards;
 
 	/**
 	 * Menu items, navbar items, quick options, etc.
 	 * @var array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	protected $menu;
 
 	/**
 	 * Lazy loading pages
 	 * @var array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	protected $pages;
 
@@ -43,7 +43,7 @@ class AMDDashboard{
 	/**
 	 * Initialize core
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function init(){
 
@@ -55,7 +55,7 @@ class AMDDashboard{
 	/**
 	 * Initialize hooks
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function initHooks(){
 
@@ -87,7 +87,7 @@ class AMDDashboard{
 	/**
 	 * Initialize dashboard when client visits dashboard and login page
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function initDashboard(){
 
@@ -101,7 +101,7 @@ class AMDDashboard{
 	 * @param array $r
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function ajax( $r ){
 
@@ -119,7 +119,7 @@ class AMDDashboard{
 	 * Card data
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function registerCard( $data ){
 
@@ -131,7 +131,7 @@ class AMDDashboard{
 	/**
 	 * Get registered cards
 	 * @return array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getCards( $filter = null, $sort = false ){
 		if( empty( $filter ) )
@@ -176,7 +176,7 @@ class AMDDashboard{
 	 * Item data
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function addMenuItem( $id, $data ){
 
@@ -206,7 +206,7 @@ class AMDDashboard{
 	 * Item data
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function addNavItem( $side, $data ){
 
@@ -226,7 +226,7 @@ class AMDDashboard{
 	 * `$side` is navbar item position (left or right) and `$data` is navbar data array
 	 *
 	 * @return array|mixed
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getNav( $filter = null ){
 		$_m = $this->menu["navbar"] ?? [];
@@ -265,7 +265,7 @@ class AMDDashboard{
 	 *
 	 * @return array
 	 * Menu items array if ID exists, otherwise returns empty array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getMenu( $id, $void = null, $sort = true ){
 
@@ -303,7 +303,7 @@ class AMDDashboard{
 	 * Page data
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function registerPage( $page_id, $data ){
 
@@ -325,7 +325,7 @@ class AMDDashboard{
 	 *
 	 * @return void
 	 * @see AMDDashboard::registerPage()
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function registerPageSimple( $page_id, $title, $path, $icon ){
 
@@ -344,7 +344,7 @@ class AMDDashboard{
 	 * Page ID
 	 *
 	 * @return array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function lazyPage( $void ){
 
@@ -407,7 +407,7 @@ class AMDDashboard{
 	 * Extra data for hooks
 	 *
 	 * @return array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getLazyPage( $void, $extra = [] ){
 
@@ -488,7 +488,7 @@ class AMDDashboard{
 	 * Page ID
 	 *
 	 * @return array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getDashboardPage( $void ){
 

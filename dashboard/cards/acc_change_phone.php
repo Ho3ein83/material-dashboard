@@ -4,11 +4,11 @@
  * Force it to display phone edit fields even if phone field is disabled by settings
  * @since 1.0.4
  */
-$force_display = apply_filters( "amd_force_display_phone_edit", false );
+$force_display = apply_filters(  "amd_force_display_phone_edit", false );
 
 /**
  * Allow users change phone number
- * @sicne 1.0.4
+ * @since 1.0.4
  */
 $allow_change_phone_number = apply_filters( "amd_allow_change_phone_number", false );
 

@@ -138,6 +138,13 @@ if( !$lazy_load OR $turtle == "normal" ){
 	<?php amd_load_part( "loader" ); ?>
 </div>
 <div id="wrapper" class="amd-wrapper <?php echo esc_attr( amd_element_classes( "wrapper" ) ); ?>">
+	<?php
+        /**
+         * Before wrapper
+         * @since 1.0.9
+         */
+        do_action( "amd_before_wrapper" );
+	?>
     <?php if( amd_part_exist( "navbar" ) ): ?>
         <div id="navbar" class="amd-navbar <?php echo esc_attr( amd_element_classes( "navbar" ) ); ?>">
 		    <?php amd_load_part( "navbar" ); ?>
@@ -145,9 +152,18 @@ if( !$lazy_load OR $turtle == "normal" ){
     <?php else: ?>
         <style>.amd-wrapper{margin-top:0 !important}</style>
     <?php endif; ?>
-    <div class="text-center _show_on_loader_">
-        <h2 class="_loading_text_"></h2>
-    </div>
+    <?php
+        /**
+         * After navbar
+         * @since 1.0.9
+         */
+        do_action( "amd_after_navbar" );
+    ?>
+    <?php if( !amd_theme_support( "custom_loader" ) ): ?>
+        <div class="text-center _show_on_loader_">
+            <h2 class="_loading_text_"></h2>
+        </div>
+    <?php endif; ?>
 	<div id="before-content">
 		<?php do_action( "amd_before_dashboard_content" ); ?>
     </div>
@@ -158,6 +174,13 @@ if( !$lazy_load OR $turtle == "normal" ){
 	<div id="after-content">
 		<?php do_action( "amd_after_dashboard_content" ); ?>
     </div>
+    <?php
+        /**
+         * After wrapper
+         * @since 1.0.9
+         */
+        do_action( "amd_after_wrapper" );
+	?>
 </div>
 <script>
 

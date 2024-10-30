@@ -145,7 +145,7 @@ define( 'AMD_UPLOAD_PATH', $_upload_base_dir . DIRECTORY_SEPARATOR . AMD_DIRECTO
  * Plugin current version
  * @since 1.0.4
  */
-define( 'AMD_VER', '1.0.8' );
+define( 'AMD_VER', '1.0.9' );
 
 /**
  * Version codes

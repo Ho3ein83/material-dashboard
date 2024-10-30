@@ -110,25 +110,5 @@ function amd_theme_amatris_init_themes(){
 add_action( "amd_core_init", "amd_theme_amatris_init_themes" );
 add_action( "amd_admin_core_init", "amd_theme_amatris_init_themes" );
 
-# Admin stylesheet which loads from API stylesheet request
-add_action( "amd_api_admin_stylesheet", function(){
-	# @formatter off
-	echo /** @lang CSS */ ".amd-table{max-width:100%;overflow-x:auto;border-radius:8px;-ms-overflow-style:none;scrollbar-width:none;background:var(--amd-wrapper-bg)}
-.amd-table::-webkit-scrollbar{display:none}
-.amd-table>table{width:100%;border-collapse:collapse}
-.amd-table>table tr>th{font-family:var(--amd-title-font),sans-serif;background:rgba(var(--amd-primary-rgb),.7);color:var(--amd-wrapper-fg);text-align:start;font-size:var(--amd-size-lg);height:30px;padding:8px 16px}
-.amd-table>table tr>th{color:#fff}
-body.rtl .amd-table>table tr>th:first-child{border-top-right-radius:8px}
-body.rtl .amd-table>table tr>th:last-child{border-top-left-radius:8px}
-body.ltr .amd-table>table tr>th:first-child{border-top-left-radius:8px}
-body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
-.amd-table>table tr>td{text-align:start;font-size:var(--amd-size-md);color:var(--amd-text-color);height:30px;padding:8px 16px;background-color:transparent;transition:background-color ease .2s}
-.amd-table>table tr:nth-child(even)>td{background-color:rgba(var(--amd-wrapper-fg-rgb),.2)}
-.amd-table>table tr:nth-child(odd)>td{background-color:var(--amd-wrapper-fg)}
-.amd-table>table tr:hover>td{background-color:rgba(var(--amd-primary-rgb),.08);}";
-	# @formatter on
-
-} );
-
 # Register dashboard tab content for admin settings
 add_action( "amd_appearance_tab_dashboard", "amd_theme_amatris_dashboard_tab" );

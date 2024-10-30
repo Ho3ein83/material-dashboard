@@ -699,7 +699,7 @@ class AMDFirewall{
 	 *
 	 * @return AMDFirewallBrowser
 	 * Firewall browser object
-	 * @sicne 1.0.5
+	 * @since 1.0.5
 	 */
 	public function parseAgent( $user_agent=null ){
 

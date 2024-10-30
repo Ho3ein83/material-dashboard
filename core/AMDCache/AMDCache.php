@@ -7,7 +7,8 @@ class AMDCache{
 
 	/**
 	 * Time stamps
-	 * @sicne 1.0.0
+     * @var array
+	 * @since 1.0.0
 	 */
 	const STAMPS = array(
 		'minute' => 60,
@@ -19,70 +20,71 @@ class AMDCache{
 
 	/**
 	 * Cookies and sessions prefix
-	 * @sicne 1.0.0
+     * @var string
+	 * @since 1.0.0
 	 */
 	const PREFIX = 'amd_';
 
 	/**
 	 * Variable scope
 	 * @var stdClass
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public $scope;
 
 	/**
 	 * Public cache variables
 	 * @var array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public $cache;
 
 	/**
 	 * Default variables
 	 * @var array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	protected $defaults;
 
 	/**
 	 * CSS stylesheets URL
 	 * @var array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	protected $css;
 
 	/**
 	 * JavaScript scripts URL
 	 * @var array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	protected $js;
 
 	/**
 	 * 24 hours -> 1 day
 	 * @var int
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public $COOKIE_DAY = 24;
 
 	/**
 	 * 168 hours -> 7 days
 	 * @var int
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public $COOKIE_WEEK = 168;
 
 	/**
 	 * 720 hours -> 30 days
 	 * @var int
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public $COOKIE_MONTH = 720;
 
 	/**
 	 * Array for storing data with multiple groups
 	 * @var array
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public $SCOPE_GROUP = [];
 
@@ -140,7 +142,7 @@ class AMDCache{
 	 * Item value: if `$id_s` is an array leave it empty
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function setScopeGroup( $group, $id_s, $value = "" ){
 		if( is_array( $id_s ) ){
@@ -161,7 +163,7 @@ class AMDCache{
      * New value to replace
 	 *
 	 * @return void
-	 * @sicne 1.0.4
+	 * @since 1.0.4
 	 */
 	public function updateScopeGroup( $group, $new_value ){
 		if( isset( $this->SCOPE_GROUP[$group] ) )
@@ -181,7 +183,7 @@ class AMDCache{
 	 * Whether to sort array or not
 	 *
 	 * @return array|mixed
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getScopeGroup( $group, $id = null, $sort = false ){
 		if( empty( $id ) )
@@ -230,7 +232,7 @@ class AMDCache{
      * Cache key (without prefix)
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function removeCache( $key ){
 
@@ -274,7 +276,7 @@ class AMDCache{
 	 * @param string $key
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function removeCookie( $key ){
 
@@ -295,7 +297,7 @@ class AMDCache{
 	 * Whether to get cookie value (if exists) or not
 	 *
 	 * @return bool|mixed|string
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function cookieExists( $key, $get = false ){
 
@@ -314,7 +316,7 @@ class AMDCache{
 	 * Whether to get session value (if exists) or not
 	 *
 	 * @return bool|mixed|string
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function sessionExists( $key, $get = false ){
 
@@ -335,7 +337,7 @@ class AMDCache{
 	 * Default value that return if cache doesn't exist
 	 *
 	 * @return bool|mixed|string
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function cacheExists( $key, $get = false, $default = "" ){
 
@@ -352,7 +354,7 @@ class AMDCache{
 	 * Cache type: "cookie" | "session" | "scope"
 	 *
 	 * @return mixed|null
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getCache( $key, $type = "*" ){
 
@@ -381,7 +383,7 @@ class AMDCache{
 	 * Number of days or true for 1 day or null to skip adding cookie
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function setCache( $key, $value, $cookie = null ){
 
@@ -405,7 +407,7 @@ class AMDCache{
 	 * Number of days or true for 1 day
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function setCookie( $key, $value, $cookie = false ){
 
@@ -425,7 +427,7 @@ class AMDCache{
 	 * Session value
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function setSession( $key, $value ){
 
@@ -442,7 +444,7 @@ class AMDCache{
 	 * Session key (`PREFIX` constant will be added to the beginning)
 	 *
 	 * @return mixed|null
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getSession( $key ){
 
@@ -462,7 +464,7 @@ class AMDCache{
 	 * Whether to only check cookie or all cache methods
 	 *
 	 * @return bool
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function cacheIsset( $key, $onlyCookie = false ){
 
@@ -495,7 +497,7 @@ class AMDCache{
      * Stylesheet version
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function addStyle( $id, $url, $ver = "unknown" ){
 
@@ -518,7 +520,7 @@ class AMDCache{
 	 * Script version
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function addScript( $id, $url, $ver = "unknown" ){
 
@@ -537,7 +539,7 @@ class AMDCache{
      * Stylesheet scope
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function dumpStyles( $scope = null ){
 
@@ -565,7 +567,7 @@ class AMDCache{
      * Script scope
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function dumpScript( $scope = null ){
 
@@ -672,7 +674,7 @@ class AMDCache{
      * Return this value if item doesn't exist
 	 *
 	 * @return mixed|string
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function getDefault( $key, $default = "" ){
 
@@ -706,7 +708,7 @@ class AMDCache{
      * Item value
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function addDefault( $key, $value ){
 
@@ -726,7 +728,7 @@ class AMDCache{
      * Whether to switch locale
 	 *
 	 * @return void
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	public function setLocale( $locale, $switch=true ){
 

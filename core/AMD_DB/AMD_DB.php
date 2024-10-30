@@ -109,7 +109,7 @@ class AMD_DB {
 
 				/**
 				 * Update database
-				 * @sicne 1.0.5
+				 * @since 1.0.5
 				 */
 				do_action( "amd_update_db", self::db_version );
 

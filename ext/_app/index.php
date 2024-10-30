@@ -752,6 +752,14 @@ add_action( "amd_dashboard_header", function(){
             background: var(--amd-wrapper-fg)
         }
 
+        .amd-lr-form input:-webkit-autofill,
+        .amd-lr-form input:-webkit-autofill:focus {
+            transition: background-color 600000s 0s, color 600000s 0s;
+        }
+        .amd-lr-form input[data-autocompleted] {
+            background-color: transparent !important;
+        }
+
         .amd-lr-form > .--title {
             font-family: var(--amd-title-font);
             color: var(--amd-title-color);

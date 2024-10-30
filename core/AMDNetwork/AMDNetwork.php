@@ -297,7 +297,7 @@ class AMDNetwork{
                 if( !empty( $custom_fields ) ){
 	                /**
 	                 * Save user custom fields
-                     * @sicne 1.0.5
+                     * @since 1.0.5
 	                 */
                     do_action( "amd_save_user_custom_fields", $uid, $custom_fields );
                 }

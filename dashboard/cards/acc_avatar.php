@@ -14,6 +14,26 @@ $hasCustomAvatar = file_exists( amd_get_avatars_path() . "/" . $thisuser->secret
 
 <?php ob_start(); ?>
 <div class="amd-avatars-gallery" id="avatars-gallery">
+	<?php if( $uploadAllowed ): ?>
+        <div class="--item _upload_avatar_">
+            <div class="--icon --dashed">
+				<?php _amd_icon( "cloud_upload" ); ?>
+            </div>
+        </div>
+	<?php endif; ?>
+    <div class="--item --self <?php echo $isCustomAvatar ? 'active' : ''; ?>"
+         data-avatar="<?php echo esc_attr( $thisuser->secretKey ); ?>" <?php echo ( $isCustomAvatar || $hasCustomAvatar ) ? '' : 'style="display:none"'; ?>>
+        <div class="--image">
+            <img src="<?php echo esc_url( amd_merge_url_query( amd_avatar_url( $thisuser->secretKey ), "cache=" . time() ) ); ?>"
+                 alt="" loading="lazy">
+        </div>
+    </div>
+    <div class="--item <?php echo esc_attr( $thisuser->profileKey == 'placeholder' ? 'active' : '' ); ?>"
+         data-avatar="placeholder">
+        <div class="--image">
+            <img src="<?php echo esc_url( amd_avatar_url( 'placeholder' ) ); ?>" alt="" loading="lazy">
+        </div>
+    </div>
 	<?php foreach( $avatars as $path_id => $avatar ): ?>
 		<?php
 
@@ -41,26 +61,6 @@ $hasCustomAvatar = file_exists( amd_get_avatars_path() . "/" . $thisuser->secret
 		}
 		?>
 	<?php endforeach; ?>
-    <div class="--item <?php echo esc_attr( $thisuser->profileKey == 'placeholder' ? 'active' : '' ); ?>"
-         data-avatar="placeholder">
-        <div class="--image">
-            <img src="<?php echo esc_url( amd_avatar_url( 'placeholder' ) ); ?>" alt="" loading="lazy">
-        </div>
-    </div>
-    <div class="--item --self <?php echo $isCustomAvatar ? 'active' : ''; ?>"
-         data-avatar="<?php echo esc_attr( $thisuser->secretKey ); ?>" <?php echo ( $isCustomAvatar || $hasCustomAvatar ) ? '' : 'style="display:none"'; ?>>
-        <div class="--image">
-            <img src="<?php echo esc_url( amd_merge_url_query( amd_avatar_url( $thisuser->secretKey ), "cache=" . time() ) ); ?>"
-                 alt="" loading="lazy">
-        </div>
-    </div>
-	<?php if( $uploadAllowed ): ?>
-        <div class="--item _upload_avatar_">
-            <div class="--icon --dashed">
-				<?php _amd_icon( "cloud_upload" ); ?>
-            </div>
-        </div>
-	<?php endif; ?>
 </div>
 <div id="cropper" class="amd-cropper">
     <img src="" alt="" id="cropper-img">
@@ -272,6 +272,7 @@ $hasCustomAvatar = file_exists( amd_get_avatars_path() . "/" . $thisuser->secret
         });
     }());
 </script>
+
 <!-- @formatter off -->
 <style>.amd-drop-zone{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:inherit;background:rgba(var(--amd-primary-rgb),.7);z-index:10}.amd-drop-zone>div{display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;margin:32px;width:calc(100% - 64px);height:calc(100% - 64px);border-radius:inherit;border:3px dashed #fff}.amd-drop-zone>div>*{color:#fff}
 .amd-cropper{width:90%;max-width:300px;margin:20px auto;text-align:center}.amd-cropper>img{display:block;max-width:100%}

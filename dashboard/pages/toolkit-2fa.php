@@ -24,7 +24,9 @@ $expire = $_expire > 0 ? $_expire - time() : 0;
         <input type="text" class="clear-invalid-state" id="2fa-code">
         <span><?php esc_html_e( "Verification code", "material-dashboard" ); ?></span>
     </label>
-    <button type="button" class="btn btn-text --low waiting" id="2fa-resend"><?php esc_html_e( "Resend code", "material-dashboard" ); ?></button>
+    <div class="text-center">
+        <button type="button" class="btn btn-text --low waiting margin-auto" id="2fa-resend"><?php esc_html_e( "Resend code", "material-dashboard" ); ?></button>
+    </div>
 </div>
 <div class="h-20"></div>
 <div class="amd-lr-buttons">

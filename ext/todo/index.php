@@ -80,7 +80,7 @@ add_action( "amd_init_sidebar_items", function(){
 
 /**
  * @return void
- * @sicne 1.0.0
+ * @since 1.0.0
  */
 function amd_ext_todo_init_hooks(){
 

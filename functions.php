@@ -201,7 +201,7 @@ function amd_replace_constants( $str ){
 
 	/**
      * For custom properties
-	 * @sicne 1.0.0
+	 * @since 1.0.0
 	 */
 	return apply_filters( "amd_replace_constants", $str );
 
@@ -2043,7 +2043,7 @@ function amd_get_page_url( $page ){
  *
  * @return void
  * @see AMDDashboard::registerPage()
- * @sicne 1.0.0
+ * @since 1.0.0
  */
 function amd_register_lazy_page( $id, $title, $path, $icon ){
 
@@ -2624,7 +2624,7 @@ function amd_set_default( $key, $value ){
  * Return this value if item doesn't exist
  *
  * @return mixed|string
- * @sicne 1.0.0
+ * @since 1.0.0
  */
 function amd_get_default( $key, $default = "" ){
 
@@ -4533,7 +4533,7 @@ function amd_error_code_track_url( $error_code ){
  * Stylesheet version
  *
  * @return void
- * @sicne 1.0.1
+ * @since 1.0.1
  */
 function amd_register_style( $id, $url, $ver="unknown" ){
 
@@ -4586,7 +4586,7 @@ function amd_deregister_style_scope( $scope ){
  * Script version
  *
  * @return void
- * @sicne 1.0.1
+ * @since 1.0.1
  */
 function amd_register_script( $id, $url, $ver="unknown" ){
 
@@ -4839,7 +4839,7 @@ function amd_pull_value( $input, $element, $separator=",", $unique=true ){
  * Whether phone field is for login page or not
  *
  * @return void
- * @sicne 1.0.4
+ * @since 1.0.4
  */
 function amd_phone_fields( $isForLogin=false ){
 
@@ -4969,7 +4969,7 @@ function amd_user_required_2f( $uid=null ){
  *
  * @return array|mixed
  * Templates array
- * @sicne 1.0.8
+ * @since 1.0.8
  */
 function amd_get_user_message_templates( $get_id=null ){
 
@@ -5009,7 +5009,7 @@ function amd_get_user_message_templates( $get_id=null ){
  *
  * @return string
  * Template text
- * @sicne 1.0.8
+ * @since 1.0.8
  */
 function amd_get_user_message_template( $message_id, $user, ...$args ){
 
@@ -5183,7 +5183,7 @@ function amd_get_template_allowed_variables( $template_id ){
  *
  * @return array
  * Variables list
- * @sicne 1.0.8
+ * @since 1.0.8
  */
 function amd_get_template_variables( $template, $onlyNames=false ){
 
@@ -5285,7 +5285,7 @@ function amd_get_tasks( $filter=[], $make=true, $single=false, $order=[] ){
  * @return bool
  * True on success, false on failure
  * @see AMDTasks::deleteTasks()
- * @sicne 1.0.8
+ * @since 1.0.8
  */
 function amd_delete_tasks( $where ){
 
@@ -5317,13 +5317,64 @@ function amd_update_tasks( $data, $where ){
  * Run all queued tasks
  * @return void
  * @see AMDTasks::runQueuedTasks()
- * @sicne 1.0.8
+ * @since 1.0.8
  */
 function amd_run_queued_tasks(){
 
     global $amdTasks;
 
     $amdTasks->runQueuedTasks();
+
+}
+
+/**
+ * Print spacer with specific height
+ * @param int $height
+ * Spacer height in px
+ *
+ * @return void
+ * @since 1.0.9
+ */
+function amd_front_spacer( $height=10 ){
+    ?>
+    <div class="amd-front-spacer" style="height:<?php echo esc_attr( "{$height}px" ); ?>"></div>
+    <?php
+}
+
+/**
+ * Enable or disable no distraction mode
+ *
+ * @param bool $enable
+ *
+ * @return void
+ */
+function amd_no_distraction_mode( $enable=true ){
+
+    if( $enable ){
+
+	    amd_set_default( "dnd_mode_navbar_path", apply_filters( "amd_part_navbar_path", "" ) );
+
+	    amd_set_default( "dnd_mode_sidebar_path", apply_filters( "amd_part_sidebar_path", "" ) );
+
+	    add_filter( "amd_part_navbar_path", "__return_false" );
+
+	    add_filter( "amd_part_sidebar_path", "__return_false" );
+
+	    amd_add_element_class( "body", ["dnd-mode"] );
+
+        return;
+
+    }
+
+	add_filter( "amd_part_navbar_path", function(){
+		return amd_get_default( "dnd_mode_navbar_path", false );
+    } );
+
+	add_filter( "amd_part_sidebar_path", function(){
+		return amd_get_default( "dnd_mode_sidebar_path", false );
+    } );
+
+	amd_remove_element_class( "body", ["dnd-mode"] );
 
 }
 

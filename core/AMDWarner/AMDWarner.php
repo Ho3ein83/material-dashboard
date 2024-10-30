@@ -273,7 +273,7 @@ class AMDWarner{
 
             /**
 	         * Schedule time for messages
-             * @sicne 1.0.8
+             * @since 1.0.8
 	         */
 	        $schedule = apply_filters( "amd_message_schedule_time", 0 );
 

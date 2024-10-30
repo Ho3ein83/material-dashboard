@@ -13,7 +13,7 @@ if( !empty( $_GET["report"] ) ){
     if( has_action( "amd_account_report" ) ){
 	    /**
 	     * Custom account reports
-         * @sicne 1.0.5
+         * @since 1.0.5
 	     */
         do_action( "amd_account_report" );
         return;
@@ -22,4 +22,4 @@ if( !empty( $_GET["report"] ) ){
 
 ?>
 <div class="card-columns template-1"><?php amd_dump_cards( "acc_card" ); ?></div>
-<div class="h-100"></div>
+<?php amd_front_spacer( 100 ); ?>

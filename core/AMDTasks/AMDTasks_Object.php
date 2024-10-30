@@ -67,7 +67,7 @@ class AMDTasks_Object {
 
 	/**
 	 * Task object
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function __construct(){
 
@@ -126,7 +126,7 @@ class AMDTasks_Object {
 	/**
 	 * Get user object
 	 * @return AMDUser|null
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function get_user(){
 		return $this->user;
@@ -135,7 +135,7 @@ class AMDTasks_Object {
 	/**
 	 * Get key
 	 * @return string
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function get_key(){
 		return $this->key;
@@ -146,7 +146,7 @@ class AMDTasks_Object {
 	 * @param string $key
 	 *
 	 * @return void
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function set_key( $key ){
 		$this->key = $key;
@@ -159,7 +159,7 @@ class AMDTasks_Object {
 	 * Whether to decrypt data or return encrypted task
 	 *
 	 * @return string
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function get_task( $decrypt=true ){
 
@@ -172,7 +172,7 @@ class AMDTasks_Object {
 	 * @param string $task
 	 *
 	 * @return void
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function set_task( $task ){
 		$this->task = $task;
@@ -181,7 +181,7 @@ class AMDTasks_Object {
 	/**
 	 * Get repeat times
 	 * @return int
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function get_repeat(){
 		return $this->repeat;
@@ -192,7 +192,7 @@ class AMDTasks_Object {
 	 * @param int $repeat
 	 *
 	 * @return void
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function set_repeat( $repeat ){
 		$this->repeat = $repeat;
@@ -201,7 +201,7 @@ class AMDTasks_Object {
 	/**
 	 * Set task repeat period
 	 * @return int
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function get_period(){
 		return $this->period;
@@ -212,7 +212,7 @@ class AMDTasks_Object {
 	 * @param int $period
 	 *
 	 * @return void
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function set_period( $period ){
 		$this->period = $period;
@@ -221,7 +221,7 @@ class AMDTasks_Object {
 	/**
 	 * Get task execution time
 	 * @return int
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function get_time(){
 		return $this->time;
@@ -232,7 +232,7 @@ class AMDTasks_Object {
 	 * @param int $time
 	 *
 	 * @return void
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function set_time( $time ){
 		$this->time = $time;
@@ -245,7 +245,7 @@ class AMDTasks_Object {
 	 * Whether to get specific element from meta items or get the whole meta
 	 *
 	 * @return mixed
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function get_meta( $element=null ){
 		return $element ? $this->meta[$element] : $this->meta;
@@ -259,7 +259,7 @@ class AMDTasks_Object {
 	 * Pass null to set meta value completely, or pass meta element key to change specific element
 	 *
 	 * @return void
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function set_meta( $meta, $element=null ){
 		if( $element )
@@ -275,7 +275,7 @@ class AMDTasks_Object {
 	 *
 	 * @return bool
 	 * True on success, false on failure
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function run( $timeCheck=true ){
 
@@ -288,13 +288,13 @@ class AMDTasks_Object {
 
 			/**
 			 * Hook for running task item
-			 * @sicne 1.0.8
+			 * @since 1.0.8
 			 */
 			do_action( "amd_run_task", $this );
 
 			/**
 			 * Run task and get the result
-			 * @sicne 1.0.8
+			 * @since 1.0.8
 			 */
 			$finished = apply_filters( "amd_task_run", false, $this, $json );
 
@@ -313,7 +313,7 @@ class AMDTasks_Object {
 	 * Delete this task from database
 	 * @return bool
 	 * True on success, false on failure
-	 * @sicne 1.0.8
+	 * @since 1.0.8
 	 */
 	public function delete(){
 

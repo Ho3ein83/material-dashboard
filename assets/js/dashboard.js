@@ -11,31 +11,21 @@ var AMDDashboard = (function() {
         _network.setAction(conf.action);
 
         this.on = {
-            start: () => {
-            },
-            success: () => {
-            },
-            failed: () => {
-            },
-            error: () => {
-            },
-            end: () => {
-            }
+            start: () => null,
+            success: () => null,
+            failed: () => null,
+            error: () => null,
+            end: () => null
         }
 
         this.getNetwork = () => _network;
         this.clean = () => {
             this.on = {
-                start: () => {
-                },
-                success: () => {
-                },
-                failed: () => {
-                },
-                error: () => {
-                },
-                end: () => {
-                }
+                start: () => null,
+                success: () => null,
+                failed: () => null,
+                error: () => null,
+                end: () => null
             }
             _network.clean();
         }
@@ -85,6 +75,7 @@ var AMDDashboard = (function() {
         var thisuser = null, _api_engine = null;
         var actions = {}, keymap = {}, keymap_lower = {}, keyEvents = [], keyEvents2 = {};
         var _floating_buttons = {}, _checkin_interval;
+        var defaultContentHtml = "";
         var lazyEvent = {
             open: [],
             reload: [],
@@ -303,6 +294,12 @@ var AMDDashboard = (function() {
         this.setAvatar = url => {
             $sidebar.find(".--avatar").attr("src", url);
             $("img._self_avatar_").attr("src", url);
+            $amd.doEvent("set_user_avatar", { url });
+        }
+
+        this.setUserName = name => {
+            $sidebar.find(".--user-name").html(name);
+            $amd.doEvent("set_user_name", { name });
         }
 
         this.initNavbar = () => {
@@ -413,15 +410,23 @@ var AMDDashboard = (function() {
             (function() {
                 let $clocks = $(".__live_clock");
                 if($clocks.length > 0) {
-                    let setClock = () => {
-                        let d = new Date();
-                        let hh = d.getHours().toString();
-                        let mm = d.getMinutes().toString();
-                        let ss = d.getSeconds().toString();
-                        $clocks.html(`${hh.addZero()}:${mm.addZero()}:${ss.addZero()}`);
-                    }
-                    setClock();
-                    setInterval(() => setClock(), 1000);
+                    $clocks.each(function(){
+                        let $clock = $(this);
+                        if($clock.hasAttr("--checked"))
+                            return;
+                        let format = $clock.hasAttr("data-format", true, "h:m:s");
+                        let setClock = () => {
+                            let d = new Date();
+                            let hh = d.getHours().toString();
+                            let mm = d.getMinutes().toString();
+                            let ss = d.getSeconds().toString();
+                            // $clock.html(`${hh.addZero()}:${mm.addZero()}:${ss.addZero()}`);
+                            let text = format.replaceAll("h", hh.addZero()).replaceAll("m", mm.addZero()).replaceAll("s", ss.addZero());
+                            $clock.html(text);
+                        }
+                        setClock();
+                        setInterval(() => setClock(), 1000);
+                    });
                 }
             }());
         }
@@ -699,6 +704,7 @@ var AMDDashboard = (function() {
             let $_loader = $loader;
             if(conf.mode === "form")
                 $_loader = $("#form-loader");
+            $amd.doEvent("loader_display", { display: b });
             if(!$_loader) return;
             let $e = $("._show_on_loader_");
             let $dots = $("._loader_dots_");
@@ -876,7 +882,7 @@ var AMDDashboard = (function() {
                 return false;
 
             if(!$content || !conf.lazy_load) return false;
-            $content.html("");
+            $content.html(defaultContentHtml);
             if($after_content.length)
                 $after_content.html("");
             if($before_content.length)
@@ -1106,6 +1112,16 @@ var AMDDashboard = (function() {
             n.clean();
             return n;
         }
+
+        // since 1.0.9
+        this.setDefaultContentHtml = html => defaultContentHtml = html;
+
+        // since 1.0.9
+        this.get$content = () => $content;
+        this.get$sidebar = () => $sidebar;
+        this.get$navbar = () => $navbar;
+        this.get$wrapper = () => $wrapper;
+        this.get$loader = () => $loader;
 
     }
 

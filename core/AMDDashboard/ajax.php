@@ -3,7 +3,7 @@
 /**
  * Print fail message
  * @return string
- * @sicne 1.0.0
+ * @since 1.0.0
  */
 function amd_hbdash_ajax_fail_message(){
 
@@ -27,7 +27,7 @@ function amd_hbdash_ajax_fail_message(){
  * @param array $r
  *
  * @return void
- * @sicne 1.0.0
+ * @since 1.0.0
  */
 function amd_hbdash_ajax_handler( $r ){
 
