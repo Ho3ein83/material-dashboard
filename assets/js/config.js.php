@@ -1,5 +1,6 @@
 <?php
 
+$tooltip_mode = amd_get_site_option( "dashboard_tooltip", "dashboard_default" );
 $isLocal = amd_is_localhost();
 $isLoggedIn = is_user_logged_in();
 $userObject = null;
@@ -111,6 +112,7 @@ var amd_conf = {
     login_url: `<?php echo amd_get_login_page(); ?>`,
     dashboard_url: `<?php echo amd_get_dashboard_page(); ?>`,
     title_separator: `<?php echo apply_filters( "amd_title_separator", "»" ); ?>`,
+    tooltip_mode: `<?php echo sanitize_text_field( $tooltip_mode ); ?>`,
     forms: {
         special_keys: ["Control", "Shift", "Backspace", "CapsLock", "NumLock", "Tab", "Meta", "Escape", "Home", "End", "PageUp", "PageDown", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"],
         getAllowedKeys: pattern => {
@@ -128,6 +130,7 @@ var amd_conf = {
             return amd_conf.forms.special_keys.includes(key);
         }
     },
+    locale: `<?php echo get_locale(); ?>`,
     isLocal: <?php echo $isLocal ? "true" : "false"; ?>,
     isLoggedIn: <?php echo $isLoggedIn ? "true" : "false"; ?>,
     getUser: () => {

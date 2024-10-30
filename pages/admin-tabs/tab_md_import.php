@@ -49,7 +49,7 @@ $variants = $amdDB->getExportVariants();
                 let reader = new FileReader();
                 $state.html(file.name);
                 reader.addEventListener("load", d => {
-                    let text = d.explicitOriginalTarget.result;
+                    let text = d.currentTarget.result;
                     importData = file;
                     $log.html(_t("wait_td"));
                     $log.removeClass("color-red");

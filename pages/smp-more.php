@@ -14,6 +14,11 @@ $tabs = array(
 		"title" => esc_html_x( "Documentation", "Admin", "material-dashboard" ),
 		"icon"  => "page",
 		"page"  => AMD_PAGES . "/admin-tabs/tab_more_documentation.php",
+	),
+    "data-collect" => array(
+		"title" => esc_html_x( "Data collect", "Admin", "material-dashboard" ),
+		"icon"  => "star",
+		"page"  => AMD_PAGES . "/admin-tabs/tab_more_data_collect.php",
 	)
 );
 

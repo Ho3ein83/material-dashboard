@@ -52,6 +52,7 @@ var AMDDashboard = (function() {
             loader_id: "",
             api_url: "",
             mode: "dashboard",
+            tooltip_mode: "dashboard_default",
             loading_text: _t("wait_td"),
             prefix: "amd_",
             languages: {},
@@ -435,6 +436,9 @@ var AMDDashboard = (function() {
 
             this.switchTheme(_this.getTheme());
 
+            if(typeof amd_conf.tooltip_mode !== "undefined")
+                conf.tooltip_mode = amd_conf.tooltip_mode;
+
             thisuser = new (function() {
                 function AMDUser(d = {}) {
                     var data = Object.assign({
@@ -809,8 +813,12 @@ var AMDDashboard = (function() {
         this.toggleSidebar = () => this.getSidebar().toggleClass("collapse")
 
         this.initTooltips = () => {
-            if(typeof HBTooltip !== "undefined")
-                new HBTooltip().init();
+            if(typeof HBTooltip !== "undefined") {
+                let tooltip = new HBTooltip({
+                    mode: conf.tooltip_mode
+                });
+                tooltip.init();
+            }
         };
 
         this.availableLanguages = () => Object.entries(conf.languages).length;
@@ -1075,7 +1083,8 @@ var AMDDashboard = (function() {
         this.onKeydown = (key, callable) => this.onKey(key, callable, "keydown");
 
         this.checkin = () => {
-            if(_this.isLoggedIn()) this.createNetwork().clean().cleanEvents().put("_checkin", true).post()
+            if(_this.isLoggedIn())
+                this.createNetwork().clean().cleanEvents().put("_checkin", true).post()
         };
 
         this.resetCheckin = () => {

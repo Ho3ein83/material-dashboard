@@ -67,6 +67,12 @@ if( !empty( $r["stylesheets"] ) ){
     # For each separated stylesheet
 	foreach( $styles as $style ){
 
+        # since 1.1.0
+        if( has_action( "amd_custom_api_stylesheet_$style" ) ){
+            do_action( "amd_custom_api_stylesheet_$style" );
+            continue;
+        }
+
         # Variables stylesheet
         if( $style == "_vars" ){
 
@@ -256,6 +262,12 @@ else if( !empty( $r["scripts"] ) ){
 
 	# For each separated script
 	foreach( $scripts as $script ){
+
+        # since 1.1.0
+        if( has_action( "amd_custom_api_script_$script" ) ){
+            do_action( "amd_custom_api_script_$script", $minify, $r );
+            continue;
+        }
 
         # Main script (is )
 		if( $script == "_main" ){

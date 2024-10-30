@@ -140,9 +140,7 @@ class AMDComponent {
 	 */
 	public function get_decoded_data(){
 
-		$d = @json_decode( $this->data, true );
-
-		return $d;
+        return @json_decode( $this->data, true );
 
 	}
 

@@ -253,7 +253,6 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     form.$getField("vCode").on("input", function(){
         let $el = $(this), v = $el.val();
         let length = $el.parent().hasAttr("data-length", true);
-        console.log(v, length);
         if(!length) return;
         if(length && parseInt(length) === v.length) form.submit();
     });

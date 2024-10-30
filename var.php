@@ -75,6 +75,12 @@ define( 'AMD_CSS', AMD_ASSETS . '/css' );
 define( 'AMD_JS', AMD_ASSETS . '/js' );
 
 /**
+ * Scripts directory
+ * @since 1.1.0
+ */
+define( 'AMD_SCRIPTS_PATH', AMD_ASSETS_PATH . '/scripts' );
+
+/**
  * Images directory
  * @since 1.0.0
  */
@@ -114,7 +120,7 @@ define( 'AMD_API_PATH', AMD_PATH . DIRECTORY_SEPARATOR . 'api' );
  * Author website URL (for documentation and other resources)
  * @since 1.0.0
  */
-define( 'AMD_AUTH_SITE', "http://amatris.ir" );
+define( 'AMD_AUTH_SITE', "https://amatris.ir" );
 
 /**
  * Watermark
@@ -145,7 +151,24 @@ define( 'AMD_UPLOAD_PATH', $_upload_base_dir . DIRECTORY_SEPARATOR . AMD_DIRECTO
  * Plugin current version
  * @since 1.0.4
  */
-define( 'AMD_VER', '1.0.9' );
+define( 'AMD_SEARCH_ENGINE_URL', 'https://amatris.ir/Machines/MaterialDashboard/Search' );
+
+/**
+ * Plugin current version
+ * @since 1.0.4
+ */
+define( 'AMD_VER', '1.1.0' );
+
+/**
+ * cTrack collect URL
+ * @since 1.1.0
+ */
+define( 'AMD_CTRACK_COLLECT_URL', 'https://amatris.ir/cTrack/collect' );
+
+/**
+ * @since 1.1.0
+ */
+define( 'AMD_PATCH_HASH', '59Gmrz0uaBZPVoPJvVF0BWNhzVrHIT0T5kKCeOyj4Q5iKcjBN34hoHADYppseMZM' );
 
 /**
  * Version codes

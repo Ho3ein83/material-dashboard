@@ -2,8 +2,8 @@
 Contributors: ho3einie,amatris
 Tags: dashboard, material dashboard, user profile, woocommerce, easy digital downloads
 Requires at least: 5.2
-Tested up to: 6.3
-Stable tag: 1.0.9
+Tested up to: 6.4
+Stable tag: 1.1.0
 Requires PHP: 7.4.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -56,13 +56,24 @@ At our company, we take the security and privacy of our users' data very serious
 
 = Will you collect any data from my site? =
 
-Currently, we do not collect any information without your explicit consent. If we ever decide to gather data, it will only be done with your permission.
+At your first installation you can choose to share your data or not and we respect your choice, if you accept to share your data with us in purpose of improvements, we only will collect data from this plugin database tables and nowhere else. You can also disable data-sharing at any time.
 
 = Can I develop my own extensions and themes for this plugin? =
 
 You can create your own extensions and themes for your dashboard and publish it with your name if you want. You can get started by reading our [documentation](https://amatris.ir/amd/d).
 
 == Changelog ==
+
+= 1.1.0 =
+* C-Track core added for better data management
+* Icon library improvements
+* Task manager feature
+* Database structures change (database engine and collation)
+* Advanced search feature added
+* New core added: Search engine for better search results
+* Dashboard sidebar menu custom items
+* Cores improved
+* Bugs fixed
 
 = 1.0.9 =
 * Cores improved

@@ -33,19 +33,30 @@ var AMDTab = (function() {
                 }
             });
 
-            this.switch(this.getActive())
+            this.switch(this.getActive());
+            let focus = this.getFocus();
+            if(focus){
+                window.onload = () => $amd.scrollTo($(`[data-ts="${focus}"]`), 1000, 20);
+            }
             window.addEventListener("popstate", () => _this.switch(_this.getActive()));
 
         }
 
         this.getActive = () => {
             let hash = location.href.split("#")[1] || "";
-            if(hash) return hash;
+            if(hash) return hash.split(":")[0];
 
             let active = $("[data-amd-tab].active").hasAttr("data-amd-tab", true);
             if(active) return active;
 
             return conf.default_tab;
+        }
+
+        this.getFocus = () => {
+            let hash = location.href.split("#")[1] || "";
+            if(hash.indexOf(":") > -1)
+                return hash.split(":")[1];
+            return "";
         }
 
         this.switch = id => {

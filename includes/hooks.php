@@ -1,6 +1,23 @@
 <?php
 
 /**
+ * Autoload hooks scripts
+ * @return void
+ * @since 1.2.0
+ */
+function amd_hooks_load_all(){
+
+    # Search keys (look inside 'hooks' directory)
+    # al_menu_hooks.php, al_icon_library_hooks.php
+
+    foreach( glob( AMD_INCLUDES . "/hooks/*.php", GLOB_BRACE ) as $file ){
+        if( file_exists( $file ) AND preg_match( "/\/al_(.*)\.php$/", $file ) )
+            require_once( $file );
+    }
+
+}
+
+/**
  * Fix database tables collation
  *
  * @param int $db_version

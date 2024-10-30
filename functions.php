@@ -3,10 +3,24 @@
 # Load cores
 add_action( "init", function(){
 
-	// Load all required cores
+	# Load all required cores
 	amd_require_all();
 
 } );
+
+/**
+ * Initialize C-Track core
+ * @since 1.1.0
+ */
+add_action( "amd_after_cores_init", function(){
+
+    global $amdCTrack;
+
+    # Run C-Track core to improve user-experience by collecting non-sensitive data
+    if( $amdCTrack instanceof AMD_CTrack )
+        $amdCTrack->run();
+
+}, 99 );
 
 /**
  * Extra components stylesheet
@@ -62,8 +76,7 @@ function amd_icon( $icon, $pack = null, $styles = [], $options = [] ){
     if( empty( $icon ) )
         return "";
 
-	global /** @var AMDIcon $amdIcon */
-	$amdIcon;
+	global $amdIcon;
 
 	return $amdIcon->getIcon( $pack, $icon, $styles, $options );
 }
@@ -105,8 +118,7 @@ function _amd_icon( $icon, $pack = null, $styles = [], $options = [] ){
  */
 function amd_set_icon_pack( $pack ){
 
-	global /** @var AMDIcon $amdIcon */
-	$amdIcon;
+	global $amdIcon;
 
 	$amdIcon->setIconPack( $pack );
 
@@ -121,8 +133,7 @@ function amd_set_icon_pack( $pack ){
  */
 function amd_current_icon_pack(){
 
-	global /** @var AMDIcon $amdIcon */
-	$amdIcon;
+	global $amdIcon;
 
 	return $amdIcon->getCurrentIconPack();
 
@@ -140,8 +151,7 @@ function amd_current_icon_pack(){
  */
 function amd_icon_pack_require( $pack_id ){
 
-	global /** @var AMDIcon $amdIcon */
-	$amdIcon;
+	global $amdIcon;
 
 	$amdIcon->requireIconPack( $pack_id );
 
@@ -156,8 +166,7 @@ function amd_icon_pack_require( $pack_id ){
  */
 function amd_get_icon_pack(){
 
-	global /** @var AMDIcon $amdIcon */
-	$amdIcon;
+	global $amdIcon;
 
 	return $amdIcon->getCurrentIconPack();
 
@@ -285,9 +294,7 @@ function amd_check_requirements( $r ){
 	}
 
 	# If all search terms are true (for 'AND' queries) or at least one is true (for 'OR' queries), the overall result is true
-	$available = ( $operator == 'AND' ? !in_array( false, $results ) : in_array( true, $results ) );
-
-	return $available;
+    return ( $operator == 'AND' ? !in_array( false, $results ) : in_array( true, $results ) );
 
 }
 
@@ -616,8 +623,7 @@ function amd_replace_url( $url ){
  */
 function amd_set_user_meta( $uid, $mn, $mv ){
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	return $amdSilu->setUserMeta( $uid, $mn, $mv );
 
@@ -638,8 +644,7 @@ function amd_set_user_meta( $uid, $mn, $mv ){
  */
 function amd_get_user_meta( $uid, $mn, $default = "" ){
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	return $amdSilu->getUserMeta( $uid, $mn, $default );
 
@@ -658,8 +663,7 @@ function amd_get_user_meta( $uid, $mn, $default = "" ){
  */
 function amd_delete_user_meta( $uid, $mn ){
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	return $amdSilu->deleteUserMeta( $uid, $mn );
 
@@ -678,8 +682,7 @@ function amd_delete_user_meta( $uid, $mn ){
  */
 function amd_user_has_meta( $uid, $mn ){
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	return $amdSilu->userMetaExists( $uid, $mn );
 
@@ -1037,13 +1040,11 @@ function amd_generate_secret( $uid, $unique = false, $addToDB = false ){
 	};
 	$secret = call_user_func( $makeSecret );
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	if( $unique and !empty( $amdSilu ) ){
-		while( $amdSilu->getUserByMeta( "secret", $secret ) ){
-			$secret = call_user_func( $makeSecret );
-		}
+		while( $amdSilu->getUserByMeta( "secret", $secret ) )
+            $secret = call_user_func( $makeSecret );
 	}
 
 	if( $addToDB )
@@ -1105,7 +1106,7 @@ function amd_is_verification_code_valid( $uid, $vCode, $name = "verification" ){
  * User ID
  * @param string $new_password
  * New password
- * @param bool $notify
+ * @param bool $notice
  * Whether let user know about password change
  *
  * @return bool
@@ -1113,8 +1114,7 @@ function amd_is_verification_code_valid( $uid, $vCode, $name = "verification" ){
  */
 function amd_change_password( $uid, $new_password, $notice = false ){
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	return $amdSilu->changePassword( $uid, $new_password, $notice );
 
@@ -1132,8 +1132,7 @@ function amd_change_password( $uid, $new_password, $notice = false ){
  */
 function amd_get_user( $user ){
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	return $amdSilu->getUserAuto( $user )["user"] ?? null;
 
@@ -1152,8 +1151,7 @@ function amd_get_user( $user ){
  */
 function amd_guess_user( $part ){
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	return $amdSilu->getUserAuto( $part );
 
@@ -1178,8 +1176,7 @@ function amd_guess_user( $part ){
  */
 function amd_get_user_by( $by, $user, $simpleUser = true ){
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	return $amdSilu->getUser( $by, $user, $simpleUser );
 
@@ -1201,8 +1198,7 @@ function amd_get_user_by( $by, $user, $simpleUser = true ){
  */
 function amd_get_user_by_meta( $by, $value, $single = true ){
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	return $amdSilu->getUserByMeta( $by, $value, $single );
 
@@ -1219,8 +1215,7 @@ function amd_get_current_user(){
 	if( !is_user_logged_in() )
 		return false;
 
-	global /** @var AMDSilu $amdSilu */
-	$amdSilu;
+	global $amdSilu;
 
 	$user = $amdSilu->create( wp_get_current_user()->ID );
 
@@ -1246,8 +1241,7 @@ function amd_get_default_locale(){
  */
 function amd_get_default_options(){
 
-	global /** @var AMDCache $amdCache */
-	$amdCache;
+	global $amdCache;
 
 	return $amdCache->getDefault( "options_data" );
 
@@ -1711,8 +1705,7 @@ function amd_dump_cards( $filter = "" ){
  */
 function amd_get_current_theme_mode(){
 
-	global /** @var AMDCache $amdCache */
-	$amdCache;
+	global $amdCache;
 
 	$theme = is_user_logged_in() ? amd_get_user_meta( get_current_user_id(), "theme" ) : "";
 
@@ -1778,12 +1771,14 @@ function amd_admin_head(){
 
 	do_action( "amd_before_admin_head" );
 
-	global /** @var AMDCache $amdCache */
-	$amdCache;
+	global $amdCache;
 
 	$API_URL = amd_get_api_url();
 	$locale = get_locale();
 	$amdCache->addStyle( 'admin:fonts', amd_merge_url_query( $API_URL, "stylesheets=_fonts&locale=$locale&screen=admin&ver=1.0.0" ), null );
+
+    $amdCache->addStyle( 'admin:icon_library', amd_merge_url_query( $API_URL, "stylesheets=icon_library&ver=1.0.0" ), null );
+    $amdCache->addScript( 'admin:icon_library', amd_merge_url_query( $API_URL, "scripts=icon_library&ver=1.0.0" ), null );
 
 	$amdCache->dumpStyles( "admin" );
 	$amdCache->dumpScript( "admin" );
@@ -1822,6 +1817,7 @@ function amd_admin_head(){
         ?><script>$("#wizard-dismiss").click(function(){let $card=$("#amd-box-wizard-dismiss");network.clean();network.put("_dismiss_wizard","");network.on.start=()=>$card.setWaiting();network.on.end=(resp,error) =>{if(!error && resp.success){$card.removeSlow()} else{$card.setWaiting(false)}};network.post();});</script><?php
         # @formatter on
 	}
+
 }
 
 /**
@@ -2848,8 +2844,8 @@ function amd_send_api_response( $data, $is_success ){
 	header( "Content-Type: application/json; charset=UTF-8" );
 
 	# Double-checking
-	if( !is_bool( $is_success ) )
-		$is_success = (bool) $is_success;
+	#if( !is_bool( $is_success ) )
+	#	$is_success = (bool) $is_success;
 
 	$_d = array(
 		"success" => $is_success,
@@ -5375,6 +5371,46 @@ function amd_no_distraction_mode( $enable=true ){
     } );
 
 	amd_remove_element_class( "body", ["dnd-mode"] );
+
+}
+
+function amd_convert_time_to_text( $seconds ){
+
+    global $amdCache;
+
+    $one_minute = $amdCache::STAMPS["minute"];
+    $one_hour = $amdCache::STAMPS["hour"];
+    $one_day = $amdCache::STAMPS["day"];
+    $one_week = $amdCache::STAMPS["week"];
+    $one_month = $amdCache::STAMPS["month"];
+    $one_year = $one_month * 12;
+
+    if( $seconds >= $one_year ){
+        $years = ceil( $seconds / $one_year );
+        return sprintf( _n( "%s year", "%s years", $years, "material-dashboard" ), $years );
+    }
+    else if( $seconds >= $one_month ){
+        $months = ceil( $seconds / $one_month );
+        return sprintf( _n( "%s month", "%s months", $months, "material-dashboard" ), $months );
+    }
+    else if( $seconds >= $one_week ){
+        $weeks = ceil( $seconds / $one_week );
+        return sprintf( _n( "%s week", "%s weeks", $weeks, "material-dashboard" ), $weeks );
+    }
+    else if( $seconds >= $one_day ){
+        $days = ceil( $seconds / $one_day );
+        return sprintf( _n( "%s day", "%s days", $days, "material-dashboard" ), $days );
+    }
+    else if( $seconds >= $one_hour ){
+        $hours = ceil( $seconds / $one_hour );
+        return sprintf( _n( "%s hour", "%s hours", $hours, "material-dashboard" ), $hours );
+    }
+    else if( $seconds >= $one_minute ){
+        $minutes = ceil( $seconds / $one_minute );
+        return sprintf( _n( "%s hour", "%s hours", $minutes, "material-dashboard" ), $minutes );
+    }
+
+    return sprintf( _n( "%s second", "%s seconds", $seconds, "material-dashboard" ), $seconds );
 
 }
 

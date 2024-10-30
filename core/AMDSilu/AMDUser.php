@@ -114,6 +114,20 @@ class AMDUser{
 	 */
 	public $extra;
 
+    /**
+	 * User locale code
+	 * @var string
+	 * @since 1.1.0
+	 */
+	public $locale;
+
+    /**
+	 * User locale code for locale
+	 * @var string
+	 * @since 1.1.0
+	 */
+	public $rollback_locale;
+
 	/**
 	 * Simple user object
 	 */
@@ -147,7 +161,28 @@ class AMDUser{
 		 */
 		$this->extra = apply_filters( "amd_simple_user_extra", [], $this );
 
+        $this->rollback_locale = $this->locale;
+
 	}
+
+    public function rollLocale( $locale=null ) {
+
+        $this->rollback_locale = get_locale();
+
+        if( $locale === null )
+            $locale = $this->locale;
+
+        if( $locale )
+            switch_to_locale( $locale );
+
+    }
+
+    public function rollbackLocale() {
+
+        if( $this->rollback_locale )
+            switch_to_locale( $this->rollback_locale );
+
+    }
 
 	/**
 	 * Check if user is admin

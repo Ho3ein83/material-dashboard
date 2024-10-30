@@ -30,6 +30,13 @@ class AMDTasks_Object {
 	 */
 	private $key;
 
+    /**
+	 * Task title
+	 * @var string
+	 * @since 1.1.0
+	 */
+	private $title;
+
 	/**
 	 * Task data string
 	 * @var string
@@ -152,6 +159,28 @@ class AMDTasks_Object {
 		$this->key = $key;
 	}
 
+    /**
+     * Get task title
+     * @return string
+     * @since 1.1.0
+     */
+    public function get_title(){
+
+        return $this->title;
+
+    }
+
+    /**
+     * Set task title
+     * @param string $title
+     * @since 1.1.0
+     */
+    public function set_title( $title ){
+
+        $this->title = $title;
+
+    }
+
 	/**
 	 * Get task data string
 	 *
@@ -238,17 +267,18 @@ class AMDTasks_Object {
 		$this->time = $time;
 	}
 
-	/**
-	 * Get task meta
-	 *
-	 * @param string|null $element
-	 * Whether to get specific element from meta items or get the whole meta
-	 *
-	 * @return mixed
-	 * @since 1.0.8
-	 */
-	public function get_meta( $element=null ){
-		return $element ? $this->meta[$element] : $this->meta;
+    /**
+     * Get task meta
+     *
+     * @param string|null $element
+     * Whether to get specific element from meta items or get the whole meta
+     * @param mixed $default
+     * Default value
+     * @return mixed
+     * @since 1.0.8
+     */
+	public function get_meta( $element=null, $default=null ){
+		return $element ? ( $this->meta[$element] ?? $default ) : $this->meta;
 	}
 
 	/**
@@ -366,6 +396,54 @@ class AMDTasks_Object {
 		) );
 
 	}
+
+    /**
+     * Check if task has specific attribute
+     * @param string $attribute
+     * Attribute name, e.g: "visible", "editable", "executable"
+     * @param bool $default
+     * Default value, default is false
+     * @return bool
+     * @since 1.1.0
+     */
+    public function is( $attribute, $default=false ) {
+
+        $attrs = $this->get_meta( "attributes" );
+
+        return $attrs[$attribute] ?? $default;
+
+    }
+
+    /**
+     * Export data for JSON encryption
+     * @return array
+     * @since 1.1.0
+     */
+    public function export() {
+
+        $user = $this->get_user();
+
+        return array(
+            "id" => $this->get_id(),
+            "key" => $this->get_key(),
+            "title" => $this->get_title(),
+            "user_id" => $this->get_user_id(),
+            "user_fullname" => $user ? $user->fullname : "",
+            "user_username" => $user ? $user->username : "",
+            "user_email" => $user ? $user->email : "",
+            "repeats" => $this->get_repeat(),
+            "period" => $this->get_period(),
+            "period_str" => amd_convert_time_to_text( $this->get_period() ),
+            "time" => $this->get_time(),
+            "execution_time" => $this->get_time() - time(),
+            "is_visible" => $this->is( "visible", true ),
+            "is_deletable" => $this->is( "deletable", true ),
+            "is_executable" => $this->is( "executable", true ),
+            "attributes" => $this->get_meta( "attributes", [] ),
+            "extra" => apply_filters( "amd_task_export_extra", null, $this )
+        );
+
+    }
 
 
 }

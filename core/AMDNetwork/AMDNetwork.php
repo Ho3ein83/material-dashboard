@@ -302,8 +302,28 @@ class AMDNetwork{
                     do_action( "amd_save_user_custom_fields", $uid, $custom_fields );
                 }
 
-				if( apply_filters( "amd_welcome_message_enabled", true ) )
-					amd_set_user_meta( $uid, "welcome_pending", "true" );
+                $user = amd_get_user( $uid );
+				if( apply_filters( "amd_welcome_message_enabled", true ) AND $user ) {
+
+                    $title = apply_filters( "amd_welcome_alert_title", $user );
+                    $text = apply_filters( "amd_welcome_alert_text", $user );
+
+                    /**
+                     * Welcome message methods
+                     * @since 1.1.0
+                     */
+                    $methods = apply_filters( "amd_welcome_message_methods", "email,sms" );
+
+                    global $amdWarn;
+
+                    $amdWarn->sendMessage( array(
+                        "email" => $user->email,
+                        "phone" => $user->phone,
+                        "message" => $text,
+                        "subject" => $title
+                    ), $methods, true );
+
+                }
 
 				do_action( "amd_signup_complete", $uid );
 
@@ -780,8 +800,15 @@ class AMDNetwork{
 								$value = call_user_func( $filter, $value );
 							$allowed = amd_compile_data_type( $type, $value );
 						}
-						if( $allowed )
-							amd_set_site_option( $key, $value );
+						if( $allowed ) {
+                            amd_set_site_option( $key, $value );
+
+                            /**
+                             * After option saved
+                             * @since 1.1.0
+                             */
+                            do_action( "amd_after_option_saved", $key, $value );
+                        }
 					}
 
 				}

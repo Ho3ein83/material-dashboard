@@ -143,7 +143,7 @@ add_filter( "amd_get_dashboard_sidebar_menu", function( $void ){
 
 # Block users for a while after too many attempts for admin login
 add_filter( "amd_login_too_many_attempts_expire", function(){
-    // TODO: check if this value is came from site options
+    // TODO: check if this value came from site options
 	return intval( amd_get_site_option( "login_attempts_time", "10" ) );
 } );
 
@@ -158,10 +158,16 @@ add_filter( "amd_new_verification_code_message", function( $uid, $code ){
 	if( !$user )
 		return "";
 
-    # [USER_TEMPLATE][MSG_TEMPLATE] - Password reset verification code
-    return amd_get_user_message_template( "password_reset_verification", $user, $code );
+    # Switch to user language
+    $user->rollLocale();
 
-	# return sprintf( esc_html__( "Dear %s, your verification code for password reset is: %s", "material-dashboard" ), $user->firstname, "<br>$code" );
+    # [USER_TEMPLATE][MSG_TEMPLATE] - Password reset verification code
+    $message = amd_get_user_message_template( "password_reset_verification", $user, $code );
+
+    # Rollback language to current session language
+    $user->rollbackLocale();
+
+    return $message;
 
 }, 10, 2 );
 
@@ -171,10 +177,17 @@ add_filter( "amd_password_changed_message", function( $uid ){
 	if( !$user )
 		return "";
 
-    # [USER_TEMPLATE][MSG_TEMPLATE] - Password changed
-    return amd_get_user_message_template( "password_changed", $user, time() );
+    # Switch to user language
+    $user->rollLocale();
 
-	# return sprintf( esc_html__( "Dear %s, your password has been changed at %s.\nPlease let us know if you didn't change it.", "material-dashboard" ), $user->firstname, amd_true_date( "Y/m/d H:i" ) );
+    # [USER_TEMPLATE][MSG_TEMPLATE] - Password changed
+    $message = amd_get_user_message_template( "password_changed", $user, time() );
+
+    # Rollback language to current session language
+    $user->rollbackLocale();
+
+    return $message;
+
 } );
 
 # "change email" message
@@ -186,10 +199,16 @@ add_filter( "amd_change_email_message", function( $uid, $new_email, $url ){
     # TODO
     $a_tag = '<a class="link --fill" href="' . esc_url( $url ) . '">' . esc_html__( "Change email", "material-dashboard" ) . '</a>';
 
-    # [USER_TEMPLATE][MSG_TEMPLATE] - Confirm email change
-    return amd_get_user_message_template( "change_email_confirm", $user, $new_email, $url );
+    # Switch to user language
+    $user->rollLocale();
 
-    # return sprintf( esc_html__( "Dear %s, you have requested for changing your email, if you want to change it to %s please click on the below link. %s", "material-dashboard" ), $user->firstname, "<p style='margin:8px' class='color-primary'>$new_email</p>", $a_tag );
+    # [USER_TEMPLATE][MSG_TEMPLATE] - Confirm email change
+    $message = amd_get_user_message_template( "change_email_confirm", $user, $new_email, $url );
+
+    # Rollback language to current session language
+    $user->rollbackLocale();
+
+    return $message;
 
 }, 10, 3 );
 
@@ -199,10 +218,16 @@ add_filter( "amd_email_changed_message", function( $uid, $new_email ){
 	if( !$user )
 		return "";
 
+    # Switch to user language
+    $user->rollLocale();
     # [USER_TEMPLATE][MSG_TEMPLATE] - Email changed
-    return amd_get_user_message_template( "email_changed", $user, $new_email );
+    $message = amd_get_user_message_template( "email_changed", $user, $new_email );
 
-	# return sprintf( esc_html__( "Dear %s, your email address has been changed successfully", "material-dashboard" ), $user->firstname );
+    # Rollback language to current session language
+    $user->rollbackLocale();
+
+	return $message;
+
 }, 10, 2 );
 
 /**
@@ -222,9 +247,11 @@ add_action( "amd_send_2fa_code", function( $code, $user_id ){
      */
     $method = apply_filters( "amd_2fa_code_send_method", "email,sms" );
 
+    # Switch to user language
+    $user->rollLocale();
+
     # [USER_TEMPLATE][MSG_TEMPLATE] - 2FA code
     $message = amd_get_user_message_template( "2fa_code", $user, $code );
-    # $message = sprintf( esc_html__( "Dear %s, your 2FA code is: %s", "material-dashboard" ), $user->firstname, "\n$code" );
 
     $data = [
         "email" => $user->email,
@@ -233,6 +260,9 @@ add_action( "amd_send_2fa_code", function( $code, $user_id ){
         "message" => $message
     ];
 
+    # Rollback language to current session language
+    $user->rollbackLocale();
+
     $amdWarn->sendMessage( $data, $method );
 
 }, 10, 2 );
@@ -240,8 +270,7 @@ add_action( "amd_send_2fa_code", function( $code, $user_id ){
 # Set dashboard navbar items
 add_action( "amd_add_dashboard_navbar_item", function( $side, $data ){
 
-	global /** @var AMDDashboard $amdDashboard */
-	$amdDashboard;
+	global $amdDashboard;
 
 	$amdDashboard->addNavItem( $side, $data );
 
@@ -531,7 +560,7 @@ add_action( "amd_init_sidebar_items", function(){
                     "data-switch-theme" => "light"
                 ],
                 "extraClass" => "no-light"
-            ),
+            )
 	    ) );
 
     }
@@ -741,7 +770,8 @@ add_action( "amd_dashboard_header", function(){
 	<!-- @formatter on -->
 
     <!-- Inline -->
-        <style>.amd-lr-form {
+        <style>
+        .amd-lr-form {
             position: relative;
             width: 85%;
             max-width: 500px;
@@ -1183,10 +1213,18 @@ add_filter( "amd_welcome_alert_title", function( $thisuser ){
 
 add_filter( "amd_welcome_alert_text", function( $thisuser ){
 
-    # [USER_TEMPLATE][MSG_TEMPLATE] - Welcome notification
-	return amd_get_user_message_template( "welcome", $thisuser );
+    /** @var AMDUser $thisuser */
 
-    # return sprintf( esc_html__( "Hello dear %s! Thanks for subscribing to our site, we hope you enjoy using it.", "material-dashboard" ), $thisuser->firstname );
+    # Switch to user language
+    $thisuser->rollLocale();
+
+    # [USER_TEMPLATE][MSG_TEMPLATE] - Welcome notification
+	$message = amd_get_user_message_template( "welcome", $thisuser );
+
+    # Rollback language to current session language
+    $thisuser->rollbackLocale();
+
+    return $message;
 
 } );
 
@@ -1221,73 +1259,264 @@ add_action( "amd_before_page_home", function(){
 function amd_ext__app_email_head( $to, $subject, $message ){
 
     $blog_name = get_bloginfo( "name" );
+    $site_desc = get_bloginfo( "description" );
 
     $dash = amd_get_dash_logo();
     $dash_logo_url = $dash["url"];
     $image_url = apply_filters( "amd_email_header_image", $dash_logo_url );
+    $is_rtl = is_rtl();
     ob_start();
     # @formatter on
     ?><!DOCTYPE HTML>
 <html lang="<?php bloginfo_rss( 'language' ); ?>">
     <head>
-        <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    </head>
-    <body>
-    <style type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title><?php echo esc_html( $subject ); ?></title>
+    <style>
+      img {
+        border: none;
+        -ms-interpolation-mode: bicubic;
+        max-width: 100%;
+      }
+      body {
+        background-color: #f6f6f6;
+        font-family: sans-serif;
+        -webkit-font-smoothing: antialiased;
+        font-size: 14px;
+        line-height: 1.4;
+        margin: 0;
+        padding: 0;
+        direction: <?php echo $is_rtl ? "rtl" : "ltr"; ?>;
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+      table {
+        border-collapse: separate;
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+        width: 100%;
+      }
+      table td {
+        font-family: sans-serif;
+        font-size: 14px;
+        vertical-align: top;
+      }
+      .body {
+        background-color: #f6f6f6;
+        width: 100%;
+      }
+      .container {
+        display: block;
+        margin: 0 auto !important;
+        /* makes it centered */
+        max-width: 580px;
+        padding: 10px;
+        width: 580px;
+      }
+      .content {
+        box-sizing: border-box;
+        display: block;
+        margin: 0 auto;
+        max-width: 580px;
+        padding: 10px;
+      }
+      .main {
+        background: #ffffff;
+        border-radius: 3px;
+        width: 100%;
+      }
+      .wrapper {
+        box-sizing: border-box;
+        padding: 20px;
+      }
+      .content-block {
+        padding-bottom: 10px;
+        padding-top: 10px;
+      }
+      .footer {
+        clear: both;
+        margin-top: 10px;
+        text-align: center;
+        width: 100%;
+      }
+      .footer td,
+      .footer p,
+      .footer span,
+      .footer a {
+        color: #999999;
+        font-size: 12px;
+        text-align: center;
+      }
+      h1, h2, h3, h4 {
+        color: #000000;
+        font-family: sans-serif;
+        font-weight: 400;
+        line-height: 1.4;
+        margin: 0;
+        margin-bottom: 30px;
+      }
+      h1 {
+        font-size: 35px;
+        font-weight: 300;
+        text-align: center;
+        text-transform: capitalize;
+      }
+      p, ul, ol {
+        font-family: sans-serif;
+        font-size: 14px;
+        font-weight: normal;
+        margin: 0;
+        margin-bottom: 15px;
+      }
+      p li, ul li, ol li {
+        list-style-position: inside;
+        margin-left: 5px;
+      }
+      a {
+        color: #3498db;
+        text-decoration: underline;
+      }
+      .wrapper .btn {
+        background-color: #ffffff;
+        border: solid 1px #3498db;
+        border-radius: 5px;
+        box-sizing: border-box;
+        color: #3498db;
+        cursor: pointer;
+        display: inline-block;
+        font-size: 14px;
+        font-weight: bold;
+        margin: 0;
+        padding: 12px 25px;
+        text-decoration: none;
+        text-transform: capitalize;
+      }
+      .wrapper .btn {
+        background-color: #3498db;
+        border-color: #3498db;
+        color: #ffffff;
+      }
+      .preheader {
+        color: transparent;
+        display: none;
+        height: 0;
+        max-height: 0;
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        mso-hide: all;
+        visibility: hidden;
+        width: 0;
+      }
+      .powered-by a {
+        text-decoration: none;
+      }
+      hr {
+        border: 0;
+        border-bottom: 1px solid #f6f6f6;
+        margin: 20px 0;
+      }
+      @media only screen and (max-width: 620px) {
+        table.body h1 {
+          font-size: 28px !important;
+          margin-bottom: 10px !important;
+        }
+        table.body p,
+        table.body ul,
+        table.body ol,
+        table.body td,
+        table.body span,
+        table.body a {
+          font-size: 16px !important;
+        }
+        table.body .wrapper,
+        table.body .article {
+          padding: 10px !important;
+        }
+        table.body .content {
+          padding: 0 !important;
+        }
+        table.body .container {
+          padding: 0 !important;
+          width: 100% !important;
+        }
+        table.body .main {
+          border-left-width: 0 !important;
+          border-radius: 0 !important;
+          border-right-width: 0 !important;
+        }
+        table.body .btn table {
+          width: 100% !important;
+        }
+        table.body .btn a {
+          width: 100% !important;
+        }
+        table.body .img-responsive {
+          height: auto !important;
+          max-width: 100% !important;
+          width: auto !important;
+        }
+      }
+      @media all {
         .ExternalClass {
-            width: 100%;
+          width: 100%;
         }
-        body {
-            font-family: arial, verdana, georgia, "Times New Roman", courier, sans-serif;
-            text-align: center;
-            font-size: 18px;
-            line-height: 30px;
-            background: #f6f6f6;
+        .ExternalClass,
+        .ExternalClass p,
+        .ExternalClass span,
+        .ExternalClass font,
+        .ExternalClass td,
+        .ExternalClass div {
+          line-height: 100%;
         }
-        .h1, h1 {
-            font-size: 24px;
-            color: #030023;
-            margin: 8px 0;
+        .apple-link a {
+          color: inherit !important;
+          font-family: inherit !important;
+          font-size: inherit !important;
+          font-weight: inherit !important;
+          line-height: inherit !important;
+          text-decoration: none !important;
         }
-        .h2, h2 {
-            font-size: 16px;
-            color: #250bd0;
-            margin: 8px 0;
+        #MessageViewBody a {
+          color: inherit;
+          text-decoration: none;
+          font-size: inherit;
+          font-family: inherit;
+          font-weight: inherit;
+          line-height: inherit;
         }
-        a {
-            color: #2e93d9;
-            text-decoration: none;
+        .btn-primary table td:hover {
+          background-color: #34495e !important;
         }
-        .link {
-            font-size: 15px;
-            background: #4F69EA33;
-            color: #4f69ea;
-            padding: 8px 18px;
-            margin: 8px;
+        .btn-primary a:hover {
+          background-color: #34495e !important;
+          border-color: #34495e !important;
         }
-        .link.--fill {
-            color: #fff;
-            background: #4f69ea;
-        }
-        .content {
-            width: 90%;
-            margin: 24px auto 12px;
-            background: #fff;
-            padding: 16px;
-            border: 1px solid #eaeaea;
-        }
-        .color-primary {
-            color: #250BD0;
-        }
+      }
     </style>
-    <img src="<?php echo esc_attr( $image_url ); ?>" alt="<?php echo esc_attr( $blog_name ); ?>" style="width:130px;margin:24px auto 8px">
-    <div class="content" dir="auto" style="mso-line-height-rule:exactly;">
-        <p class="h2"><?php echo wp_kses( $blog_name, amd_allowed_tags_with_attr( "br,span,a" ) ); ?></p>
-        <p class="h1"><?php echo esc_html( $subject ); ?></p>
-        <div style="height:20px">
-    </div>
+  </head>
+    <body>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
+      <tr>
+        <td>
+          <img style="display:block; margin:16px auto 0px; border-radius:8px;" width="100" src="<?php echo esc_attr( $image_url ); ?>" alt="<?php echo esc_attr( $blog_name ); ?>">
+        </td>
+      </tr>
+    </table>
+    <span class="preheader"><?php echo esc_html( $site_desc ); ?></span>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
+      <tr>
+        <td>&nbsp;</td>
+        <td class="container">
+          <div class="content">
+            <table role="presentation" class="main">
+              <tr>
+                <td class="wrapper">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td>
+                        <p style="font-size:24px"><?php echo esc_html( $subject ); ?></p>
     <?php
     # @formatter on
     return ob_get_clean();
@@ -1309,7 +1538,18 @@ add_filter( "amd_email_head", "amd_ext__app_email_head", 10, 3 );
 */
 function amd_ext__app_email_content( $to, $subject, $message ){
 
-    return $message;
+    ob_start();
+    ?>
+                        <p><?php echo esc_html( $message ); ?></p>
+                        <p style="color:#484848; font-size:13px; margin:8px 0;"><?php echo esc_html( amd_true_date( "j F Y H:i" ) ); ?></p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+<?php
+    return ob_get_clean();
 
 }
 add_filter( "amd_email_content", "amd_ext__app_email_content", 10, 3 );
@@ -1329,13 +1569,23 @@ add_filter( "amd_email_content", "amd_ext__app_email_content", 10, 3 );
  */
 function amd_ext__app_email_foot( $to, $subject, $message ){
     $domain = amd_replace_url( "%domain%" );
+    $site_url = get_site_url();
     ob_start();
     ?>
-            <div style="height:20px"></div>
-            <a class="link" href="<?php echo esc_url( get_site_url() ); ?>"><?php echo esc_html( ucfirst( $domain ) ); ?></a>
-            <br>
-            <p style="font-size:14px;opacity:.8;margin:0"><?php echo esc_html( amd_true_date( "j F Y" ) . " - " . amd_true_date( "H:i" ) ); ?></p>
-        </div>
+            <div class="footer">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="content-block">
+                    <a href="<?php echo esc_url( $site_url ); ?>"><?php echo esc_html( $domain ); ?></a>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </td>
+        <td>&nbsp;</td>
+      </tr>
+    </table>
     </body>
 </html>
     <?php

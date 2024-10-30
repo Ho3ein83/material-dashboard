@@ -253,6 +253,44 @@ function amd_require_tasks(){
 }
 
 /**
+ * Load C-Track core
+ * @return void
+ * @since 1.0.8
+ */
+function amd_require_cTrack(){
+
+	require_once( 'AMD_CTrack/AMD_CTrack.php' );
+
+	global /** @var AMD_CTrack $amdCTrack */
+	$amdCTrack;
+
+	$amdCTrack = new AMD_CTrack();
+
+	global $AMD_CORE_LOAD;
+	$AMD_CORE_LOAD["cTrack"] = true;
+
+}
+
+/**
+ * Load search engine core
+ * @return void
+ * @since 1.10
+ */
+function amd_require_search_engine(){
+
+	require_once( 'AMDSearchEngine/AMDSearchEngine.php' );
+
+	global /** @var AMDSearchEngine $amdSearch */
+	$amdSearch;
+
+	$amdSearch = new AMDSearchEngine();
+
+	global $AMD_CORE_LOAD;
+	$AMD_CORE_LOAD["search_engine"] = true;
+
+}
+
+/**
  * Check if core is loaded
  *
  * @param string $core
@@ -304,6 +342,10 @@ function amd_require_all(){
 	amd_require_loader();
 
 	amd_require_dashboard();
+
+    amd_require_cTrack();
+
+    amd_require_search_engine();
 
 	do_action( "amd_after_cores_init" );
 

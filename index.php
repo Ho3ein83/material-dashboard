@@ -5,10 +5,10 @@
  * Description: The best material dashboard for WordPress! If you want to delete this plugin, delete its data from cleanup menu first.
  * Plugin URI: https://amatris.ir/amd
  * Author: Hossein
- * Version: 1.0.9
+ * Version: 1.1.0
  * Requires at least: 5.2
  * Requires PHP: 7.4.0
- * Tested up to: 6.3
+ * Tested up to: 6.4
  * Author URI: https://amatris.ir/amd/author
  * Text Domain: material-dashboard
  * Domain Path: /languages/
@@ -37,7 +37,7 @@ function amd_plugin(){
 }
 
 /**
- * Initialize not indexable translations
+ * Initialize not index-able translations
  * @return void
  * @since 1.0.4
  */
@@ -64,6 +64,9 @@ require_once( AMD_INCLUDES . "/template-hooks.php" );
 
 # Require functions
 require_once( __DIR__ . "/functions.php" );
+
+# Autoload hooks
+amd_hooks_load_all();
 
 # Initialize plugin hook
 do_action( "amd_init" );
@@ -238,7 +241,25 @@ add_action( "amd_init_translation", function(){
 		"saving_orders" => esc_html__( "Saving orders", "material-dashboard" ),
 		"write_a_text" => esc_html__( "Write anything", "material-dashboard" ),
 		"hint" => esc_html__( "Hint", "material-dashboard" ),
+        "single:n_results_found" => _n( "%s result found", "%s result found", 1, "material-dashboard" ),
+        "plural:n_results_found" => _n( "%s result found", "%s result found", 2, "material-dashboard" ),
 	) );
+
+    if( amd_is_admin() ){
+        do_action( "amd_add_front_string", array(
+            "task_n_times" => esc_html_x( "%s times", "Task", "material-dashboard" ),
+            "task_every_n" => esc_html_x( "Every %s", "Task", "material-dashboard" ),
+            "run" => esc_html_x( "Run", "Task", "material-dashboard" ),
+            "task_delete_confirm" => esc_html_x( "Are you sure about deleting this task? it may be created again.", "Task", "material-dashboard" ),
+            "task_run_confirm" => esc_html_x( "Do you want to run this task?", "Task", "material-dashboard" ),
+            "more_than_one_day" => esc_html_x( "More than a day", "Task", "material-dashboard" ),
+            "more_than_one_week" => esc_html_x( "More than a week", "Task", "material-dashboard" ),
+            "more_than_one_month" => esc_html_x( "More than a month", "Task", "material-dashboard" ),
+            "single:within_n_days" => esc_html( _n( "Within %s day", "Within %s days", 1, "material-dashboard" ) ),
+            "plural:within_n_days" => esc_html( _n( "Within %s day", "Within %s days", 2, "material-dashboard" ) ),
+            "menu_settings" => esc_html__( "Menu settings", "material-dashboard" ),
+        ) );
+    }
 
 } );
 
@@ -403,6 +424,9 @@ add_action( "init", function(){
 
 	$locales = apply_filters( "amd_override_locales", amd_get_site_option( "locales" ) );
 	$locales_exp = explode( ",", $locales );
+    $is_user_logged_in = is_user_logged_in();
+    $current_user = amd_get_current_user();
+    $current_user_id = $current_user ? $current_user->ID : 0;
 	if( count( $locales_exp ) == 1 ){
 		$locale = $locales[0] ?? "";
 	}
@@ -410,8 +434,8 @@ add_action( "init", function(){
 		if( !empty( $_GET["lang"] ) )
 			$amdCache->setLocale( sanitize_text_field( $_GET["lang"] ) );
 
-		if( is_user_logged_in() )
-			$locale = get_user_meta( get_current_user_id(), "locale", true );
+		if( $is_user_logged_in )
+			$locale = get_user_meta( $current_user_id, "locale", true );
 		else
 			$locale = $amdCache->getCache( "locale" );
 
@@ -419,8 +443,14 @@ add_action( "init", function(){
 			$locale = current( $locales_exp );
 	}
 
-	if( !empty( $locale ) )
-		amd_switch_locale( $locale );
+	if( !empty( $locale ) ) {
+        amd_switch_locale( $locale );
+        if( $is_user_logged_in ) {
+            $user_locale = get_user_meta( $current_user_id, "locale", true );
+            if( empty( $user_locale ) )
+                update_user_meta( $current_user_id, "locale", $locale );
+        }
+    }
 
 } );
 

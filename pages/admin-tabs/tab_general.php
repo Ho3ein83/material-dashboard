@@ -24,7 +24,7 @@ $defaultSettings = array(
 
 ?>
 <!-- Optimizer -->
-<div class="amd-admin-card --setting-card">
+<div class="amd-admin-card --setting-card" data-ts="optimizer">
     <h3 class="--title"><?php echo esc_html_x( "Optimizer", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">
@@ -49,7 +49,7 @@ $defaultSettings = array(
 </div>
 
 <!-- Seo -->
-<div class="amd-admin-card --setting-card">
+<div class="amd-admin-card --setting-card" data-ts="seo">
     <h3 class="--title"><?php echo esc_html_x( "Seo", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">
@@ -72,8 +72,9 @@ $defaultSettings = array(
         </div>
     </div>
 </div>
+
 <!-- Force SSL -->
-<div class="amd-admin-card --setting-card">
+<div class="amd-admin-card --setting-card" data-ts="ssl">
     <h3 class="--title"><?php echo esc_html_x( "URL and addresses", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">
@@ -98,7 +99,7 @@ $defaultSettings = array(
 </div>
 
 <!-- Allow avatar image upload -->
-<div class="amd-admin-card --setting-card">
+<div class="amd-admin-card --setting-card" data-ts="avatar">
     <h3 class="--title"><?php echo esc_html_x( "Avatar image", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">
@@ -123,7 +124,7 @@ $defaultSettings = array(
 </div>
 
 <!-- Fast loading & content settings -->
-<div class="amd-admin-card --setting-card">
+<div class="amd-admin-card --setting-card" data-ts="lazyload">
     <h3 class="--title"><?php echo esc_html_x( "Content", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">
@@ -148,7 +149,7 @@ $defaultSettings = array(
 </div>
 
 <!-- Change email -->
-<div class="amd-admin-card --setting-card">
+<div class="amd-admin-card --setting-card" data-ts="change_email">
     <h3 class="--title"><?php echo esc_html_x( "Change email", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">
@@ -173,7 +174,7 @@ $defaultSettings = array(
 </div>
 
 <!-- Woocommerce -->
-<div class="amd-admin-card --setting-card">
+<div class="amd-admin-card --setting-card" data-ts="woocommerce">
     <h3 class="--title"><?php echo esc_html_x( "Woocommerce", "Admin", "material-dashboard" ); ?></h3>
     <div class="--content">
         <div class="__option_grid">

@@ -144,6 +144,9 @@ class AMDSilu{
 		$simpleUser->profile = self::getUserProfile( $simpleUser->ID );
 		$simpleUser->phone = self::getUserMeta( $simpleUser->ID, "phone" );
 		$simpleUser->gender = self::getUserMeta( $simpleUser->ID, "gender" );
+		$simpleUser->locale = get_user_meta( $simpleUser->ID, "locale", true );
+        if( empty( $simpleUser->locale ) )
+            $simpleUser->locale = get_locale();
 		if( !in_array( $simpleUser->gender, [ 'male', 'female', 'unknown' ] ) )
 			$simpleUser->gender = "unknown";
 

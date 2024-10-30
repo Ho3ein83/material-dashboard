@@ -253,4 +253,4 @@ $phone_field_required = true;
         $country_code.trigger("change");
     }());
 </script>
-<style>.ht-magic-select._phone_field_holder_ > label{height:50px}  .ht-magic-select._phone_field_holder_ input{height:40px;font-size:13px;padding-top:24px}</style>
+<style>.ht-magic-select._phone_field_holder_ > label{height:32px}  .ht-magic-select._phone_field_holder_ input{height:40px;font-size:13px;padding-top:24px}</style>

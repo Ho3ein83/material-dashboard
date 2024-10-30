@@ -26,6 +26,11 @@ $tabs = array(
 	)
 );
 
+/**
+ * @since 1.1.0
+ */
+$tabs = apply_filters( "amd_manage_data_tabs", $tabs );
+
 $tabsJS = "";
 
 ?>

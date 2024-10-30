@@ -59,7 +59,7 @@ class AMD_DB {
 	 * @var int
 	 * @since 1.0.5
 	 */
-	const db_version = 3;
+	const db_version = 4;
 
 	/**
 	 * Tables SQL structure
@@ -74,6 +74,18 @@ class AMD_DB {
 	 * @since 1.0.0
 	 */
 	protected $export_variants;
+
+    /**
+     * Database default engine
+     * @since 1.1.0
+     */
+    const DB_ENGINE = "InnoDB";
+
+    /**
+     * Database default charset
+     * @since 1.1.0
+     */
+    const DB_CHARSET = "utf8mb4";
 
 	/**
 	 * Database manager
@@ -132,19 +144,25 @@ class AMD_DB {
 	 */
 	public function init( $install = false ){
 
+        $engine = self::sanitizeEngine();
+
+        # since 1.1.0
+        if( apply_filters( "amd_change_db_charset", true ) )
+            self::query( "SET NAMES " . self::sanitizeCharset() );
+
 		self::registerTable( "users_meta", array(
 			"id" => "INT NOT NULL AUTO_INCREMENT",
 			"user_id" => "INT NOT NULL",
 			"meta_name" => "VARCHAR(64) NOT NULL",
 			"meta_value" => "LONGTEXT NOT NULL",
-			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = MyISAM;"
+			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = $engine;"
 		) );
 
 		self::registerTable( "options", array(
 			"id" => "INT NOT NULL AUTO_INCREMENT",
 			"option_name" => "VARCHAR(64) NOT NULL",
 			"option_value" => "LONGTEXT NOT NULL",
-			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = MyISAM;"
+			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = $engine;"
 		) );
 
 		self::registerTable( "temp", array(
@@ -152,7 +170,7 @@ class AMD_DB {
 			"temp_key" => "VARCHAR(64) NOT NULL",
 			"temp_value" => "LONGTEXT NOT NULL",
 			"expire" => "VARCHAR(64) NOT NULL",
-			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = MyISAM;"
+			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = $engine;"
 		) );
 
 		self::registerTable( "todo", array(
@@ -161,7 +179,7 @@ class AMD_DB {
 			"todo_value" => "LONGTEXT NOT NULL",
 			"status" => "VARCHAR(64) NOT NULL",
 			"meta" => "LONGTEXT NOT NULL",
-			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = MyISAM;"
+			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = $engine;"
 		) );
 
 		self::registerTable( "reports", array(
@@ -171,7 +189,7 @@ class AMD_DB {
 			"report_value" => "LONGTEXT NOT NULL",
 			"report_time" => "VARCHAR(64) NOT NULL",
 			"meta" => "LONGTEXT NOT NULL",
-			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = MyISAM;"
+			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = $engine;"
 		) );
 
 		self::registerTable( "components", array(
@@ -181,7 +199,7 @@ class AMD_DB {
 			"component_data" => "LONGTEXT NOT NULL",
 			"component_time" => "VARCHAR(64) NOT NULL",
 			"meta" => "LONGTEXT NOT NULL",
-			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = MyISAM;"
+			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = $engine;"
 		) );
 
 		if( $install == true )
@@ -200,16 +218,21 @@ class AMD_DB {
 
 			if( self::isDashboardTable( $table_name ) ){
 
+                # 1. Change tables collation (since 1.0.5)
 				$collation = self::getTableCollation( $table );
 
 				/**
 				 * Default collation for dashboard tables
 				 * @since 1.0.5
 				 */
-				$default_collation = apply_filters( "amt_default_tables_collation", "utf8mb4_persian_ci" );
+				$default_collation = apply_filters( "amt_default_tables_collation", "utf8mb4_unicode_520_ci" );
 
 				if( $collation != $default_collation )
 					self::collateTable( $table, $default_collation );
+
+                # 2. Change tables engine to default engine (since 1.1.0)
+                if( apply_filters( "amd_change_table_engine", true, $table ) )
+                    self::resetTableEngine( $table );
 
 			}
 
@@ -576,15 +599,15 @@ class AMD_DB {
 		global $wp_version;
 
 		$data = array(
-			"date" => amd_true_date( "l j F Y" ),
-			"time" => time(),
-			"is_premium" => function_exists( "adp_plugin" ) ? true : false,
-			"premium_version" => function_exists( "adp_plugin" ) ? adp_plugin()["Version"] ?? "unknown" : null,
-			"version" => amd_plugin()["Version"] ?? "unknown",
-			"author" => wp_get_current_user()->user_login,
-			"wp_version" => !empty( $wp_version ) ? $wp_version : "unknown",
-			"php_version" => phpversion(),
-			"from" => amd_replace_url( "%domain%" )
+            "date" => amd_true_date( "l j F Y" ),
+            "time" => time(),
+            "is_premium" => function_exists( "adp_plugin" ),
+            "premium_version" => function_exists( "adp_plugin" ) ? adp_plugin()["Version"] ?? "unknown" : null,
+            "version" => amd_plugin()["Version"] ?? "unknown",
+            "author" => wp_get_current_user()->user_login,
+            "wp_version" => !empty( $wp_version ) ? $wp_version : "unknown",
+            "php_version" => phpversion(),
+            "from" => amd_replace_url( "%domain%" )
 		);
 
 		foreach( $exp as $item ){
@@ -1034,6 +1057,40 @@ class AMD_DB {
 		return $order;
 
 	}
+
+    /**
+     * Sanitize engine name for prevent allowed engine types be used
+     * @param string|null $engine
+     * Engine name, e.g: "InnoDB", "MyISAM". Pass null to use default engine
+     * @return string
+     * Engine name
+     * @since 1.1.0
+     */
+    public function sanitizeEngine( $engine=null ) {
+
+        if( in_array( $engine, ["InnoDB", "MyISAM", "CSV", "MEMORY", "ARCHIVE", "BLACKHOLE", "MRG_MYISAM"] ) )
+            return $engine;
+
+        return self::DB_ENGINE;
+
+    }
+
+    /**
+     * Sanitize charset name for using in database
+     * @param string|null $charset
+     * Engine name, e.g: "utf8mb4". Pass null to use default engine
+     * @return string
+     * Charset
+     * @since 1.1.0
+     */
+    public function sanitizeCharset( $charset=null ) {
+
+        if( $charset == "utf8mb4" )
+            return $charset;
+
+        return self::DB_CHARSET;
+
+    }
 
 	/**
 	 * Add/Update site option
@@ -1806,6 +1863,25 @@ class AMD_DB {
 
 	}
 
+    /**
+     * Reset tables engine
+     * @param string $table
+     * Table name
+     * @param string $engine
+     * New engine name, e.g: "InnoDB", "MyISAM". Pass null to use default engine
+     * @return void
+     * @since 1.1.0
+     */
+    public function resetTableEngine( $table, $engine=null ) {
+
+        $engine = self::sanitizeEngine( $engine );
+
+        $sql = $this->db->prepare( "ALTER TABLE %i ENGINE = %s;", $table, $engine );
+
+        $this->db->query( $sql );
+
+    }
+
 	/**
 	 * Register new report
 	 * @param string $key
@@ -2046,10 +2122,11 @@ class AMD_DB {
 	 * @param string|array $field
 	 * Value to search inside components or filter array to use custom filter, default is component ID
 	 * @param string $by
-	 * Field to search into, default is "id"
+	 * Field to search into, default is "id". Some of other options are:<br>
+     * "type" or "component_type", "key" or "component_key", "component_time"
 	 *
-	 * @return bool|int
-	 * True or first result ID if component(s) does exist, otherwise false
+	 * @return false|int
+	 * First result ID if component(s) does exist, otherwise false
 	 * @since 1.0.5
 	 */
 	public function componentExist( $field, $by="id" ){

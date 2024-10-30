@@ -256,7 +256,14 @@ class AMDWarner{
 	 * Send message to
 	 *
 	 * @param array $data
-	 * Message data
+	 * Message data array, these are traditional options:
+     * <ul>
+     * <li><code>email [STRING]</code> (only required for sending emails) <br><b>Target user email</b></li>
+     * <li><code>subject [STRING]</code> (only required for sending emails) <br><b>Message title</b></li>
+     * <li><code>message [STRING]</code> (required) <br><b>Message text</b></li>
+     * <li><code>phone [STRING]</code> (only required for sending SMS) <br><b>Target user phone number</b></li>
+     * <li><code>emailBreakLine [BOOL]</code> (optional, only available in emails) <br><b>Whether to replace break lines (\n) with HTML `br` tag</b></li>
+     * </ul>
 	 * @param string $methods
 	 * Message sending method(s) (e.g: "email", "sms", "email,sms")
 	 * @param false|int $schedule
@@ -286,7 +293,7 @@ class AMDWarner{
                 "data" => $data,
                 "args" => [$methods]
             );
-	        return amd_add_task( null, null, esc_html_x( "Send email and/or SMS to user", "Task title", "material-dashboard-pro" ), $schedule_data );
+	        return amd_add_task( null, null, esc_html_x( "Send email and/or SMS to user", "Task title", "material-dashboard" ), $schedule_data );
         }
 
         if( strpos( $methods, "," ) !== false ){

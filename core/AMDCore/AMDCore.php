@@ -102,21 +102,10 @@ class AMDCore{
 
 		} );
 
-		# Set default languages
-		add_action( "amd_add_locales", function( $data ){
-
-			global /** @var AMDCache $amdCache */
-			$amdCache;
-
-			$amdCache->setScopeGroup( "locales", $data );
-
-		} );
-
 		# Add string for frontend translation
 		add_action( "amd_add_front_string", function( $data ){
 
-			global /** @var AMDCache $amdCache */
-			$amdCache;
+			global $amdCache;
 
 			$amdCache->setScopeGroup( "front_strings", $data );
 
@@ -218,20 +207,32 @@ class AMDCore{
 		# Get icon packs
 		add_filter( "amd_get_icon_packs", function(){
 
-			global /** @var AMDCache $amdCache */
-			$amdCache;
+			global $amdCache;
 
 			return $amdCache->getScopeGroup( "icon_packs" );
 
 		} );
 
 		# Get default languages
-		add_filter( "amd_locales", function(){
+		add_filter( "amd_locales", function( $locales ){
 
-			global /** @var AMDCache $amdCache */
-			$amdCache;
+            $locales["fa_IR"] = array(
+                "name" => json_decode( "\"\u0641\u0627\u0631\u0633\u06cc\"" ),
+                "_name" => "Persian",
+                "region" => json_decode( "\"\u0627\u06cc\u0631\u0627\u0646\"" ),
+                "_region" => "Iran",
+                "flag" => AMD_IMG . "/flags/iran-flag.png"
+            );
 
-			return $amdCache->getScopeGroup( "locales" );
+            $locales["en_US"] = array(
+                "name" => "English",
+                "_name" => "English",
+                "region" => "United states",
+                "_region" => "United states",
+                "flag" => AMD_IMG . "/flags/usa-flag.png"
+            );
+
+			return $locales;
 
 		} );
 
@@ -796,7 +797,8 @@ class AMDCore{
 			"use_login_2fa" => "BOOL",
 			"force_login_2fa" => "BOOL",
 			"display_login_reports" => "BOOL",
-			"tera_wallet_support" => "BOOL"
+			"tera_wallet_support" => "BOOL",
+			"search_hint_approved" => "BOOL"
 		) );
 
 		# Set default export variants
@@ -1019,24 +1021,6 @@ class AMDCore{
 			),
 		) );
 
-		# Set available languages
-		do_action( "amd_add_locales", array(
-			"fa_IR" => array(
-				"name" => json_decode( "\"\u0641\u0627\u0631\u0633\u06cc\"" ),
-				"_name" => "Persian",
-				"region" => json_decode( "\"\u0627\u06cc\u0631\u0627\u0646\"" ),
-				"_region" => "Iran",
-				"flag" => AMD_IMG . "/flags/iran-flag.png"
-			),
-			"en_US" => array(
-				"name" => "English",
-				"_name" => "English",
-				"region" => "United states",
-				"_region" => "United states",
-				"flag" => AMD_IMG . "/flags/usa-flag.png"
-			)
-		) );
-
 		# Set allowed default pages
 		do_action( "amd_allowed_pages", [ "dashboard", "login", "api" ] );
 
@@ -1130,7 +1114,8 @@ class AMDCore{
 			"use_login_2fa" => "false",
 			"force_login_2fa" => "false",
 			"display_login_reports" => "true",
-			"tera_wallet_support" => "true"
+			"tera_wallet_support" => "true",
+			"search_hint_approved" => "false"
 		);
 
 		$amdCache->setDefault( "options_data", json_encode( $data ) );
@@ -1267,6 +1252,14 @@ class AMDCore{
 				"submenu_admin_appearance"
 			] );
 
+            /**
+             * @since 1.1.0
+             */
+            add_submenu_page( "material-dashboard", esc_html_x( "Menu settings", "Admin", "material-dashboard" ), esc_html_x( "Menu settings", "Admin", "material-dashboard" ), "manage_options", "amd-menu", [
+				$this,
+				"submenu_admin_menu"
+			] );
+
 			add_submenu_page( "material-dashboard", esc_html_x( "Manage data", "Admin", "material-dashboard" ), esc_html_x( "Manage data", "Admin", "material-dashboard" ), "manage_options", "amd-data", [
 				$this,
 				"submenu_admin_manage_data"
@@ -1290,6 +1283,11 @@ class AMDCore{
 			add_submenu_page( "material-dashboard", esc_html_x( "Themes", "Admin", "material-dashboard" ), esc_html_x( "Themes", "Admin", "material-dashboard" ), "manage_options", "amd-themes", [
 				$this,
 				"submenu_admin_themes"
+			] );
+
+            add_submenu_page( "material-dashboard", esc_html__( "Advanced search", "material-dashboard" ), esc_html__( "Advanced search", "material-dashboard" ), "manage_options", "amd-search", [
+				$this,
+				"submenu_admin_search_engine"
 			] );
 
             add_submenu_page( "material-dashboard", esc_html__( "More", "material-dashboard" ), esc_html__( "More", "material-dashboard" ), "manage_options", "amd-more", [
@@ -1318,6 +1316,30 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 			# @formatter on
 
 		} );
+
+        # Since 1.1.0
+        if( apply_filters( "amd_do_admin_checkin", true ) ){
+            add_action( "amd_admin_header", function(){
+                $checkin_interval = intval( amd_get_default( "checkin_interval", 30000 ) );
+                ?>
+                <script>
+                    jQuery($ => {
+                        $(document).ready(function(){
+                            if(typeof send_ajax === "function"){
+                                const checkin = () => {
+                                    send_ajax({
+                                        action: amd_conf.ajax.private,
+                                        _checkin: true
+                                    }, () => {}, () => {});
+                                }
+                                window.amd_checkin_interval = setInterval(checkin, parseInt(`<?php echo $checkin_interval; ?>`));
+                            }
+                        });
+                    });
+                </script>
+                <?php
+            } );
+        }
 
 	}
 
@@ -1650,6 +1672,17 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 
 	}
 
+    /**
+     * Load menu settings page
+     * @return void
+     * @since 1.1.0
+     */
+    public function submenu_admin_menu(){
+
+		require_once AMD_PAGES . "/smp-menu.php";
+
+	}
+
 	/**
 	 * Load manage data page
 	 * @return void
@@ -1702,6 +1735,17 @@ body.ltr .amd-table>table tr>th:last-child{border-top-right-radius:8px}
 	public function submenu_admin_more(){
 
 		require_once AMD_PAGES . "/smp-more.php";
+
+	}
+
+    /**
+	 * Advanced search page
+	 * @return void
+	 * @since 1.0.0
+	 */
+	public function submenu_admin_search_engine(){
+
+		require_once AMD_PAGES . "/smp-search.php";
 
 	}
 

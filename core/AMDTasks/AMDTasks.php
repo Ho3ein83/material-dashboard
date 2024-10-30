@@ -28,6 +28,8 @@ class AMDTasks {
 
 			global $amdDB;
 
+            $engine = $amdDB->sanitizeEngine();
+
 			$amdDB->registerTable( "tasks", array(
 				"id" => "INT NOT NULL AUTO_INCREMENT",
 				"task_user" => "INT(255) NOT NULL",
@@ -38,7 +40,7 @@ class AMDTasks {
 				"task_period" => "INT(255) NOT NULL",
 				"task_time" => "INT(255) NOT NULL",
 				"meta" => "LONGTEXT NOT NULL",
-				"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = MyISAM;"
+				"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = $engine;"
 			) );
 
 		} );
@@ -81,6 +83,18 @@ class AMDTasks {
 			return $executed;
 
 		}, 10, 3 );
+
+        /**
+         * Register admin submenu page
+         * @since 1.1.0
+         */
+        add_action( "admin_menu", function(){
+
+            $title = esc_html_x( "Task manager", "Tasks title", "material-dashboard" );
+
+            add_submenu_page( "material-dashboard", $title, $title, "manage_options", "amd-tasks", "amd_core_tasks_submenu_page", 8 );
+
+        } );
 
 	}
 
@@ -138,6 +152,8 @@ class AMDTasks {
 					$task->set_user_id( $result->task_user );
 				if( isset( $result->task_key ) )
 					$task->set_key( $result->task_key );
+                if( isset( $result->task_title ) )
+					$task->set_title( $result->task_title );
 				if( isset( $result->task_data ) )
 					$task->set_task( $result->task_data );
 				if( isset( $result->task_repeat ) )
@@ -146,8 +162,8 @@ class AMDTasks {
 					$task->set_period( $result->task_period );
 				if( isset( $result->task_time ) )
 					$task->set_time( $result->task_time );
-				if( isset( $result->task_meta ) )
-					$task->set_meta( unserialize( $result->task_meta ) );
+				if( isset( $result->meta ) )
+					$task->set_meta( unserialize( $result->meta ) );
 			}
 			if( $single )
 				return $task;
@@ -199,10 +215,10 @@ class AMDTasks {
 		if( is_array( $meta ) )
 			$meta["time"] = time();
 
-		return $amdDB->safeInsert( $table, array(
+        return $amdDB->safeInsert( $table, array(
 			"task_user" => $user_id,
 			"task_key" => $key,
-			"task_title" => $title,
+			"task_title" => strval( $title ),
 			"task_data" => amd_encrypt_aes( json_encode( $data ), $key ),
 			"task_repeat" => $repeat,
 			"task_period" => $period,
@@ -388,5 +404,104 @@ class AMDTasks {
 			$task_item->run();
 
 	}
+
+    /**
+     * Print admin submenu page content
+     * @return void
+     * @since 1.1.0
+     */
+    public function printAdminSubmenu() {
+
+        require_once( __DIR__ . "/view/admin_menu.php" );
+
+    }
+
+    /**
+     * Export tasks group for JSON encryption
+     * @param AMDTasks_Object[] $tasks
+     * {@see AMDTasks_Object} object list
+     * @return array
+     * @since 1.1.0
+     */
+    public function export( $tasks ) {
+
+        $out = [];
+
+        if( is_iterable( $tasks ) ){
+            foreach( $tasks as $task ){
+                if( $task instanceof AMDTasks_Object )
+                    $out[] = $task->export();
+            }
+        }
+
+        return $out;
+
+    }
+
+}
+
+/**
+ * Tasks core submenu page
+ * @return void
+ * @since 1.1.0
+ */
+function amd_core_tasks_submenu_page(){
+
+    global $amdTasks;
+
+    $amdTasks->printAdminSubmenu();
+
+}
+
+function amd_ajax_target_task_manager( $r ){
+
+    if( isset( $r["get_tasks"] ) ){
+
+        $current_page = $r["current_page"] ?? 1;
+        $per_page = $r["per_page"] ?? apply_filters( "amd_task_manager_max_in_page", 10 );
+
+        global $amdTasks;
+
+        $tasks = $amdTasks->getTasks();
+
+        $chunk = array_chunk( $tasks, $per_page );
+        $this_chunk = $chunk[$current_page-1] ?? [];
+
+        $has_more = !empty( $chunk[$current_page] );
+
+        wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" ), "tasks" => $amdTasks->export( $this_chunk ), "has_more" => $has_more] );
+
+    }
+
+    else if( isset( $r["task_action"] ) ){
+
+        $action = $r["task_action"];
+
+
+        $task_id = $r["task_id"] ?? "";
+
+        if( !$task_id )
+            wp_send_json_error( ["msg" => esc_html__( "Selected task is not available or doesn't exist", "material-dashboard" )] );
+
+        global $amdTasks;
+        $task = $amdTasks->getTaskByID( $task_id );
+
+        if( !$task )
+            wp_send_json_error( ["msg" => esc_html__( "Selected task is not available or doesn't exist", "material-dashboard" )] );
+
+        if( $action == "run" ){
+            $s = $task->run( false );
+            if( $s )
+                wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+        }
+        else if( $action == "delete" ){
+            $s = $task->delete();
+            if( $s )
+                wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+        }
+
+        wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+
+    }
 
 }

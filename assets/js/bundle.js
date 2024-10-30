@@ -89,7 +89,7 @@ jQuery.fn.extend({
         }, t + 10);
     },
     winload: (callback) => window.addEventListener("load", callback),
-})
+});
 
 String.prototype.regex = function(r) {
     let regex = new RegExp(r, "g");
