@@ -10,6 +10,8 @@
   "icon_type": "svg",
   "html_template": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" class=\"iconhub _icon_[CLASS]\"[SIZE]>{ICON}</svg>",
   "icons": {
+    "_SINCE:1.0.4": null,
+    "workspace": "<path d=\"M20,21H4a1,1,0,0,1-1-1V4A1,1,0,0,1,4,3H20a1,1,0,0,1,1,1V20A1,1,0,0,1,20,21ZM12,7V21M3,7H21\"></path>",
     "_SINCE:1.0.1": null,
     "bracket": "<path d=\"M15,3h2a1,1,0,0,1,1,1V20a1,1,0,0,1-1,1H15\"></path><path d=\"M9,3H7A1,1,0,0,0,6,4V20a1,1,0,0,0,1,1H9\"></path>",
     "money": "<path d=\"M14,9H11.5A1.5,1.5,0,0,0,10,10.5h0A1.5,1.5,0,0,0,11.5,12h1A1.5,1.5,0,0,1,14,13.5h0A1.5,1.5,0,0,1,12.5,15H10\"></path><path d=\"M21,19H3V5H21ZM21,5H17a4,4,0,0,0,4,4h0ZM3,9H3A4,4,0,0,0,7,5H3Zm18,6h0a4,4,0,0,0-4,4h4ZM3,19H7a4,4,0,0,0-4-4H3ZM12,9V8m0,8V15\"></path>",

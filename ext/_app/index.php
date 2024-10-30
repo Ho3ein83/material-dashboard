@@ -384,6 +384,21 @@ add_action( "amd_init_sidebar_items", function(){
 		),
 	) );
 
+    if( amd_is_admin() ){
+        do_action( "amd_add_dashboard_sidebar_menu", array(
+		"admin" => array(
+			"text" => esc_html__( "WP admin", "material-dashboard" ),
+			"comment" => esc_html__( "This item is only visible for admins and normal users won't see it", "material-dashboard" ),
+			"icon" => "tools",
+			"void" => null,
+			"url" => admin_url( "admin.php?page=material-dashboard" ),
+			"priority" => 20,
+			"turtle" => "blank",
+			"attributes" => ["target" => "_blank"]
+		)
+	) );
+    }
+
     # Add dashboard navbar item (Left side)
 	do_action( "amd_add_dashboard_navbar_item", "left", array(
 		"toggle_sidebar" => array(
@@ -566,6 +581,15 @@ add_action( "amd_dashboard_start", function(){
 
 } );
 
+add_action( "amd_dashboard_init", function(){
+
+    $optimize = apply_filters( "amd_use_optimizer", true );
+
+    if( !$optimize )
+        add_action( "amd_after_dashboard_page", "wp_footer" );
+
+} );
+
 # Dashboard and login page header
 add_action( "amd_dashboard_header", function(){
 	global /** @var AMDCache $amdCache */
@@ -593,8 +617,8 @@ add_action( "amd_dashboard_header", function(){
     <?php amd_wp_head_alternate(); ?>
 
 <!-- Dashboard -->
-	<link rel="stylesheet" href="<?php echo esc_url( amd_merge_url_query( $API_URL, "stylesheets=_fonts&locale=$current_locale&ver=1.0.0" ) ); ?>">
-	<link rel="stylesheet" href="<?php echo esc_url( amd_merge_url_query( $API_URL, 'stylesheets=_components,_dashboard&dummy=1' ) ); ?>">
+	<link rel="stylesheet" href="<?php echo esc_url( amd_merge_url_query( $API_URL, "stylesheets=_fonts&locale=$current_locale&ver=" . AMD_VER ) ); ?>">
+	<link rel="stylesheet" href="<?php echo esc_url( amd_merge_url_query( $API_URL, 'stylesheets=_components,_dashboard&ver' . AMD_VER ) ); ?>">
     <?php
     if( amd_is_dashboard_page() )
         $amdCache->dumpStyles( "dashboard" );
@@ -607,7 +631,7 @@ add_action( "amd_dashboard_header", function(){
     <?php $amdCache->dumpStyles(); ?>
 
 	<!-- Dashboard -->
-	<script src="<?php echo esc_url( amd_merge_url_query( $API_URL, 'scripts=_config&ver=1.0.0' ) ); ?>"></script>
+	<script src="<?php echo esc_url( amd_merge_url_query( $API_URL, 'scripts=_config&ver=' . AMD_VER ) ); ?>"></script>
 	<!-- Icon pack -->
     <?php $amdCache->dumpScript( "icon" ); ?>
     <?php
@@ -618,7 +642,7 @@ add_action( "amd_dashboard_header", function(){
     <?php $amdCache->dumpScript( "global" ); ?>
 	<!-- Frontend -->
     <?php $amdCache->dumpScript(); ?>
-	<script src="<?php echo AMD_JS . '/dashboard.js'; ?>"></script>
+	<script src="<?php echo esc_url( AMD_JS . '/dashboard.js?ver=' . AMD_VER ); ?>"></script>
 	<!-- @formatter on -->
 
     <!-- Inline -->
@@ -849,7 +873,7 @@ add_action( "amd_dashboard_header_single", function(){
     $content = __( "You can manage your account information, transactions, payments and purchases by logging in to your dashboard", "material-dashboard" );
 
     $dash = amd_get_dash_logo();
-    $dashLogoURL = $dash["url"];
+    $dashLogoURL = $dash["url"] ?? "";
 
     ?>
     <meta name="og:title" content="<?php echo esc_html( apply_filters( "amd_dashboard_og_title", "$dashboard_title - " . get_bloginfo( 'name' ) ) ); ?>">
@@ -869,7 +893,7 @@ add_action( "amd_login_header", function(){
     $content = __( "You can manage your account information, transactions, payments and purchases by logging in to your dashboard", "material-dashboard" );
 
     $dash = amd_get_dash_logo();
-    $dashLogoURL = $dash["url"];
+    $dashLogoURL = $dash["url"] ?? "";
 
     ?>
     <meta name="og:title" content="<?php echo esc_html( apply_filters( "amd_login_og_title", "$login_title - " . get_bloginfo( 'name' ) ) ); ?>">
@@ -889,7 +913,7 @@ add_action( "amd_registration_header", function(){
     $content = __( "You can manage your account information, transactions, payments and purchases by logging in to your dashboard", "material-dashboard" );
 
     $dash = amd_get_dash_logo();
-    $dashLogoURL = $dash["url"];
+    $dashLogoURL = $dash["url"] ?? "";
 
     ?>
     <meta name="og:title" content="<?php echo esc_html( apply_filters( "amd_registration_og_title", "$register_title - " . get_bloginfo( 'name' ) ) ); ?>">
@@ -933,7 +957,10 @@ add_action( "amd_add_avatar", function( $path ){
 
 } );
 
-# Unregister new avatar
+/**
+ * Unregister avatar group
+ * @since 1.0.4
+ */
 add_action( "amd_remove_avatar", function( $group_id ){
 
 	global /** @var AMDCache $amdCache */
@@ -941,7 +968,7 @@ add_action( "amd_remove_avatar", function( $group_id ){
 
     $avatars = $amdCache->getScopeGroup( "avatars" );
 
-    if( !empty( $avatars[$group_id] ) ){
+    if( isset( $avatars[$group_id] ) ){
         unset( $avatars[$group_id] );
         $amdCache->updateScopeGroup( "avatars", $avatars );
     }
@@ -1010,7 +1037,6 @@ add_filter( "amd_is_avatar_upload_allowed", function(){
 function amd_ext__app_register_avatars(){
 	do_action( "amd_add_avatar", [ "amd_default" => AMD_ASSETS_PATH . "/images/avatars/flat" ] );
 }
-
 add_action( "amd_api_init", "amd_ext__app_register_avatars" );
 add_action( "amd_dashboard_init", "amd_ext__app_register_avatars" );
 
@@ -1087,21 +1113,68 @@ function amd_ext__app_email_head( $to, $subject, $message ){
     $dash_logo_url = $dash["url"];
     $image_url = apply_filters( "amd_email_header_image", $dash_logo_url );
     ob_start();
-    # @formatter off
+    # @formatter on
     ?><!DOCTYPE HTML>
-    <html>
-        <head>
-            <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-            <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-            <meta http-equiv="X-UA-Compatible" content="ie=edge">
-            <style>.content,.link{border-radius:6px}body{font-family:arial,verdana,georgia,"Times New Roman",courier,sans-serif;text-align:center;font-size:18px;line-height:30px;background:#f6f6f6}.h1,h1{font-size:24px;color:#030023;margin:8px 0}.h2,h2{font-size:16px;color:#250bd0;margin:8px 0}a{color:#2e93d9;text-decoration:none}.link{display:inline-block;font-size:15px;background:rgba(79,105,234,.2);color:#4f69ea;padding:8px 18px;margin:8px}.link.--fill{color:#fff;background:#4f69ea}.content{width:90%;max-width:700px;margin:24px auto 12px;background:#fff;padding:16px;border:1px solid #eaeaea}.color-primary{color:#250BD0}</style>
-        </head>
-        <body>
-        <img src="<?php echo esc_attr( $image_url ); ?>" alt="<?php echo esc_attr( $blog_name ); ?>" style="width:130px;margin:24px auto 8px">
-        <div class="content" dir="auto">
-            <p class="h2"><?php echo wp_kses( $blog_name, amd_allowed_tags_with_attr( "br,span,a" ) ); ?></p>
-            <p class="h1"><?php echo esc_html( $subject ); ?></p>
-            <div style="height:20px"></div>
+<html lang="<?php bloginfo_rss( 'language' ); ?>">
+    <head>
+        <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    </head>
+    <body>
+    <style type="text/css">
+        .ExternalClass {
+            width: 100%;
+        }
+        body {
+            font-family: arial, verdana, georgia, "Times New Roman", courier, sans-serif;
+            text-align: center;
+            font-size: 18px;
+            line-height: 30px;
+            background: #f6f6f6;
+        }
+        .h1, h1 {
+            font-size: 24px;
+            color: #030023;
+            margin: 8px 0;
+        }
+        .h2, h2 {
+            font-size: 16px;
+            color: #250bd0;
+            margin: 8px 0;
+        }
+        a {
+            color: #2e93d9;
+            text-decoration: none;
+        }
+        .link {
+            font-size: 15px;
+            background: #4F69EA33;
+            color: #4f69ea;
+            padding: 8px 18px;
+            margin: 8px;
+        }
+        .link.--fill {
+            color: #fff;
+            background: #4f69ea;
+        }
+        .content {
+            width: 90%;
+            margin: 24px auto 12px;
+            background: #fff;
+            padding: 16px;
+            border: 1px solid #eaeaea;
+        }
+        .color-primary {
+            color: #250BD0;
+        }
+    </style>
+    <img src="<?php echo esc_attr( $image_url ); ?>" alt="<?php echo esc_attr( $blog_name ); ?>" style="width:130px;margin:24px auto 8px">
+    <div class="content" dir="auto" style="mso-line-height-rule:exactly;">
+        <p class="h2"><?php echo wp_kses( $blog_name, amd_allowed_tags_with_attr( "br,span,a" ) ); ?></p>
+        <p class="h1"><?php echo esc_html( $subject ); ?></p>
+        <div style="height:20px">
+    </div>
     <?php
     # @formatter on
     return ob_get_clean();
@@ -1145,11 +1218,13 @@ function amd_ext__app_email_foot( $to, $subject, $message ){
     $domain = amd_replace_url( "%domain%" );
     ob_start();
     ?>
-                <div style="height:20px"></div>
-                <a class="link" href="<?php echo esc_url( get_site_url() ); ?>"><?php echo esc_html( ucfirst( $domain ) ); ?></a>
-            </div>
-        </body>
-    </html>
+            <div style="height:20px"></div>
+            <a class="link" href="<?php echo esc_url( get_site_url() ); ?>"><?php echo esc_html( ucfirst( $domain ) ); ?></a>
+            <br>
+            <p style="font-size:14px;opacity:.8;margin:0"><?php echo esc_html( amd_true_date( "j F Y" ) . " - " . amd_true_date( "H:i" ) ); ?></p>
+        </div>
+    </body>
+</html>
     <?php
     return ob_get_clean();
 }

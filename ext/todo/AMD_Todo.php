@@ -3,21 +3,21 @@
 class AMD_Todo {
 
 	/**
-	 * _Todo ID
+	 * To-do ID
 	 * @var int
 	 * @since 1.0.0
 	 */
 	public $id;
 
 	/**
-	 * _Todo salt key for decryption
+	 * To-do salt key for decryption
 	 * @var string
 	 * @since 1.0.0
 	 */
 	public $salt;
 
 	/**
-	 * _Todo key
+	 * To-do key
 	 * @var string
 	 * @since 1.0.0
 	 */
@@ -31,28 +31,28 @@ class AMD_Todo {
 	public $_text;
 
 	/**
-	 * Decrypted _todo text
+	 * Decrypted To-do text
 	 * @var string
 	 * @since 1.0.0
 	 */
 	public $text;
 
 	/**
-	 * _Todo status
+	 * To-do status
 	 * @var string
 	 * @since 1.0.0
 	 */
 	public $status;
 
 	/**
-	 * _Todo meta-data
+	 * To-do meta-data
 	 * @var array
 	 * @since 1.0.0
 	 */
 	public $meta;
 
 	/**
-	 * _Todo items object
+	 * To-do items object
 	 */
 	public function __construct(){
 
@@ -64,7 +64,7 @@ class AMD_Todo {
 	}
 
 	/**
-	 * Reset _todo data to default
+	 * Reset To-do data to default
 	 * @return void
 	 * @since 1.0.0
 	 */
@@ -78,7 +78,7 @@ class AMD_Todo {
 	}
 
 	/**
-	 * Change _todo salt key
+	 * Change To-do salt key
 	 * @param string $salt
 	 * New salt value
 	 *
@@ -90,17 +90,17 @@ class AMD_Todo {
 	}
 
 	/**
-	 * Set _todo data
+	 * Set To-do data
 	 * @param string $key
-	 * _Todo key
+	 * To-do key
 	 * @param string $_text
 	 * Not decrypted text
 	 * @param string $text
 	 * Decrypted text
 	 * @param string $status
-	 * _Todo status
+	 * To-do status
 	 * @param array $meta
-	 * _Todo meta-data
+	 * To-do meta-data
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -114,9 +114,9 @@ class AMD_Todo {
 	}
 
 	/**
-	 * Load _todo from ID and change object properties
+	 * Load To-do from ID and change object properties
 	 * @param int $id
-	 * _Todo ID in database
+	 * To-do ID in database
 	 *
 	 * @return void
 	 * @since 1.0.0
@@ -139,9 +139,9 @@ class AMD_Todo {
 	}
 
 	/**
-	 * Get complete _todo list by key
+	 * Get complete To-do list by key
 	 * @param string $key
-	 * _Todo list key
+	 * To-do list key
 	 * @param string $salt
 	 * Salt key for decryption
 	 *
@@ -169,13 +169,13 @@ class AMD_Todo {
 	}
 
 	/**
-	 * Insert _todo item into databse
+	 * Insert to-do item into database
 	 * @param string $key
-	 * _Todo ket
+	 * To-do key
 	 * @param string $value
-	 * _Todo text
+	 * To-do text
 	 * @param string $status
-	 * _Todo status
+	 * To-do status
 	 * @param array $meta
 	 * Meta-data
 	 *

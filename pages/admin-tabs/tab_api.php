@@ -73,7 +73,7 @@ $defaultSettings = array(
         recheck();
         $api_enabled.on("change", recheck);
         $url.click(() => $amd.copy(url, true));
-        $("#copy-api-url").click(() => $amd.copy(url, true));
+        $("#copy-api-url").click(() => $amd.copy(url, false, true));
         $("#open-api-url").click(() => window.open(url, "_blank"));
         $amd.addEvent("on_settings_saved", () => {
             return {

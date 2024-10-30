@@ -56,7 +56,10 @@ $show_btn = $data["show_btn"] ?? true;
 $btn_text = $data["btn_text"] ?? "";
 $btn_url = $data["btn_url"] ?? "";
 
-amd_add_element_class( "body", [$theme, $direction, $current_locale] );
+$icon_pack = amd_get_icon_pack();
+$theme = amd_get_theme_property( "id" );
+
+amd_add_element_class( "body", [$theme, $direction, $current_locale, "icon-$icon_pack", "theme-$theme"] );
 
 $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 

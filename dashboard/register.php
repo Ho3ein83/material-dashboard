@@ -84,8 +84,9 @@ $format = $regions["format"];
 $countries_cc_html = $regions["html"];
 
 $icon_pack = amd_get_icon_pack();
+$theme_id = amd_get_theme_property( "id" );
 
-amd_add_element_class( "body", [$theme, $direction, $current_locale, $icon_pack] );
+amd_add_element_class( "body", [$theme, $direction, $current_locale, "icon-$icon_pack", "theme-$theme_id"] );
 
 $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 
@@ -169,68 +170,10 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
             </label>
 		<?php endif; ?>
     </div>
-	<?php if( $phone_field ): ?>
-        <div id="phone-fields">
-			<?php if( $cc_count > 1 ): ?>
-                <div class="ht-magic-select">
-                    <label>
-                        <input type="text" class="--input" data-field="country_code" data-next="phone_number"
-                               placeholder=""
-							<?php echo $phone_field_required ? "required" : ""; ?>>
-                        <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
-                        <span class="--value" dir="auto"><?php _amd_icon( "phone" ) ?></span>
-                    </label>
-                    <div class="--options">
-	                    <?php foreach( $regions["regions"] as $region ): ?>
-                            <span data-value="<?php echo esc_attr( $region['digit'] ?? '' ); ?>"
-                                  data-format="<?php echo esc_attr( $region['format'] ?? '' ); ?>"
-                                  data-keyword="<?php echo esc_attr( $region['name'] ?? '' ); ?>">
-                                <?php echo apply_filters( "amd_phone_format_name", $region["name"] ?? "", $region["digit"] ?? "", $region["format"] ?? "" ); ?></span>
-	                    <?php endforeach; ?>
-                    </div>
-                    <div class="--search"></div>
-                </div>
-                <label class="ht-input --ltr">
-                    <input type="text" class="not-focus" data-field="phone_number" data-pattern="" data-keys="[+0-9]"
-                           data-next="submit"
-                           placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
-                    <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
-					<?php _amd_icon( "phone" ); ?>
-                </label>
-			<?php else: ?>
-				<?php if( $first_cc == "98" AND apply_filters( "amd_use_phone_simple_digit", false ) ): ?>
-                    <label class="ht-input --ltr">
-                        <input type="text" class="not-focus" data-field="phone_number" data-keys="[0-9]"
-                               data-pattern="[0-9]" data-next="submit" placeholder=""
-                            <?php echo $phone_field_required ? "required" : ""; ?>>
-                        <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
-						<?php _amd_icon( "phone" ); ?>
-                    </label>
-				<?php else: ?>
-                    <div class="ht-magic-select" style="display:none">
-                        <label>
-                            <input type="text" class="--input" data-field="country_code" data-next="phone_number"
-                                   data-value="<?php echo esc_attr( $first_cc ); ?>" value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
-								<?php echo $phone_field_required ? "required" : ""; ?>>
-                            <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
-                            <span class="--value" dir="auto"><?php echo esc_html( $first_cc ); ?></span>
-                        </label>
-                        <div class="--options">
-                            <span data-value="<?php echo esc_attr( $first_cc ); ?>" data-format="<?php echo esc_attr( $format ); ?>" data-keyword=""></span>
-                        </div>
-                        <div class="--search"></div>
-                    </div>
-                    <label class="ht-input --ltr">
-                        <input type="text" class="not-focus" data-field="phone_number" data-pattern="[0-9]{11}"
-                               data-keys="[0-9]" data-next="submit"
-                               placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
-                        <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
-						<?php _amd_icon( "phone" ); ?>
-                    </label>
-				<?php endif; ?>
-			<?php endif; ?>
-        </div>
-	<?php endif; ?>
+
+    <!-- Phone number fields -->
+    <?php amd_phone_fields( true ); ?>
+
     <div class="mt-20"></div>
     <div class="amd-lr-buttons">
         <button type="button" class="btn" id="btn-register" data-submit="register"><?php esc_html_e( "Register", "material-dashboard" ); ?></button>
@@ -439,6 +382,8 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
             $phone_number.attr("data-pattern", `^\\+${cc}\\s?${_f}$`);
         }
         let val = $country_code.val();
+        for(let i = 0; i < val.length; i++)
+            val = val.replaceAll("  ", " ");
         $country_code.val(val.trimChar(" "));
     });
     $country_code.trigger("change");

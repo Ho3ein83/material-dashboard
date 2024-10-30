@@ -86,12 +86,15 @@ body {
 
 .amd-admin-tabs > .--tabs > div > i {
     display: block;
-    font-size: 15px;
     padding: 8px;
     padding-inline-end: 0;
 }
+.amd-admin-tabs > .--tabs > div > i::before {
+    font-size: 15px;
+}
 
-.amd-admin-tabs > .--tabs > div > svg.iconhub {
+.amd-admin-tabs > .--tabs > div > svg.iconhub,
+.amd-admin-tabs > .--tabs > div > svg.tabler {
     display: block;
     height: 18px;
     width: auto;

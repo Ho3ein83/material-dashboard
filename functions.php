@@ -8,23 +8,24 @@ add_action( "init", function(){
 
 } );
 
-function adp_register_avatars(){
-
-    do_action( "amd_remove_avatar", "amd_default" );
-
-    do_action( "amd_add_avatar", [ "adp_default" => ADP_ASSETS_PATH . "/images/avatars/default" ] );
-
-	//file_put_contents( ABSPATH . 'log.txt', var_export( apply_filters( "amd_get_avatars", [] ), true ) );
-
+/**
+ * Extra components stylesheet
+ * @since 1.0.4
+ * @return void
+ */
+function amd_extra_components(){
+	echo <<<CSS
+        .btn.btn-icon-square{width:max-content !important;min-width:max-content !important;display:inline-flex !important;aspect-ratio:1;align-items:center;justify-content:center;padding:8px !important}
+        .btn-icon-square.bis-sm{padding:2px !important}
+        .btn-sm.btn-icon-square>._icon_{width:18px;height:auto}
+        .btn.btn-icon-square.--block{display:flex !important}
+        .btn.btn-full{width:100%}
+        .hb-select-group>select{left:0}
+        body.rtl .hb-select-group>select{text-align:right}
+        body.ltr .hb-select-group>select{text-align:left}
+    CSS;
 }
-add_action( "amd_api_init", "adp_register_avatars", 20 );
-add_action( "amd_dashboard_init", "adp_register_avatars", 20 );
-
-add_filter( "amd_placeholder_avatar_path", function(){
-
-    return ADP_ASSETS_PATH . "/images/avatars/default/_placeholder.svg";
-
-}, 9 );
+add_action( "amd_api_components_stylesheet", "amd_extra_components" );
 
 /**
  * Alternate for wp_head
@@ -198,7 +199,11 @@ function amd_replace_constants( $str ){
 	$str = preg_replace( "/\{AMD_AUTH_SITE}/", AMD_AUTH_SITE, $str );
 	$str = preg_replace( "/\{DOC_URL}/", amd_doc_url( "" ), $str );
 
-	return $str;
+	/**
+     * For custom properties
+	 * @sicne 1.0.0
+	 */
+	return apply_filters( "amd_replace_constants", $str );
 
 }
 
@@ -1141,12 +1146,12 @@ function amd_get_user_by( $by, $user, $simpleUser = true ){
  * @return false|AMDUser|array
  * @since 1.0.0
  */
-function amd_get_user_by_meta( $by, $user, $single = true ){
+function amd_get_user_by_meta( $by, $value, $single = true ){
 
 	global /** @var AMDSilu $amdSilu */
 	$amdSilu;
 
-	return $amdSilu->getUserByMeta( $by, $user, $single );
+	return $amdSilu->getUserByMeta( $by, $value, $single );
 
 }
 
@@ -1258,6 +1263,7 @@ function amd_get_site_option( $name, $default = "" ){
 
 /**
  * Get result of regex search inside site_options table
+ *
  * @param string $regex
  * Search regex
  *
@@ -1483,32 +1489,16 @@ function amd_validate( $string, $regex, $required = true ){
  * @param string $text
  * Input text
  * @param string $sp
- * Separator character
+ * Separator character, for URLs it would be "/"
+ * <br><code><b>DEPRECATED: this parameter is no longer available since 1.0.4 version, and it will be ignored.</b></code>
  *
  * @return string
  * @since 1.0.0
  */
 function amd_slugify( $text, $sp = '/' ){
 
-    // replace non letter or digits by divider
-	$text = preg_replace( '~[^\pL\d]+~u', $sp, $text );
+    return sanitize_title( $text );
 
-	// transliterate
-	$text = iconv( 'utf-8', 'us-ascii//TRANSLIT', $text );
-
-	// remove unwanted characters
-	$text = preg_replace( '~[^-\w]+~', '', $text );
-
-	// trim
-	$text = trim( $text, $sp );
-
-	// remove duplicate divider
-	$text = preg_replace( '~-+~', $sp, $text );
-
-	// lowercase
-	$text = strtolower( $text );
-
-	return $text;
 }
 
 /**
@@ -1930,7 +1920,9 @@ function amd_is_dashboard_page(){
 
 /**
  * Get login page URL
- * @return string|WP_Error
+ * @param bool $safe
+ * [Deprecated] this parameter is no longer available since 1.0.4 version
+ * @return string
  * @since 1.0.0
  */
 function amd_get_login_page( $safe = true ){
@@ -1939,10 +1931,7 @@ function amd_get_login_page( $safe = true ){
 
 	$url = get_permalink( $loginPage );
 
-	if( $safe and is_wp_error( $url ) )
-		return "";
-
-	return $url;
+	return !$url ? "" : $url;
 
 }
 
@@ -1950,9 +1939,9 @@ function amd_get_login_page( $safe = true ){
  * Get dashboard page URL
  *
  * @param bool $safe
- * Whether to get WP_Error object if dashboard page does not exist
+ * [Deprecated] this parameter is no longer available since 1.0.4 version
  *
- * @return string|WP_Error
+ * @return string
  * @see AMDWarner::getErrors()
  * @since 1.0.0
  */
@@ -1962,10 +1951,22 @@ function amd_get_dashboard_page( $safe = true ){
 
 	$url = get_permalink( $dashboardPage );
 
-	if( $safe AND is_wp_error( $url ) )
-		return "";
+	return !$url ? "" : $url;
 
-	return $url;
+}
+
+/**
+ * Get custom page URL
+ * @return string
+ * @since 1.0.4
+ */
+function amd_get_page_url( $page ){
+
+	$page_id = amd_get_site_option( "{$page}_page" );
+
+	$url = get_permalink( $page_id );
+
+	return !$url ? "" : $url;
 
 }
 
@@ -2172,7 +2173,15 @@ function amd_simple_user( $uid = null ){
  */
 function amd_make_pages( $page, $confirm = false, $confirmReplace = false ){
 
-	if( !in_array( $page, apply_filters( "amd_get_allowed_pages", [ "login", "dashboard", "api" ] ) ) )
+    $allowed_pages = apply_filters( "amd_get_allowed_pages", [ "login", "dashboard", "api" ] );
+
+	/**
+	 * Change allowed pages with custom filter
+     * @since 1.0.4
+	 */
+    $allowed_pages = apply_filters( "amd_custom_allowed_pages", $allowed_pages );
+
+	if( !in_array( $page, $allowed_pages ) )
 		return array(
 			"success" => false,
 			"data" => [ "msg" => esc_html__( "Failed", "material-dashboard" ) ]
@@ -2223,7 +2232,11 @@ function amd_make_pages( $page, $confirm = false, $confirmReplace = false ){
 
 	$result = wp_insert_post( array(
 		"post_title" => ucfirst( $page ),
-		"post_content" => "[amd-$page]",
+		/**
+		 * Get custom shortcode for page
+         * @since 1.0.4
+		 */
+		"post_content" => apply_filters( "amd_custom_page_shortcode", "[amd-$page]", $page ),
 		"post_status" => "publish",
 		"post_type" => "page",
 	) );
@@ -2617,10 +2630,12 @@ function amd_get_regions(){
 			$phoneRegions[$key] = (array) $value;
 	}
 
+
 	$first_cc = "";
 	$countries_cc_html = "";
 	$cc_count = 0;
 	$format = "";
+    $out_regions = [];
 	foreach( $phoneRegions as $cc => $data ){
 		if( empty( $selectedRegions[$cc] ) )
 			continue;
@@ -2645,11 +2660,13 @@ function amd_get_regions(){
         <?php
         # @formatter on
 		$countries_cc_html = ob_get_clean();
+        $out_regions[$cc] = $data;
 		$cc_count++;
 	}
 
 	return array(
-		"regions" => $phoneRegions,
+		"all_regions" => $phoneRegions,
+		"regions" => $out_regions,
 		"count" => $cc_count,
 		"first" => $first_cc,
 		"format" => $format,
@@ -3088,21 +3105,21 @@ function amd_delete_directory( $dir, $recursive = false ){
 }
 
 /**
- * Add _todo item
+ * Add To-do item
  *
  * @param string $key
- * _Todo key. e.g: "user_1"
+ * To-do key. e.g: "user_1"
  * @param string $value
- * _Todo text. e.g: "Contact customer #12"
+ * To-do text. e.g: "Contact customer #12"
  * @param string $status
- * _Todo status. e.g: "pending", "done", "undone"
+ * To-do status. e.g: "pending", "done", "undone"
  * @param string $salt
- * _Todo salt for encoding
+ * To-do salt for encoding
  * @param array $meta
- * _Todo meta-data. e.g: ["date" => "2023-01-02"]
+ * To-do meta-data. e.g: ["date" => "2023-01-02"]
  * @param bool $encode
  * Whether to encode $value or not.
- * <br><b>Note: You always have to use encoded value for _todo lists, but if your _todo text is already encoded you can pass false to skip encoding</b>
+ * <br><b>Note: You always have to use encoded value for to-do lists, but if your to-do text is already encoded you can pass false to skip encoding</b>
  *
  * @return false|int
  * Inserted row ID on success, false on failed
@@ -3121,7 +3138,7 @@ function amd_add_todo( $key, $value, $status, $salt, $meta = [], $encode = true 
 }
 
 /**
- * Update _todo item/list
+ * Update to-do item/list
  *
  * @param array $data
  * Item or list data to update. e.g: ["todo_key" => "user_1", "todo_value" => "Hello world", ...]
@@ -3144,7 +3161,7 @@ function amd_update_todo( $data, $where, $salt = "" ){
 }
 
 /**
- * Get _todo list
+ * Get to-do list
  *
  * @param array $filters
  * Filters array
@@ -3164,7 +3181,7 @@ function amd_get_todo_list( $filters, $single = false ){
 }
 
 /**
- * Delete _todo items or list
+ * Delete to-do items or list
  *
  * @param array $where
  *
@@ -3181,12 +3198,12 @@ function amd_delete_todo_list( $where ){
 }
 
 /**
- * Edit _todo item
+ * Edit to-do item
  *
  * @param int $todo_id
- * _Todo ID
+ * To-do ID
  * @param array $data
- * _Todo data to update
+ * To-do data to update
  *
  * @return bool
  * @since 1.0.0
@@ -3201,10 +3218,10 @@ function amd_edit_todo( $todo_id, $data ){
 }
 
 /**
- * Check if _todo item is owned by user
+ * Check if to-do item is owned by user
  *
  * @param int $todo_id
- * _Todo ID
+ * To-do ID
  * @param int $user_id
  * User ID
  *
@@ -3222,6 +3239,13 @@ function amd_is_todo_for_user( $todo_id, $user_id ){
 
 	if( !count( $todo ) )
 		return false;
+
+	/**
+	 * Check if user is allowed to change to-do item
+     * @since 1.0.4
+	 */
+	if( apply_filters( "amd_ext_todo_task_belongs_to", $todo_id, $user_id ) === true )
+        return true;
 
 	return $todo[0]->todo_key == $user->serial;
 
@@ -3265,6 +3289,7 @@ function amd_decrypt_aes( $hash, $salt ){
 
 /**
  * Serialize string
+ *
  * @param string $string
  * Input string
  *
@@ -3282,6 +3307,7 @@ function amd_serialize( $string ){
 
 /**
  * Deserialize string
+ *
  * @param string $string
  * Serialized string
  *
@@ -3640,6 +3666,24 @@ function amd_load_part( $part, $extra = null ){
 }
 
 /**
+ * Check if theme part is available
+ *
+ * @param string $part
+ * Part file name (without .php extension)
+ *
+ * @return bool
+ * @since 1.0.4
+ */
+function amd_part_exist( $part ){
+
+	global /** @var AMDLoader $amdLoader */
+	$amdLoader;
+
+	return $amdLoader->partExist( $part );
+
+}
+
+/**
  * Print card with theme template
  *
  * @param array $card
@@ -3695,8 +3739,8 @@ function amd_check_user_filters( $filters ){
 				return true;
 		}
 		else{
-			if( amd_guess_user( $item )["user"] ?? null )
-				return true;
+			if( $u = amd_guess_user( $item )["user"] ?? null )
+				return $u->ID == get_current_user_id();
 		}
 
 	}
@@ -4193,7 +4237,7 @@ function amd_destroy_html_tag( $html, $tag_s ){
 function amd_head_jquery(){
 
     # Print jQuery core scripts
-    wp_print_scripts( ["jquery"] );
+    wp_print_scripts( ["jquery",] );
 
     # Ignore noConflict mode
 	echo '<script>var $ = jQuery;</script>';
@@ -4502,6 +4546,285 @@ function amd_switch_locale( $locale, $updateUserOrCookie=true ){
     # Change calendar date mode base on locale
     if( $amdCal )
 	    $amdCal->setDateMode( $locale == "fa_IR" ? "j" : "g" );
+
+}
+
+/**
+ * Print log content to default logs file
+ * <br><b>Note: This is only for debug and localhost back-trace, if you are using this logger on real host,
+ * REMEMBER TO DELETE LOG FILE after your work is done, also DO NOT DUMP ANY SENSITIVE DATA in it because it is not hidden to public!</b>
+ *
+ * @param mixed $data
+ * Any data type
+ * @param bool $append
+ * Whether to append content to existing file
+ * @param array|bool $trace
+ * Whether to show date and trace at the beginning of line, or `debug_backtrace` returned value
+ * @param string $breakLine
+ * Line break character
+ *
+ * @return false|int
+ * Returns the returned value of {@see file_put_contents()}
+ * @since 1.0.4
+ */
+function amd_log( $data, $append = false, $trace = false, $breakLine="\n" ){
+
+	$pre = '';
+	try {
+		$bt = is_array( $trace ) ? $trace : debug_backtrace();
+		$caller = array_shift( $bt );
+		$fileExp = explode( DIRECTORY_SEPARATOR, $caller['file'] );
+		$filename = end( $fileExp );
+		if( $filename )
+			$pre = "['$filename': " . ( $caller["line"] ?? "_" ) . "]";
+	} catch( Exception $e ){}
+
+	$path = apply_filters( "amd_logs_path", ABSPATH . "amd_logs.txt" );
+
+	if( $data === true )
+		$data = "TRUE";
+
+    if( is_bool( $data ) )
+		$content = $data ? "TRUE" : "FALSE";
+	else if( is_string( $data ) )
+		$content = strlen( $data ) > 0 ? $data : "[EMPTY_STRING]";
+	else if( is_numeric( $data ) )
+		$content = "$data";
+	else if( is_null( $data ) )
+		$content = "NULL";
+	else if( is_callable( $data ) )
+		$content = "CALLABLE";
+	else
+		$content = apply_filters( "amd_logs_control", var_export( $data, true ), $data );
+
+	if( !is_string( $content ) )
+		$content = "[NOT_PRINTABLE]" . "[" . gettype( $content ) . "][EXPORTED] " . var_export( $content, true );
+
+	$content = $trace ? "[" . date( apply_filters( "amd_logs_time_format", "Y-m-d H:i:s" ) ) . "]" . ( $pre ? " $pre" : "" ) . " $content" : $content;
+
+	if( $data == "\n" ){
+		$content = "";
+		$breakLine = "\n";
+	}
+
+	return file_put_contents( $path, $content . ( $append ? $breakLine : "" ), $append ? FILE_APPEND : 0 );
+
+}
+
+/**
+ * Add data content to default logs file
+ *
+ * @param mixed $data
+ * Any data type
+ *
+ * @return false|int
+ * Returns the returned value from {@see amd_log()}
+ * @since 1.0.4
+ */
+function amd_put_log( $data ){
+
+	return amd_log( $data, true, debug_backtrace() );
+
+}
+
+/**
+ * Push element to custom input
+ * @param string|array $input
+ * Input array or string, e.g: "10,11,25", ["a", "b", "c"]
+ * @param scalar $element
+ * Scalar value for element (int, string, bool, float), e.g: "d", 22, 12.5, false
+ * @param string $separator
+ * Separator of input list, default is ","
+ * @param bool $unique
+ * Whether to remove duplicated values
+ *
+ * @return string
+ * Seperated items list, e.g: "a,b,c,12,45,3.14,0"
+ * @since 1.0.4
+ */
+function amd_push_value( $input, $element, $separator=",", $unique=true ){
+
+    # Covert string input to array
+    if( is_string( $input ) )
+        $input = explode( $separator, $input );
+
+    # Ignore unexpected input values
+    if( !is_array( $input ) )
+        return $input;
+
+    # Push element to input
+    $input[] = $element;
+
+    # Remove duplicated elements from input
+    if( $unique )
+        $input = array_unique( $input );
+
+    # Convert input array to string
+    $out = implode( $separator, $input );
+
+    # Remove trailing separator from output string
+    $out = trim( $out, $separator );
+    $out = str_replace( $separator . $separator, "", $out );
+
+    return $out;
+
+}
+
+/**
+ * Pull out an element from custom input
+ * @param string|array $input
+ * Input array or string, e.g: "10,11,25", ["a", "b", "c"]
+ * @param scalar $element
+ * Scalar value to remove (int, string, bool, float), e.g: "d", 22, 12.5
+ * @param string $separator
+ * Separator of input list, default is ","
+ * @param bool $unique
+ * Whether to remove duplicated values
+ *
+ * @return string
+ * Seperated items list after removing an element from it, e.g: "a,b,c,12,45,3.14"
+ * @since 1.0.4
+ */
+function amd_pull_value( $input, $element, $separator=",", $unique=true ){
+
+    # Covert string input to array
+    if( is_string( $input ) )
+        $input = explode( $separator, $input );
+
+    # Ignore unexpected input values
+    if( !is_array( $input ) )
+        return $input;
+
+    # Exchanges all keys with their associated values in input list
+    $input = array_flip( $input );
+
+    # Remove element from your input list
+    $input[$element] = null;
+    unset( $input[$element] );
+
+	# Re-exchange associated values with their keys in input list
+	$input = array_flip( $input );
+
+    # Remove duplicated elements from input
+    if( $unique )
+        $input = array_unique( $input );
+
+    # Convert input array to string
+    $out = implode( $separator, $input );
+
+    # Remove trailing separator from output string
+    $out = trim( $out, $separator );
+    $out = str_replace( $separator . $separator, "", $out );
+
+    return $out;
+
+}
+
+/**
+ * Print phone number in login and registration and other forms
+ * @param bool $isForLogin
+ * Whether phone field is for login page or not
+ *
+ * @return void
+ * @sicne 1.0.4
+ */
+function amd_phone_fields( $isForLogin=false ){
+
+    if( $isForLogin ){
+        $phone_field = true;
+        $phone_field_required = true;
+    }
+    else{
+	    $phone_field = amd_get_site_option( "phone_field" ) == "true";
+	    $phone_field_required = amd_get_site_option( "phone_field_required" ) == "true";
+    }
+
+	$regions = amd_get_regions();
+	$cc_count = $regions["count"];
+	$first_cc = $regions["first"];
+	$format = $regions["format"];
+
+    ?>
+    <?php if( $phone_field ): ?>
+        <div id="phone-fields">
+			<?php if( $cc_count > 1 ): ?>
+                <div class="_phone_field_holder_ ht-magic-select">
+                    <label>
+                        <input type="text" class="--input" data-field="country_code" data-next="phone_number"
+                               placeholder=""<?php echo $phone_field_required ? "required" : ""; ?>>
+                        <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
+                        <span class="--value" dir="auto"><?php _amd_icon( "phone" ) ?></span>
+                    </label>
+                    <div class="--options">
+						<?php foreach( $regions["regions"] as $region ): ?>
+                            <span data-value="<?php echo esc_attr( $region['digit'] ?? '' ); ?>"
+                                  data-format="<?php echo esc_attr( $region['format'] ?? '' ); ?>"
+                                  data-keyword="<?php echo esc_attr( $region['name'] ?? '' ); ?>">
+                                <?php echo apply_filters( "amd_phone_format_name", $region["name"] ?? "", $region["digit"] ?? "", $region["format"] ?? "" ); ?></span>
+						<?php endforeach; ?>
+                    </div>
+                    <div class="--search"></div>
+                </div>
+                <label class="_phone_field_holder_ ht-input --ltr">
+                    <input type="text" class="not-focus" data-field="phone_number" data-pattern="" data-keys="[+0-9]"
+                           data-next="<?php echo $isForLogin ? 'password' : 'submit'; ?>"
+                           placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
+                    <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
+					<?php _amd_icon( "phone" ); ?>
+                </label>
+			<?php else: ?>
+				<?php if( $first_cc == "98" AND apply_filters( "amd_use_phone_simple_digit", false ) ): ?>
+                    <label class="_phone_field_holder_ ht-input --ltr">
+                        <input type="text" class="not-focus" data-field="phone_number" data-keys="[0-9]"
+                               data-pattern="[0-9]" data-next="submit" placeholder=""
+							<?php echo $phone_field_required ? "required" : ""; ?>>
+                        <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
+						<?php _amd_icon( "phone" ); ?>
+                    </label>
+				<?php else: ?>
+                    <div class="_phone_field_holder_ ht-magic-select" style="display:none">
+                        <label>
+                            <input type="text" class="--input" data-field="country_code" data-next="phone_number"
+                                   data-value="<?php echo esc_attr( $first_cc ); ?>" value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
+								<?php echo $phone_field_required ? "required" : ""; ?>>
+                            <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
+                            <span class="--value" dir="auto"><?php echo esc_html( $first_cc ); ?></span>
+                        </label>
+                        <div class="--options">
+                            <span data-value="<?php echo esc_attr( $first_cc ); ?>" data-format="<?php echo esc_attr( $format ); ?>" data-keyword=""></span>
+                        </div>
+                        <div class="--search"></div>
+                    </div>
+                    <label class="_phone_field_holder_ ht-input --ltr">
+                        <input type="text" class="not-focus" data-field="phone_number" data-pattern="[0-9]{11}"
+                               data-keys="[0-9]" data-next="submit"
+                               placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
+                        <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
+						<?php _amd_icon( "phone" ); ?>
+                    </label>
+				<?php endif; ?>
+			<?php endif; ?>
+        </div>
+	<?php endif; ?>
+    <?php
+}
+
+/**
+ * Get Amatris material dashboard plugin survey URL
+ * @return string
+ * @since 1.0.4
+ */
+function amd_get_survey_url(){
+
+    $domain = amd_replace_url( "%domain%" );
+    $url = "https://amatris.ir/amd/survey/?utm_site=" . urlencode( $domain );
+
+    if( is_user_logged_in() ){
+        if( $email = amd_get_current_user()->email )
+            $url .= "&utm_email=" . urlencode( $email );
+    }
+
+    return $url;
 
 }
 

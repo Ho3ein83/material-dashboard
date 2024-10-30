@@ -362,4 +362,34 @@ class AMDExplorer{
 
 	}
 
+	/**
+	 * Require once file if exists
+	 * @param string $path
+	 * File path
+	 *
+	 * @return void
+	 * @since 1.0.4
+	 */
+	public function requireOnceFile( $path ){
+
+		if( file_exists( $path ) AND is_file( $path ) )
+			require_once( $path );
+
+	}
+
+	/**
+	 * Require file if exists
+	 * @param string $path
+	 * File path
+	 *
+	 * @return void
+	 * @since 1.0.4
+	 */
+	public function requireFile( $path ){
+
+		if( file_exists( $path ) AND is_file( $path ) )
+			require( $path );
+
+	}
+
 }

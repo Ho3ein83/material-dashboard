@@ -179,17 +179,17 @@ body.dark .btn-text {
     transition: opacity .2s
 }
 
-.btn-text.--red::before {
-    background-color: rgb(var(--amd-color-red-rgb));
+.btn-text.--low.--red::before {
+    background-color: rgb(var(--amd-color-red-rgb), .2);
 }
-.btn-text.--green::before {
-    background-color: rgb(var(--amd-color-green-rgb));
+.btn-text.--low.--green::before {
+    background-color: rgb(var(--amd-color-green-rgb), .2);
 }
-.btn-text.--blue::before {
-    background-color: rgb(var(--amd-color-blue-rgb));
+.btn-text.--low.--blue::before {
+    background-color: rgb(var(--amd-color-blue-rgb), .2);
 }
-.btn-text.--orange::before {
-    background-color: rgb(var(--amd-color-orange-rgb));
+.btn-text.--low.--orange::before {
+    background-color: rgb(var(--amd-color-orange-rgb), .2);
 }
 
 .btn-text::after {
@@ -228,6 +228,11 @@ body.dark .btn-text {
 .btn-text.--low {
     background-color: rgba(var(--amd-primary-rgb), .2);
 }
+
+.btn-text.--low.--red { background-color: rgba(var(--amd-color-red-rgb), .2) }
+.btn-text.--low.--green { background-color: rgba(var(--amd-color-green-rgb), .2) }
+.btn-text.--low.--blue { background-color: rgba(var(--amd-color-blue-rgb), .2) }
+.btn-text.--low.--orange { background-color: rgba(var(--amd-color-orange-rgb), .2) }
 
 .btn.--square {
     min-width: 36px;
@@ -883,7 +888,8 @@ body.ltr .ht-input > ._icon_{
     justify-content: center
 }
 
-body:not(.light) .ht-input > input:focus + span, body:not(.light) .ht-input > input:not(:placeholder-shown) + span {
+body:not(.light) .ht-input > input:focus + span,
+body:not(.light) .ht-input > input:not(:placeholder-shown) + span {
     color: rgba(var(--amd-text-color-rgb), .7)
 }
 
@@ -987,7 +993,7 @@ body.ltr .hb-select-group > ._icon_ {
 
 .ht-textarea {
     position: relative;
-    background: var(--amd-primary-x-low);
+    background: var(--amd-input-bg);
     width: max-content;
     padding: 20px 0 0;
     cursor: text;

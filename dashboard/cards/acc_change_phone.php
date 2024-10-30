@@ -1,7 +1,24 @@
 <?php
 
-if( amd_validate_phone_number( amd_get_user_meta( null, "phone" ) ) )
+/**
+ * Force it to display phone edit fields even if phone field is disabled by settings
+ * @since 1.0.4
+ */
+$force_display = apply_filters( "amd_force_display_phone_edit", false );
+
+/**
+ * Allow users change phone number
+ * @sicne 1.0.4
+ */
+$allow_change_phone_number = apply_filters( "amd_allow_change_phone_number", false );
+
+if( !$allow_change_phone_number )
     return;
+if( amd_get_site_option( "phone_field" ) != "true" AND !$force_display )
+    return;
+
+$thisuser = amd_get_current_user();
+$is_phone_valid = amd_validate_phone_number( $thisuser->phone );
 
 $regions = amd_get_regions();
 $cc_count = $regions["count"];
@@ -12,12 +29,15 @@ $phone_field_required = true;
 
 ?>
 <?php ob_start(); ?>
+<?php amd_phone_fields(); ?>
+<?php $phone_change_content = ob_get_clean(); ?>
+
+<?php ob_start(); ?>
 <?php if( $cc_count > 1 ): ?>
-    <div class="ht-magic-select">
-        <label>
+    <div class="_phone_field_holder_ ht-magic-select">
+        <label style="height:50px">
             <input type="text" class="--input" data-field="country_code" data-next="phone_number"
-                   placeholder=""
-				<?php echo $phone_field_required ? "required" : ""; ?>>
+                   placeholder=""<?php echo $phone_field_required ? "required" : ""; ?> style="height:40px;font-size:13px;padding-top:24px">
             <span><?php esc_html_e( "Country code", "material-dashboard" ); ?></span>
             <span class="--value" dir="auto"><?php _amd_icon( "phone" ) ?></span>
         </label>
@@ -31,16 +51,16 @@ $phone_field_required = true;
         </div>
         <div class="--search"></div>
     </div>
-    <label class="ht-input --ltr">
+    <label class="_phone_field_holder_ ht-input --ltr">
         <input type="text" class="not-focus" data-field="phone_number" data-pattern="" data-keys="[+0-9]"
-               data-next="submit"
+               data-next="submit" value="<?php echo esc_attr( $thisuser->phone ); ?>"
                placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
         <span><?php esc_html_e( "Phone", "material-dashboard" ); ?></span>
 		<?php _amd_icon( "phone" ); ?>
     </label>
 <?php else: ?>
 	<?php if( $first_cc == "98" AND apply_filters( "amd_use_phone_simple_digit", false ) ): ?>
-        <label class="ht-input --ltr">
+        <label class="_phone_field_holder_ ht-input --ltr">
             <input type="text" class="not-focus" data-field="phone_number" data-keys="[0-9]"
                    data-pattern="[0-9]" data-next="submit" placeholder=""
 				<?php echo $phone_field_required ? "required" : ""; ?>>
@@ -48,7 +68,7 @@ $phone_field_required = true;
 			<?php _amd_icon( "phone" ); ?>
         </label>
 	<?php else: ?>
-        <div class="ht-magic-select" style="display:none">
+        <div class="_phone_field_holder_ ht-magic-select" style="display:none">
             <label>
                 <input type="text" class="--input" data-field="country_code" data-next="phone_number"
                        data-value="<?php echo esc_attr( $first_cc ); ?>" value="<?php echo esc_attr( $first_cc ); ?>" placeholder=""
@@ -61,7 +81,7 @@ $phone_field_required = true;
             </div>
             <div class="--search"></div>
         </div>
-        <label class="ht-input --ltr">
+        <label class="_phone_field_holder_ ht-input --ltr">
             <input type="text" class="not-focus" data-field="phone_number" data-pattern="[0-9]{11}"
                    data-keys="[0-9]" data-next="submit"
                    placeholder="" <?php echo $phone_field_required ? "required" : ""; ?>>
@@ -70,12 +90,13 @@ $phone_field_required = true;
         </label>
 	<?php endif; ?>
 <?php endif; ?>
-<?php $phone_change_content = ob_get_clean(); ?>
+<?php $phone_change_content_ = ob_get_clean(); ?>
 
 <?php ob_start(); ?>
 <div class="plr-8">
-    <button type="button" class="btn" data-submit="change-phone"><?php esc_html_e( "Change", "material-dashboard" ); ?></button>
-    <button type="button" class="btn btn-text" data-dismiss="change-phone"><?php esc_html_e( "Dismiss", "material-dashboard" ); ?></button>
+    <button type="button" style="<?php echo $is_phone_valid ? '' : 'display:none'; ?>" class="btn" id="display-change-phone-buttons"><?php esc_html_e( "Change", "material-dashboard" ); ?></button>
+    <button type="button" style="<?php echo $is_phone_valid ? 'display:none' : ''; ?>" class="btn" data-submit="change-phone"><?php esc_html_e( "Save", "material-dashboard" ); ?></button>
+    <button type="button" style="<?php echo $is_phone_valid ? 'display:none' : ''; ?>" class="btn btn-text" data-dismiss="change-phone"><?php esc_html_e( "Dismiss", "material-dashboard" ); ?></button>
 </div>
 <?php $phone_change_footer = ob_get_clean(); ?>
 
@@ -87,6 +108,30 @@ $phone_field_required = true;
 	"_id" => "change-phone-card",
     "_attrs" => 'data-form="change-phone"'
 ) ); ?>
+<?php if( $is_phone_valid ): ?>
+    <script>
+        (function(){
+            let $f1 = $('[data-submit="change-phone"]');
+            let $f2 = $('[data-dismiss="change-phone"]');
+            let $f3 = $("#display-change-phone-buttons");
+            let $holder = $("._phone_field_holder_");
+            $holder.find('[data-field="phone_number"]').val(`<?php echo esc_html( $thisuser->phone ); ?>`);
+            $holder.setWaiting();
+            $f3.click(function(){
+                $f3.fadeOut(0);
+                $f1.fadeIn();
+                $f2.fadeIn();
+                $holder.setWaiting(false);
+            });
+            $f2.click(function(){
+                $f3.fadeIn();
+                $f1.fadeOut(0);
+                $f2.fadeOut(0);
+                $holder.setWaiting();
+            });
+        }());
+    </script>
+<?php endif; ?>
 <script>
     (function(){
         let form = new AMDForm("change-phone-card");
@@ -204,3 +249,4 @@ $phone_field_required = true;
         $country_code.trigger("change");
     }());
 </script>
+<style>.ht-magic-select._phone_field_holder_ > label{height:50px}  .ht-magic-select._phone_field_holder_ input{height:40px;font-size:13px;padding-top:24px}</style>

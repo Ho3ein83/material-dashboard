@@ -11,6 +11,10 @@ jQuery.fn.extend({
         if(bool) $(this).addClass("waiting");
         else $(this).removeClass("waiting");
     },
+    setSpinner: function(bool = true) {
+        if(bool) $(this).addClass("adp-spin --rev --ease");
+        else $(this).removeClass("adp-spin --rev --ease");
+    },
     cardLoader: function(bool = true) {
         if(bool) {
             $(this).append(`<div class="indeterminate-progress-bar --card-progress"><div class="indeterminate-progress-bar__progress"></div></div>`);
@@ -43,6 +47,22 @@ jQuery.fn.extend({
             handler = setTimeout(() => callback(e), timeout);
         });
         $el.on("mouseup touchend", () => clearTimeout(handler));
+    },
+    waitHold: function(text=null){
+        let $el = $(this);
+        let lastHtml = $el.html();
+        $el.blur();
+        $el.setWaiting();
+        if(text){
+            $el.attr("data-last-html", encodeURIComponent(lastHtml));
+            $el.html(text);
+        }
+    },
+    waitRelease: function(){
+        let $el = $(this);
+        $el.setWaiting(false);
+        let lastHtml = $el.hasAttr("data-last-html", true);
+        if(lastHtml) $el.html(decodeURIComponent(lastHtml)).removeAttr("data-last-html");
     },
     removeSlow: function(t = 700, fromParent = false) {
         let $el = fromParent ? $(this).parent() : $(this);
@@ -134,7 +154,7 @@ String.prototype.trimChar = function(character) {
     let first = [...string].findIndex(char => char !== character);
     let last = [...string].reverse().findIndex(char => char !== character);
     return string.substring(first, string.length - last);
-}
+};
 /* End of main.js */
 
 /* amd.js */
@@ -295,7 +315,40 @@ var $amd = {
     addEvent: (event, callback) => {
         if(typeof $amd.events[event] === "undefined") $amd.events[event] = [];
         if(typeof $amd.events[event].push === "undefined") $amd.events[event] = [];
-        $amd.events[event].push(callback);
+        if(event.startsWith("_SINGLE_"))
+            $amd.events[event] = [callback];
+        else
+            $amd.events[event].push(callback);
+    },
+    /**
+     * Add one-time-use event
+     * @param event
+     * @param callback
+     * @since 1.0.4
+     */
+    addDisposableEvent: (event, callback) => {
+        let key = "_DISPOSABLE_" + event;
+        $amd.addEvent(key, callback);
+    },
+    /**
+     * Single events only accepts one callback for their event handler
+     * @param event
+     * @param callback
+     * @since 1.0.4
+     */
+    addSingleEvent: (event, callback) => {
+        let key = "_SINGLE_" + event;
+        $amd.addEvent(key, callback);
+    },
+    /**
+     * These events will be removed after reloading page in any ways (lazy-load or har reload)
+     * @param event
+     * @param callback
+     * @since 1.0.4
+     */
+    addPageEvent: (event, callback) => {
+        let key = "_PAGE_" + event;
+        $amd.addEvent(key, callback);
     },
     /**
      * Unbind event
@@ -324,6 +377,29 @@ var $amd = {
      */
     doEvent: (event, arg = null) => {
         let type = typeof $amd.events[event];
+        let disposal_key = "_DISPOSABLE_" + event;
+        let disposable_type = typeof $amd.events[disposal_key];
+        if(disposable_type === "function"){
+            let v = $amd.events[disposal_key]();
+            delete $amd.events[disposal_key];
+            return v;
+        }
+        else if(disposable_type === "object"){
+            let out = {};
+            $.each($amd.events[disposal_key], (i, v) => {
+                if(typeof v === "function") {
+                    let d = v(arg);
+                    out = Object.assign(out, d);
+                }
+                $amd.events[disposal_key][i] = null;
+                delete $amd.events[disposal_key][i];
+            });
+            return out;
+        }
+        if(typeof $amd.events["_SINGLE_" + event] !== "undefined")
+            return $amd.doEvent("_SINGLE_" + event, arg);
+        if(typeof $amd.events["_PAGE_" + event] !== "undefined")
+            return $amd.doEvent("_PAGE_" + event, arg);
         if(type === "undefined")
             return null;
         else if(type === "function")
@@ -340,6 +416,12 @@ var $amd = {
         }
         return null;
     },
+    /**
+     * Do events with their name prefix
+     * @param prefix
+     * @param arg
+     * @returns {null}
+     */
     doEventsPrefix: (prefix, arg = null) => {
         let out = null;
         $.each($amd.events, (i, v) => {
@@ -647,6 +729,8 @@ var HBTooltip = (function() {
             tooltipHeight: 30,
             fadeInTimeout: 250,
             fadeOutTimeout: 250,
+            displayInterval: 300,
+            hideInterval: 500
         }, c);
 
         var $tooltip = null;
@@ -715,14 +799,14 @@ var HBTooltip = (function() {
                     $el.on("mouseover", function(e) {
                         if($amd.isMobile()) return;
                         clearTimeout(hiding);
-                        showing = setTimeout(() => handleTooltip(), 500);
+                        showing = setTimeout(() => handleTooltip(), conf.displayInterval);
                     });
                     $el.on("mouseout", function() {
                         clearTimeout(showing);
                         hiding = setTimeout(() => {
                             $tooltip.fadeOut(conf.fadeOutTimeout);
                             setTimeout(() => $tooltip.html(""), conf.fadeOutTimeout + 100);
-                        }, 1200);
+                        }, conf.hideInterval);
                     });
                 }
             });
@@ -747,6 +831,7 @@ class AMDNetwork {
     constructor(c = {}) {
         this.data = Object.assign({}, c);
         this.options = {};
+        this.request = null;
         this.on = {
             progress: () => null,
             start: () => null,
@@ -782,7 +867,7 @@ class AMDNetwork {
             return false;
         let _this = this;
         _this.on.start();
-        return send_ajax(_this.data, resp => {
+        this.request = send_ajax(_this.data, resp => {
             _this.clean();
             _this.on.end(resp, false);
             if(resp.success)
@@ -794,6 +879,7 @@ class AMDNetwork {
             _this.on.end({xhr, options, error}, true);
             _this.on.error(xhr, options, error);
         }, xhrF);
+        return this.request;
     }
 
     postTo(url, xhrF = null) {
@@ -824,6 +910,14 @@ class AMDNetwork {
             _this.on.end({xhr, options, error}, true);
             _this.on.error(xhr, options, error);
         });
+    }
+
+    abort() {
+        if(this.request && typeof this.request.abort === "function") {
+            this.request.abort();
+            return true;
+        }
+        return false;
     }
 
     upload(key = "default") {

@@ -73,10 +73,26 @@ foreach( $signInMethods as $id => $method ){
 }
 
 $icon_pack = amd_get_icon_pack();
+$theme_id = amd_get_theme_property( "id" );
 
-amd_add_element_class( "body", [$theme, $direction, $current_locale, $icon_pack] );
+amd_add_element_class( "body", [$theme, $direction, $current_locale, "icon-$icon_pack", "theme-$theme_id"] );
 
 $bodyBG = apply_filters( "amd_dashboard_bg", "" );
+
+/**
+ * Allow users to use login with phone
+ * @since 1.0.4
+ */
+$allow_phone_login = apply_filters( "amd_allow_login_with_phone", true );
+
+$auth = "login-email";
+if( $allow_phone_login ){
+	$auth = sanitize_text_field( $_GET["auth"] ?? "" );
+	if( !in_array( $auth, [ "login-phone", "login-email" ] ) )
+		$auth = apply_filters( "amd_default_login_auth_mode", "login-email" );
+}
+
+$regions = amd_get_regions();
 
 ?><!doctype html>
 <html lang="<?php bloginfo_rss( 'language' ); ?>">
@@ -101,11 +117,15 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     <div class="h-10"></div>
     <div id="login-fields">
 	    <?php do_action( "amd_before_login_form" ); ?>
-        <label class="ht-input">
+	    <?php if( $auth == "login-phone" AND $allow_phone_login ): ?>
+		    <?php amd_phone_fields( true ); ?>
+	    <?php else: ?>
+            <label class="ht-input">
                 <input type="text" data-field="user" data-next="password" placeholder="" required>
-            <span><?php esc_html_e( "Username or email", "material-dashboard" ); ?></span>
-			<?php _amd_icon( "person" ); ?>
-        </label>
+                <span><?php esc_html_e( "Username or email", "material-dashboard" ); ?></span>
+			    <?php _amd_icon( "person" ); ?>
+            </label>
+	    <?php endif; ?>
         <label class="ht-input">
             <input type="password" data-field="password" data-next="submit" data-pattern=".{8,}" placeholder="" required>
             <span><?php esc_html_e( "Password", "material-dashboard" ); ?></span>
@@ -129,6 +149,15 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     <div class="mt-20"></div>
     <div class="amd-lr-buttons">
         <button type="button" class="btn" data-submit="login"><?php esc_html_e( "Login", "material-dashboard" ); ?></button>
+
+        <?php if( $allow_phone_login ): ?>
+	        <?php if( $auth == "login-phone" ): ?>
+                <button type="button" class="btn btn-text --low" data-auth="login-email"><?php esc_html_e( "Login with email", "material-dashboard" ); ?></button>
+	        <?php else: ?>
+                <button type="button" class="btn btn-text --low" data-auth="login-phone"><?php esc_html_e( "Login with phone", "material-dashboard" ); ?></button>
+	        <?php endif; ?>
+        <?php endif; ?>
+
         <button type="button" class="btn btn-text" data-auth="reset-password"><?php esc_html_e( "Reset password", "material-dashboard" ); ?></button>
     </div>
 	<?php if( !empty( $s_methods ) ): ?>
@@ -184,15 +213,21 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     });
     form.on("submit", () => {
         let data = form.getFieldsData();
-        let user = data.user.value || null;
+        let user = "", phone = "";
+        if(typeof data.user !== "undefined")
+            user = data.user.value || null
+        if(typeof data.phone_number !== "undefined")
+            phone = data.phone_number.value || null
+
         let password = data.password.value || null;
         let remember = data.remember.value || false;
-        if (!user || !password)
+
+        if ((!user && !phone) || !password)
             return;
         $amd.doEvent("login_form_submit", data);
         network.clean();
         network.put("login", {
-            user, password, remember
+            user, password, remember, phone
         });
         network.put("login_fields", form.getObjectedFields());
         network.put("amd_login", "true");
@@ -234,6 +269,86 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
         }
         $amd.doEvent("login_form_invalid", field);
     });
+
+    let $country_code = form.$getField("country_code");
+    let $phone_number = form.$getField("phone_number");
+    let country_codes = {};
+    $country_code.parent().parent().find(".--options > span").each(function() {
+        let cc = $(this).hasAttr("data-value", true);
+        let format = $(this).hasAttr("data-format", true, "");
+        if(cc) {
+            country_codes[cc] = {
+                "$e": $(this),
+                "format": format.toUpperCase()
+            };
+        }
+    });
+
+    var getSelectedCC = () => {
+        return $country_code.hasAttr("data-value", true, "");
+    }
+    $country_code.on("change", function() {
+        let cc = getSelectedCC();
+        if(cc) {
+            $phone_number.blur();
+            $phone_number.focus();
+            $phone_number.val("+" + cc);
+        }
+    });
+    var formatPhoneNumber = (number, format, clean = true) => {
+        let cc = getSelectedCC();
+        let num = number;
+        num.replaceAll(" ", "");
+        num = num.replaceAll("+" + cc, "");
+        num = num.replaceAll("+", "");
+        num = num.replace(cc, "");
+        let out = format;
+        for(let i = 0; i < num.length; i++) {
+            let n = num[i] || "";
+            out = out.replace("X", n);
+        }
+        if(clean) {
+            out = out.replaceAll("X", "");
+            out = out.replaceAll("-", " ");
+        }
+        return "+" + cc + " " + out;
+    }
+    let formatted = "";
+    $phone_number.on("input", function(e) {
+        let key = e.key;
+        let $el = $(this);
+        let v = $el.val();
+        v = v.replaceAll("+", "");
+        v = v.replaceAll(" ", "");
+        if(v && !amd_conf.forms.isSpecialKey(key)) {
+            if(typeof country_codes[v] !== "undefined") {
+                $phone_number.val("+" + v);
+                $country_code.val(v);
+                $country_code.trigger("change");
+            }
+            let _cc = getSelectedCC();
+            let ff = typeof country_codes[_cc] !== "undefined" ? (country_codes[_cc].format || "") : "";
+            if(ff) {
+                formatted = formatPhoneNumber(v, ff);
+                $phone_number.val(formatted.trimChar(" "));
+            }
+        }
+    });
+    $country_code.on("change", function(){
+        let cc = $(this).hasAttr("data-value", true, "");
+        let _format = (country_codes[cc] || {format: ""}).format || "";
+        if(_format) {
+            let _f = _format;
+            _f = _f.replaceAll("-", "\\s?");
+            _f = _f.replaceAll("X", "[0-9]");
+            $phone_number.attr("data-pattern", `^\\+${cc}\\s?${_f}$`);
+        }
+        let val = $country_code.val();
+        for(let i = 0; i < val.length; i++)
+            val = val.replaceAll("  ", " ");
+        $country_code.val(val.trimChar(" "));
+    });
+    $country_code.trigger("change");
 </script>
 <?php do_action( "amd_after_login_page" ); ?>
 </body>

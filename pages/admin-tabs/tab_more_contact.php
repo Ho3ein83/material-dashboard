@@ -29,6 +29,17 @@ const business_email = "contact@amatris.ir", developer_email = "ho3ein.b.83@gmai
 					<p class="color-blue text-center"><?php esc_html_e( "If you need help with anything related to plugin (like license, modules, codes, etc.) you can contact the plugin developer to get help directly.", "material-dashboard" ); ?></p>
 				</div>
 			</div>
+            <div class="-item">
+				<div class="-sub-item">
+					<span><?php esc_html_e( "1 Minute Of Your Time", "material-dashboard" ); ?></span>
+				</div>
+				<div class="-sub-item">
+                    <a href="<?php echo esc_url( amd_get_survey_url() ); ?>" class="amd-admin-button --sm --primary --text" target="_blank"><?php esc_html_e( "Open survey", "material-dashboard" ); ?></a>
+				</div>
+				<div class="-sub-item --full">
+                    <p class="color-blue text-center"><?php printf( esc_html__( "Please give us 1 minute of your time and participate in %sOur survey%s to improve this plugin", "material-dashboard" ), "<b>", "</b>" ); ?></p>
+				</div>
+			</div>
 			<div class="-item">
 				<div class="-sub-item --full">
 					<p class="text-center"><strong><?php esc_html_e( "Suggestions and improvements", "material-dashboard" ); ?></strong></p>

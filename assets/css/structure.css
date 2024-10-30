@@ -663,17 +663,10 @@ svg.iconhub > polyline:not(.--exclude) {
 }
 
 /* Margin all */
-.ma-10 {
-    margin: 10px
-}
-
-.ma-8 {
-    margin: 8px
-}
-
-.ma-20 {
-    margin: 20px
-}
+.ma-5 { margin: 5px }
+.ma-8 { margin: 8px }
+.ma-10 { margin: 10px }
+.ma-20 { margin: 20px }
 
 /* Margin left & right */
 .mlr-0 {
@@ -860,6 +853,10 @@ svg.iconhub > polyline:not(.--exclude) {
 
 .w-100 {
     width: 100px
+}
+
+.w-full {
+    width: 100%
 }
 
 .min-w-100 {
@@ -1110,33 +1107,25 @@ svg.iconhub > polyline:not(.--exclude) {
     color: var(--amd-color-orange);
 }
 
-.bg-red {
-    background: var(--amd-color-red)
-}
+.bg-red { background: var(--amd-color-red) }
 
 .bg-red-im {
     background: var(--amd-color-red) !important
 }
 
-.bg-green {
-    background: var(--amd-color-green)
-}
+.bg-green { background: var(--amd-color-green) }
 
 .bg-green-im {
     background: var(--amd-color-green) !important
 }
 
-.bg-blue {
-    background: var(--amd-color-blue)
-}
+.bg-blue { background: var(--amd-color-blue) }
 
 .bg-blue-im {
     background: var(--amd-color-blue) !important
 }
 
-.bg-orange {
-    background: var(--amd-color-orange)
-}
+.bg-orange { background: var(--amd-color-orange) }
 
 .bg-orange-im {
     background: var(--amd-color-orange) !important
@@ -1158,9 +1147,7 @@ svg.iconhub > polyline:not(.--exclude) {
     background: var(--amd-color-black) !important
 }
 
-.bg-primary {
-    background: var(--amd-primary)
-}
+.bg-primary { background: var(--amd-primary) }
 
 .bg-primary-im {
     background: var(--amd-primary) !important
@@ -1193,6 +1180,12 @@ svg.iconhub > polyline:not(.--exclude) {
 .bg-text {
     background: var(--amd-text-color)
 }
+
+.bg-primary-low { background: rgba(var(--amd-primary-rgb), .2) !important }
+.bg-red-low { background: rgba(var(--amd-color-red-rgb), .2) !important }
+.bg-green-low { background: rgba(var(--amd-color-green-rgb), .2) !important }
+.bg-blue-low { background: rgba(var(--amd-color-blue-rgb), .2) !important }
+.bg-orange-low { background: rgba(var(--amd-color-orange-rgb), .2) !important }
 
 .col-justify {
     display: flex;
@@ -1263,3 +1256,33 @@ svg.iconhub > polyline:not(.--exclude) {
 .flex-ratio-1 {
     aspect-ratio: 1;
 }
+
+.icon-title,
+.icon-title > ._icon_ {
+    display: flex;
+    align-items: center;
+}
+
+.icon-title > ._icon_ {
+    margin: 0 10px;
+    color: #fff;
+}
+
+.icon-title.--boxed > ._icon_ {
+    background: var(--amd-primary);
+    padding: 10px;
+    border-radius: 8px;
+}
+.icon-title.--boxed > ._icon_.iconhub,
+.icon-title.--boxed > ._icon_.tabler {
+    width: 42px;
+    height: auto;
+}
+.icon-title.--boxed.--circle > ._icon_ {
+    border-radius: 50%;
+}
+
+.icon-title.--red > ._icon_ { background: var(--amd-color-red) }
+.icon-title.--green > ._icon_ { background: var(--amd-color-green) }
+.icon-title.--blue > ._icon_ { background: var(--amd-color-blue) }
+.icon-title.--orange > ._icon_ { background: var(--amd-color-orange) }

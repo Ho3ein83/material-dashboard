@@ -797,7 +797,7 @@ class AMDLoader{
 	 */
 	public function loadPart( $part, $extra = null ){
 
-		$part = esc_html( $part );
+		$part = sanitize_file_name( $part );
 
 		$theme = self::getCurrentTheme();
 
@@ -811,14 +811,55 @@ class AMDLoader{
 
 		$amdCache->setCache( "_extra", $extra );
 
-		if( file_exists( $page_path ) ){
+		/**
+		 * Override part path
+		 * @sicne 1.0.4
+		 */
+		$page_path = apply_filters( "amd_part_{$part}_path", $page_path );
+
+		if( $page_path AND file_exists( $page_path ) ){
 			require( $page_path );
 
 			return true;
 		}
 
+		if( $page_path === false )
+			return true;
+
 		if( amd_is_admin() AND apply_filters( "amd_show_templates_part_error", false ) )
 			amd_dump_error( "template_part_error", sprintf( esc_html__( "You are trying to access '%s' template which doesn't exist.", "material-dashboard" ), "$part.php" ) );
+
+		return false;
+
+	}
+
+	/**
+	 * Check if theme part is available
+	 * @param string $part
+	 * Part file name (without .php extension)
+	 *
+	 * @return bool
+	 * @since 1.0.4
+	 */
+	public function partExist( $part ){
+
+		$part = sanitize_file_name( $part );
+
+		$theme = self::getCurrentTheme();
+
+		if( !$theme )
+			return false;
+
+		$page_path = $theme["path"] . "/dashboard/parts/$part.php";
+
+		/**
+		 * Override part path
+		 * @sicne 1.0.4
+		 */
+		$page_path = apply_filters( "amd_part_{$part}_path", $page_path );
+
+		if( $page_path AND file_exists( $page_path ) )
+			return true;
 
 		return false;
 
@@ -846,10 +887,20 @@ class AMDLoader{
 		$page = $card["page"] ?? "";
 		if( file_exists( $page ) ){
 			require( $page );
-
 			return;
 		}
 		$type = $card["type"];
+		if( !empty( $card["content"] ) ){
+			$content = $card["content"];
+			if( amd_starts_with( $content, "path:" ) AND amd_ends_with( $content, ".php" ) ){
+				$path = str_replace( "path:", "", $content );
+				if( file_exists( $path ) ){
+					ob_start();
+					require_once( $path );
+					$card["content"] = ob_get_clean();
+				}
+			}
+		}
 		self::loadTemplate( "card_$type", $card );
 	}
 

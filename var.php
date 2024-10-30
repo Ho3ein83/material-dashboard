@@ -136,13 +136,20 @@ $_upload_base_dir = wp_get_upload_dir()['basedir'] ?? ( ABSPATH . 'wp-content' .
 define( 'AMD_UPLOAD_PATH', $_upload_base_dir . DIRECTORY_SEPARATOR . AMD_DIRECTORY );
 
 /**
+ * Plugin current version
+ * @since 1.0.4
+ */
+define( 'AMD_VER', '1.0.4' );
+
+/**
  * Version codes
  * @since 1.0.0
  */
 const AMD_VERSION_CODES = array(
-	'bundle' => '1.2.0',
-	'structure' => '1.0.0',
-	'admin' => '1.0.0',
-	'vars' => '1.0.0',
-	'mi' => '1.2.1',
+	'bundle' => AMD_VER,
+	'structure' => AMD_VER,
+	'admin' => AMD_VER,
+	'vars' => AMD_VER,
+	'hello-pop' => "2.2.3",
+	'mi' => '4.0.0',
 );

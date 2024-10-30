@@ -497,6 +497,7 @@ class AMDDashboard{
 		$page = $resp["path"];
 		$callable = $resp["callable"];
 		$redirect = $resp["redirect"] ?? null;
+		$turtle = $resp["turtle"] ?? null;
 
 		$html = "";
 		if( file_exists( $page ) ){
@@ -528,7 +529,11 @@ class AMDDashboard{
 			do_action( "amd_before_page_$void" );
 			do_action( "amd_before_page_callback_$void" );
 
-			call_user_func( $callable, $void, $resp );
+			$result = call_user_func( $callable, $void, $resp );
+			if( is_array( $result ) ){
+				if( isset( $result["turtle"] ) )
+					$turtle = $result["turtle"];
+			}
 
 			# Content actions
 			do_action( "amd_after_pages" );
@@ -552,6 +557,7 @@ class AMDDashboard{
 		return array(
 			"title" => $title,
 			"content" => $html,
+			"turtle" => $turtle,
 			"redirect" => $redirect
 		);
 

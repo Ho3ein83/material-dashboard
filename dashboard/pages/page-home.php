@@ -5,7 +5,7 @@ if( empty( $icon_cards ) OR $icon_cards == "icon_card" )
 	$icon_cards = [];
 
 $cards = apply_filters( "amd_get_dashboard_cards", "content_card,title_card" );
-if( empty( $cards ) OR $cards == "content_card" )
+if( empty( $cards ) OR $cards == "content_card,title_card" )
 	$cards = [];
 
 ?>

@@ -6,8 +6,12 @@ $primary_color = amd_ext_todo_get_primary_color();
 
 <?php ob_start(); ?>
 <?php echo esc_html_x( "Todo list", "todo", "material-dashboard" ); ?>
-<button class="btn --transparent --button mlr-8 --sm _refresh_todo_list_"><?php esc_html_e( "Refresh", "material-dashboard" ); ?></button>
-<button class="btn --transparent --button --right mlr-8 --sm" data-lazy-query="?void=todo"><?php esc_html_e( "Manage", "material-dashboard" ); ?></button>
+<button class="btn btn-icon-square bis-sm --transparent --button mlr-8 --sm _refresh_todo_list_" data-tooltip="<?php esc_html_e( "Refresh", "material-dashboard" ); ?>">
+	<?php _amd_icon( "refresh" ); ?>
+</button>
+<button class="btn btn-icon-square bis-sm --transparent --button --right mlr-8 --sm" data-lazy-query="?void=todo" data-tooltip="<?php esc_html_e( "Manage", "material-dashboard" ); ?>">
+	<?php _amd_icon( "todo" ); ?>
+</button>
 <?php $todo_card_title = ob_get_clean(); ?>
 
 <?php ob_start(); ?>
@@ -56,6 +60,7 @@ $primary_color = amd_ext_todo_get_primary_color();
         function toggleTodo($el, $cb, $text, _id){
             let checked = $cb.is(":checked");
             let _network = dashboard.createNetwork();
+            $el.blur();
             _network.clean();
             _network.put("_ajax_target", "ext_todo");
             _network.put("edit_todo", _id);
@@ -136,15 +141,11 @@ $primary_color = amd_ext_todo_get_primary_color();
                             let primary_color = `<?php echo esc_attr( $primary_color ); ?>`;
                             let $html = $(`<div class="--item --bg" data-todo="${id}">
                         <p class="--text _text" ${_status === "done" ? "style=\"text-decoration:line-through\"" : ""}>${_text}</p>
-                        <div>
-                            <label class="hb-checkbox ${primary_color}">
-                                <input type="checkbox" class="_checkbox" ${_status === "done" ? "checked" : ""}>
-                                <span></span>
-                            </label>
-                        </div>
-                        <div>
-                            <button class="btn ${primary_color} btn-text _delete no-special">${_todo_list_item_delete_icon}</button>
-                        </div>
+                        <label class="hb-checkbox ${primary_color}">
+                            <input type="checkbox" class="_checkbox" ${_status === "done" ? "checked" : ""}>
+                            <span></span>
+                        </label>
+                        <button class="btn ${primary_color} btn-text _delete no-special">${_todo_list_item_delete_icon}</button>
                     </div>`);
                             $list.append($html);
                         }
@@ -166,5 +167,5 @@ $primary_color = amd_ext_todo_get_primary_color();
     }());
 </script>
 <!-- @formatter off -->
-<style>.amd-todo-row>.--item,.amd-todo-row{display:flex;align-items:center;justify-content:center}.amd-todo-row{position:relative;flex-direction:column-reverse;flex-wrap:wrap;margin:16px}.amd-todo-row>.--item{box-sizing:border-box;flex-direction:row;border-radius:10px;margin:4px 0;width:100%;padding:8px}@media(min-width:993px){.amd-todo-row{flex-wrap:nowrap}}.amd-todo-row>.--item.--bg{background:rgba(var(<?php echo "--amd-color-$primary_color-rgb"; ?>),.2)}.amd-todo-row>.--item .btn{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;width:32px;height:auto;aspect-ratio:1;margin:0 4px}.amd-todo-row>.--item .--text{text-align:justify;padding:4px 24px;font-size:var(--amd-size-md)}.amd-todo-row>.--item .--text{flex:8}.amd-todo-row>.--item>div{flex:1}.amd-todo-row>.--item>div ._icon_{font-size:20px}</style>
+<style>.amd-todo-row>.--item,.amd-todo-row{display:flex;align-items:center;justify-content:center}.amd-todo-row{position:relative;flex-direction:column-reverse;flex-wrap:wrap;margin:16px}.amd-todo-row>.--item{box-sizing:border-box;flex-direction:row;border-radius:10px;margin:4px 0;width:100%;padding:8px}@media(min-width:993px){.amd-todo-row{flex-wrap:nowrap}}.amd-todo-row>.--item.--bg{background:rgba(var(<?php echo "--amd-color-$primary_color-rgb"; ?>),.2)}.amd-todo-row>.--item .btn{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;width:32px;min-width:40px;padding:9px;height:auto;aspect-ratio:1;margin:0 4px}.amd-todo-row>.--item .--text{text-align:justify;padding:0 16px;font-size:var(--amd-size-md)}.amd-todo-row>.--item .--text{flex:8}.amd-todo-row>.--item>div{flex:1}.amd-todo-row>.--item>div ._icon_{font-size:20px}</style>
 <!-- @formatter on -->

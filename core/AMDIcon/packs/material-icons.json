@@ -11,6 +11,8 @@
   "icon_type": "font_icon",
   "html_template": "<span class=\"mi _icon_[CLASS]\"[STYLE]>{ICON}</span>",
   "icons": {
+    "_SINCE:1.0.4": null,
+    "workspace": "backup_table",
     "_SINCE_1.0.1": null,
     "bracket": "code",
     "money": "payments",

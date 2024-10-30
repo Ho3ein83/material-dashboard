@@ -1,5 +1,5 @@
 /**
- * 2.2.2
+ * 2.2.3
  * Hello pop
  * Developer: ho3ein.b.83@gmail.com
  * License: ISC (Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted)
@@ -303,6 +303,23 @@ var Hello = (function () {
         this.setLoader = (b=true) => {
             if(b) _this.$current.find(".hello-progress").fadeIn(0);
             else _this.$current.find(".hello-progress").fadeOut(0);
+        }
+
+        this.setLoaderProgress = (p=null) => {
+            let $c = _this.$current.find(".hello-progress"),
+                $p = $c.find(".indeterminate-progress-bar__progress");
+            let progress = parseInt(p);
+            if(p === null){
+                $c.removeClass("--custom");
+                $c.removeAttr("style");
+                $p.removeAttr("style");
+            }
+            else if(!isNaN(progress)){
+                if(!$c.hasClass("--custom"))
+                    $c.addClass("--custom").css("direction", "ltr");
+                $p.css("width", p + "%");
+                $p.css("animation", "none");
+            }
         }
 
         this.isVisible = () => {

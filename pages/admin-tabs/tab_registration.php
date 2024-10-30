@@ -35,7 +35,7 @@ foreach( $country_codes as $key => $value ){
                 </div>
                 <div class="-sub-item">
                     <label class="hb-switch">
-                        <input type="checkbox" role="switch" name="phone_field" value="true"
+                        <input type="checkbox" role="switch" name="enable_registration" value="true"
                                id="enable-register" <?php echo $register_enabled ? 'checked' : ''; ?>>
                         <span></span>
                     </label>
@@ -81,10 +81,15 @@ foreach( $country_codes as $key => $value ){
                     network.clean();
                     network.put("enable_registration", checked);
                     network.on.end = (resp, error) => {
-                        if(!error)
-                            location.reload()
-                        else
+                        $card.cardLoader(false);
+                        if(!error) {
+                            location.reload();
+                            $el.setWaiting();
+                        }
+                        else {
                             $amd.alert(_t("settings"), _t("error"));
+                            $el.prop("checked", !checked);
+                        }
                     };
                     network.post();
                 },
@@ -225,12 +230,16 @@ endif;
     (function(){
         $amd.addEvent("on_settings_saved", () => {
             let $loginAfter = $('input[name="login_after_registration"]'), $lnField = $('input[name="lastname_field"]');
-            let $unField = $('input[name="username_field"]'), $pcField = $('input[name="password_conf_field"]');
+            let $unField = $('input[name="username_field"]'), $pcField = $('input[name="password_conf_field"]'),
+                $spField = $('input[name="single_phone"]');
             return {
+                phone_field: $('input[name="phone_field"]').is(":checked") ? "true" : "false",
+                phone_field_required: $('input[name="phone_field_required"]').is(":checked") ? "true" : "false",
                 login_after_registration: $loginAfter.is(":checked") ? "true" : "false",
                 lastname_field: $lnField.is(":checked") ? "true" : "false",
                 username_field: $unField.is(":checked") ? "true" : "false",
                 password_conf_field: $pcField.is(":checked") ? "true" : "false",
+                single_phone: $spField.is(":checked") ? "true" : "false",
             }
         });
     }());
@@ -345,12 +354,6 @@ endif;
         check(0);
         $field.on("change", function () {
             check();
-        });
-        $amd.addEvent("on_settings_saved", () => {
-            return {
-                phone_field: $('input[name="phone_field"]').is(":checked") ? "true" : "false",
-                phone_field_required: $('input[name="phone_field_required"]').is(":checked") ? "true" : "false"
-            }
         });
     }());
     (function () {

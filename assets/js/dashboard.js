@@ -90,6 +90,7 @@ var AMDDashboard = (function() {
             reload: [],
             request: [],
             start: [],
+            before_start: [],
             success: [],
             failed: [],
             error: [],
@@ -215,11 +216,14 @@ var AMDDashboard = (function() {
             let $menu = $sidebar.find("ul.amd-sidebar-menu");
             let icon = data.icon || "", text = data.text || "";
             let url = data.url || "";
+            let _void = data.void || "";
+            let turtle = data.turtle || "lazy", indicator = data.indicator || conf.default_indicator;
             if(!url) {
                 url = "javascript:void(0)";
             }
             else {
-                url = $amd.mergeUrlQueryOnly(location.href, url, ["page_id", "void"]);
+                if(_void)
+                    url = $amd.mergeUrlQueryOnly(location.href, url, ["page_id", "void"]);
             }
             let attr = $amd.makeAttributes(data.attributes || {});
             let extraClass = data.extraClass || "";
@@ -228,8 +232,6 @@ var AMDDashboard = (function() {
                 _badge = "";
             if(badge !== null) _badge = ` <span class="--badge bg-${badge_color}">${badge}</span>`;
             else _badge = ` <span class="--badge"></span>`;
-            let turtle = data.turtle || "lazy", indicator = data.indicator || conf.default_indicator;
-            let _void = data.void || "";
             if(indicator.length <= 0) indicator = conf.default_indicator;
             let html = `<li class="amd-menu-item${extraClass.length > 0 ? ' ' + extraClass + ' ' : ' '}${indicator}${active ? ' active' : ''}" id="menu-item-${_id}" data-menu-item="${_id}">
     <a href="${url}" data-href="${_void}" data-turtle="${turtle}" ${attr}>${icon} <span class="--text">${text}</span>${_badge}</a>
@@ -532,7 +534,7 @@ var AMDDashboard = (function() {
                 if(href === "void(0)" || turtle === "none" || turtle.length <= 0)
                     return false;
 
-                if(!conf.lazy_load)
+                if(!conf.lazy_load && turtle === "lazy")
                     turtle = "normal";
 
                 $amd.doEvent("_lazy_request");
@@ -563,7 +565,7 @@ var AMDDashboard = (function() {
                         window.open(href);
                         break;
                     case "reload":
-                        _this.lazyReload();
+                        _this.lazyReload(true, "turtle");
                         break;
                     case "normal":
                         location.href = href;
@@ -618,10 +620,12 @@ var AMDDashboard = (function() {
                 if(text) $amd.copy(text, false, true);
             });
 
-            $(window).on('popstate', () => _this.lazyReload());
+            $(window).on('popstate', () => _this.lazyReload(true, "popstate"));
 
             $(window).on("keydown keyup", function(e) {
                 let {type, key} = e;
+                if(typeof key === "undefined")
+                    return;
                 keymap[key] = type === "keydown";
                 keymap_lower[key.toLowerCase()] = type === "keydown";
 
@@ -667,6 +671,13 @@ var AMDDashboard = (function() {
 
             if(!_this.isMultiLingual())
                 $("[data-change-locale]").remove();
+
+            $amd.addEvent("_lazy_end", () => {
+                $.each($amd.events, (key, ignored) => {
+                    if(key.startsWith("_PAGE_"))
+                        $amd.unbindEvent(key);
+                });
+            });
 
         }
 
@@ -731,6 +742,13 @@ var AMDDashboard = (function() {
             if(b) $screen.fadeIn();
             else $screen.fadeOut();
             if(b && timeout > 0) setTimeout(() => _this.resume(), timeout);
+        }
+
+        this.setSuspendText = text => {
+            let $sus = $("._suspend_screen_");
+            $sus.find("suspend-text").remove();
+            if(text)
+                $sus.append(`<p class="suspend-text">${text}</p>`);
         }
 
         this.stop = () => this.suspend(true);
@@ -819,6 +837,10 @@ var AMDDashboard = (function() {
         this.pushState = (url, data = {}) => window.history.pushState(data, "", url);
 
         this.lazyStart = data => {
+            var request_allowed = dispatchLazyEvent("before_start", data);
+            if(request_allowed === false)
+                return false;
+
             if(!$content || !conf.lazy_load) return false;
             $content.html("");
             if($after_content.length)
@@ -874,7 +896,7 @@ var AMDDashboard = (function() {
             return new URLSearchParams(href.split("?")[1] || "");
         };
 
-        this.lazyReload = (hardReload=true) => {
+        this.lazyReload = (hardReload=true, ref=null) => {
             if(!conf.lazy_load && hardReload) {
                 location.reload();
                 return;
@@ -888,7 +910,8 @@ var AMDDashboard = (function() {
                 url: href.split("#")[0],
                 params: params,
                 _void: _params.has("void") ? _params.get("void") : "",
-                hash: href.split("#")[1] || ""
+                hash: href.split("#")[1] || "",
+                ref: ref
             };
             $amd.doEvent("_lazy_reload", data);
             var allowed = dispatchLazyEvent("reload", data);
@@ -917,7 +940,7 @@ var AMDDashboard = (function() {
                 url = "?" + _params;
             }
             this.pushState(url, {});
-            this.lazyReload();
+            this.lazyReload(true, "opener");
         }
 
         this._net = () => {

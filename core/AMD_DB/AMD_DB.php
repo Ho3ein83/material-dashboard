@@ -1236,21 +1236,21 @@ class AMD_DB {
 	}
 
 	/**
-	 * Add _todo item
+	 * Add To-do item
 	 *
 	 * @param string $key
-	 * _Todo key. e.g: "user_1"
+	 * To-do key. e.g: "user_1"
 	 * @param string $value
-	 * _Todo text. e.g: "Contact customer #12"
+	 * To-do text. e.g: "Contact customer #12"
 	 * @param string $status
-	 * _Todo status. e.g: "pending", "done", "undone"
+	 * To-do status. e.g: "pending", "done", "undone"
 	 * @param string $salt
-	 * _Todo salt for encoding
+	 * To-do salt for encoding
 	 * @param array $meta
-	 * _Todo meta-data. e.g: ["date" => "2023-01-02"]
+	 * To-do meta-data. e.g: ["date" => "2023-01-02"]
 	 * @param bool $encode
 	 * Whether to encode $value or not.
-	 * <br><b>Note: You always have to use encoded value for _todo lists, but if your _todo text is already encoded you can pass false to skip encoding</b>
+	 * <br><b>Note: You always have to use encoded value for to-do lists, but if your to-do text is already encoded you can pass false to skip encoding</b>
 	 *
 	 * @return false|int
 	 * Inserted row ID on success, false on failure
@@ -1274,7 +1274,7 @@ class AMD_DB {
 	}
 
 	/**
-	 * Update _todo item/list
+	 * Update to-do item/list
 	 *
 	 * @param array $data
 	 * Item or list data to update. e.g: ["todo_key" => "user_1", "todo_value" => "Hello world", ...]
@@ -1294,6 +1294,12 @@ class AMD_DB {
 			$data["todo_value"] = json_encode( amd_encrypt_aes( $v, $salt ) );
 		}
 
+		if( !empty( $data["status"] ) ){
+			$s = $data["status"];
+			if( !in_array( $s, apply_filters( "amd_ext_todo_allowed_status_ids", [] ) ) )
+				$data["status"] = "pending";
+		}
+
 		$table = $this->getTable( "todo" );
 
 		return (bool) $this->db->update( $table, $data, $where );
@@ -1301,7 +1307,7 @@ class AMD_DB {
 	}
 
 	/**
-	 * Get _todo list
+	 * Get to-do list
 	 *
 	 * @param array $filters
 	 * Filters array
@@ -1325,7 +1331,7 @@ class AMD_DB {
 	}
 
 	/**
-	 * Delete _todo list or item
+	 * Delete to-do list or item
 	 *
 	 * @param array $where
 	 * Where array. e.g: ["id" => 12]

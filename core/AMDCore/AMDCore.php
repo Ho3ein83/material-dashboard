@@ -473,7 +473,7 @@ class AMDCore{
 		# Initialize
 		add_action( "init", [ $this, "initRegisteredHooks" ] );
 		add_action( "admin_init", [ $this, "initRegisteredHooks" ] );
-		add_action( "amd_dashboard_init", [ $this, "initRegisteredHooks" ] );
+		# add_action( "amd_dashboard_init", [ $this, "initRegisteredHooks" ] );
 
 		# Enqueue color picker scripts
 		add_action( "admin_enqueue_scripts", function(){
@@ -484,7 +484,7 @@ class AMDCore{
 		# Config script
 		add_action( "amd_config_script", function(){
 			?>
-            <script src="<?php echo esc_url( amd_get_api_url( "?scripts=_config&release=1" ) ); ?>"></script>
+            <script src="<?php echo esc_url( amd_get_api_url( "?scripts=_config&ver=" . AMD_VER ) ); ?>"></script>
 			<?php
 		} );
 

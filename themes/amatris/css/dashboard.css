@@ -1215,6 +1215,10 @@ body.ltr .amd-table > table tr > th:last-child {
     background: rgba(var(--amd-text-color-rgb), .1);
     animation: mgi_cursor_blink ease 1s infinite;
 }
+body:not(.light) .ht-magic-select .--input:focus + span,
+body:not(.light) .ht-magic-select .--input:not(:placeholder-shown) + span {
+    color: rgba(var(--amd-text-color-rgb), .7)
+}
 @keyframes mgi_cursor_blink {
     0% {
         opacity: 0;

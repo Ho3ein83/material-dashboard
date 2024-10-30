@@ -116,8 +116,8 @@ class AMDCache{
 		$this->addScript( 'global:bundle', AMD_JS . '/bundle.js', $versions["bundle"] ?? "unset" );
 
 		# Global: Hello popup module
-		$this->addStyle( 'global:hello', AMD_MOD . '/hello/hello.css', null );
-		$this->addScript( 'global:hello', AMD_MOD . '/hello/hello.js', null );
+		$this->addScript( 'global:hello', AMD_MOD . '/hello/hello.js', $versions["hello-pop"] ?? null );
+		$this->addStyle( 'global:hello', AMD_MOD . '/hello/hello.css', $versions["hello-pop"] ?? null );
 
 		# Dashboard: Cropper module
 		$this->addStyle( 'dashboard:cropper', AMD_MOD . '/cropper/cropper.css', "1.5.11" );
@@ -157,7 +157,7 @@ class AMDCache{
      * New value to replace
 	 *
 	 * @return void
-	 * @sicne 1.0.3
+	 * @sicne 1.0.4
 	 */
 	public function updateScopeGroup( $group, $new_value ){
 		if( isset( $this->SCOPE_GROUP[$group] ) )

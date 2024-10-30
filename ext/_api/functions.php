@@ -181,19 +181,19 @@ function amd_ext__api_handler_all( $r ){
 
 			$extension = amd_guess_extension_from_mime_type( $mime );
 
-			if( !in_array( $mime, $allowed_formats ) AND !in_array( $extension, $allowed_formats ) OR empty( $extension ) )
+			if( empty( $extension ) OR !in_array( $mime, $allowed_formats ) AND !in_array( $extension, $allowed_formats ) )
 				amd_send_api_error( ["msg" => esc_html__( "Image format is not allowed", "material-dashboard" )] );
 
 			$image_data = base64_decode( $image );
 			$size = intval( floor( strlen( rtrim( $image, "=" ) ) * 0.75 ) );
-			$max_size = apply_filters( "amd_max_avatar_upload_size", 1024*1024 );
+			$max_size = apply_filters( "amd_max_avatar_upload_size", 1024*1024*2 );
 
 			if( $size > $max_size )
 				amd_send_api_error( ["msg" => sprintf( esc_html__( "Uploaded image is too large. Max size is %s", "material-dashboard" ), size_format( $max_size ) )] );
 
 			$avatars_path = amd_get_avatars_path();
 			if( !file_exists( $avatars_path ) )
-				mkdir( $avatars_path );
+				mkdir( $avatars_path, 0777, true );
 			$image_path = $avatars_path . "/$user->secretKey.$extension";
 
 			$bytes = file_put_contents( $image_path, $image_data );
@@ -261,7 +261,17 @@ function amd_ext__api_handler_all( $r ){
 
 		else if( !empty( $r["change_phone"] ) ){
 
+			/**
+			 * Allow users change phone number
+			 * @sicne 1.0.4
+			 */
+			$allow_change_phone_number = apply_filters( "amd_allow_change_phone_number", false );
+
+			if( !$allow_change_phone_number )
+				wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+
 			$phone = $r["change_phone"];
+			$phone = str_replace( " ", "", $phone );
 
 			$phone_field = amd_get_site_option( "phone_field" ) == "true";
 			$single_phone = amd_get_site_option( "single_phone" ) == "true";

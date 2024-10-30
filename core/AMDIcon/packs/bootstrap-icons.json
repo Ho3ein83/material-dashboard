@@ -11,6 +11,8 @@
   "icon_type": "font_icon",
   "html_template": "<i class=\"bi bi-{ICON} _icon_[CLASS]\"[STYLE]></i>",
   "icons": {
+    "_SINCE:1.0.4": null,
+    "workspace": "layout-sidebar-reverse",
     "_SINCE:1.0.1": null,
     "bracket": "braces",
     "money": "cash",

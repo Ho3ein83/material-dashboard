@@ -64,6 +64,12 @@ You can create your own extensions and themes for your dashboard and publish it 
 
 == Changelog ==
 
+= 1.0.4 =
+* Login with phone number added
+* WP rocket minifier disabled in dashboard pages for more compatibility
+* Some of other features improved
+* Bugs fixed
+
 = 1.0.1 =
 * Open graph meta tags added to headers
 * New icons added

@@ -1,7 +1,5 @@
 <?php
 
-// TODO: add resend button to 'Password reset' page
-
 if( is_user_logged_in() ){
 	wp_safe_redirect( amd_get_dashboard_page() );
 	exit();
@@ -62,8 +60,9 @@ foreach( $signInMethods as $id => $method ){
 }
 
 $icon_pack = amd_get_icon_pack();
+$theme_id = amd_get_theme_property( "id" );
 
-amd_add_element_class( "body", [$theme, $direction, $current_locale, $icon_pack] );
+amd_add_element_class( "body", [$theme, $direction, $current_locale, "icon-$icon_pack", "theme-$theme_id"] );
 
 $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 
@@ -90,16 +89,18 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     <div class="h-10"></div>
     <div id="rp-fields">
         <label class="ht-input" data-step="1">
-            <input type="text" data-field="email" data-pattern="%email%" data-next="submit" placeholder="" required>
+            <input type="email" data-field="email" data-pattern="%email%" data-next="submit" placeholder="" required>
             <span><?php esc_html_e( "Email", "material-dashboard" ); ?></span>
 			<?php _amd_icon( "email" ); ?>
         </label>
-        <label class="ht-magic-input" data-step="2" data-length="6" data-keys="[0-9]">
-            <input type="text" data-field="vCode" data-next="submit" placeholder="" required>
-            <span class="--title"><?php esc_html_e( "Verification code", "material-dashboard" ); ?></span>
-            <span class="--keys"></span>
-            <?php _amd_icon( "password" ); ?>
-        </label>
+        <div data-step="2">
+            <label class="ht-input" data-length="6" data-keys="[0-9]">
+                <input type="text" data-field="vCode" data-next="submit" placeholder="" required>
+                <span><?php esc_html_e( "Verification code", "material-dashboard" ); ?></span>
+                <?php _amd_icon( "password" ); ?>
+            </label>
+            <button type="button" class="btn btn-text" id="send-code-again"><?php esc_html_e( "Resend code", "material-dashboard" ); ?></button>
+        </div>
         <label class="ht-input" data-step="3">
             <input type="password" data-field="new_password" minlength="8" data-next="submit" placeholder="" required>
             <span><?php esc_html_e( "New password", "material-dashboard" ); ?></span>
@@ -175,9 +176,14 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
             targetStep = 2;
         }
         else if(step === 2){
+            let vCode = form.getField("vCode").value;
+            if(!vCode){
+                $amd.toast(_t("vCode_invalid"));
+                return;
+            }
             data = {
                 email: form.getField("email").value,
-                vCode: form.getField("vCode").value
+                vcode: vCode
             };
             onSuccess = () => form.$getField("new_password").focus();
             targetStep = 3;
@@ -185,7 +191,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
         else if(step === 3){
             data = {
                 email: form.getField("email").value,
-                vCode: form.getField("vCode").value,
+                vcode: form.getField("vCode").value,
                 new_password: form.getField("new_password").value
             };
             onSuccess = () => {
@@ -238,11 +244,53 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
                 dashboard.toast(_t("password_8"))
         }
     });
-    form.$getField("vCode").on("change", function(){
+    form.$getField("vCode").on("input", function(){
         let $el = $(this), v = $el.val();
         let length = $el.parent().hasAttr("data-length", true);
+        console.log(v, length);
         if(!length) return;
         if(length && parseInt(length) === v.length) form.submit();
+    });
+    let $send_again = $("#send-code-again"), send_again_interval = null;
+    let lock_resend_button = time => {
+        send_again_interval = setInterval(() => {
+            if(time <= 0){
+                $send_again.setWaiting(false);
+                $send_again.html(`<?php esc_html_e( "Resend code", "material-dashboard" ); ?>`);
+                clearInterval(send_again_interval);
+                return;
+            }
+            $send_again.html(`<?php esc_html_e( "Resend code", "material-dashboard" ); ?> (${time})`);
+            $send_again.setWaiting();
+            time--;
+        }, 1000);
+    }
+    $send_again.click(function(){
+        let n = dashboard.createNetwork();
+        n.clean();
+        n.setAction(amd_conf.ajax.public);
+        n.put("resend_rp_code", form.getField("email").value);
+        n.on.start = () => {
+            $send_again.waitHold(_t("wait_td"));
+        }
+        n.on.end = (resp, error) => {
+            if(!error){
+                $amd.toast(resp.data.msg);
+                if(resp.success){
+                    let t = parseInt(resp.data.resend_interval || 0);
+                    if(t) lock_resend_button(t);
+                    else $send_again.waitRelease();
+                }
+                else{
+                    $send_again.waitRelease();
+                }
+            }
+            else{
+                $amd.toast(_t("error"));
+                console.log(resp.xhr);
+            }
+        }
+        n.post();
     });
 </script>
 <?php do_action( "amd_after_reset_password_page" ); ?>

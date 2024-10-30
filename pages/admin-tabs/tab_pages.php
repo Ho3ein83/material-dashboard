@@ -195,6 +195,14 @@ $apiPage_flag = false;
     </div>
 </div>
 
+<?php
+    /**
+     * After admin pages settings
+     * @since 1.0.4
+     */
+    do_action( "amd_admin_settings_after_pages_setup", $pages );
+?>
+
 <script>
     $(document).on("click", "[data-copy]", function() {
         let text = $(this).hasAttr("data-copy", true);
@@ -212,9 +220,7 @@ $apiPage_flag = false;
             };
         });
 
-        function pageCreateRequest(scope, onStart = () => {
-        }, onEnd = () => {
-        }, confirm = false) {
+        function pageCreateRequest(scope, onStart = () => {}, onEnd = () => {}, confirm = false) {
             onStart();
             network.clean();
             network.put("make_page", scope);
@@ -249,6 +255,11 @@ $apiPage_flag = false;
                             $apiPage.append(`<option value="${id}">${title}</option>`);
                             $apiPage.val(id);
                         }
+                        else{
+                            let $p = $(`[data-custom-page-select="${scope}"]`);
+                            $p.append(`<option value="${id}">${title}</option>`);
+                            $p.val(id);
+                        }
                         if(url) {
                             let $a = $(`[data-amd-url="${scope}"]`);
                             $a.attr("href", url);
@@ -275,6 +286,22 @@ $apiPage_flag = false;
                 scope = "dashboard";
             else if($btn.hasClass("--make-api-page"))
                 scope = "api";
+            if(scope.length <= 0)
+                return;
+            let lastHtml = $btn.html();
+            pageCreateRequest(scope, () => {
+                $btn.html(_t("wait_td"));
+                $btn.setWaiting();
+                $btn.blur();
+            }, () => {
+                $btn.html(lastHtml);
+                $btn.setWaiting(false);
+            });
+        });
+
+        $(document).on("click", "[data-create-custom-page]", function() {
+            let $btn = $(this);
+            let scope = $(this).attr("data-create-custom-page");
             if(scope.length <= 0)
                 return;
             let lastHtml = $btn.html();

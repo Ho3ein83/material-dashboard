@@ -36,5 +36,17 @@
     "version_name": "1.0.3",
     "version_code": 4,
     "last_change": "2023-07-24"
+  },
+  "1.0.4": {
+    "desc": "Bugs fixed, some functions changed",
+    "changes": [
+      "Bugs fixed",
+      "Some functions are changed",
+      "WP rocket disabled in dashboard for more compatibility",
+      "Login with phone feature added"
+    ],
+    "version_name": "1.0.4",
+    "version_code": 5,
+    "last_change": "2023-08-20"
   }
 }
