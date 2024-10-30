@@ -1018,6 +1018,7 @@ body.ltr .ht-magic-select .--value {
     flex-wrap: nowrap;
     align-items: center;
     justify-content: stretch;
+    gap: 12px;
     color: #fff;
     background: var(--amd-primary);
     padding: 4px 16px;
@@ -1049,8 +1050,6 @@ body.ltr .ht-magic-select .--value {
 
 .amd-alert ._icon_ {
     flex: 0 0 30px;
-    margin: 8px;
-    margin-inline-start: 0;
     font-size: 18px;
     display: inline-flex;
     width: auto;

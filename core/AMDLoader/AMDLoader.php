@@ -269,7 +269,7 @@ class AMDLoader{
 	 */
 	public function getTheme( $theme = null ){
 
-		if( empty( $theme ) )
+        if( $theme === null )
 			return self::getCurrentTheme();
 
 		return $this->themes[$theme] ?: false;
@@ -518,6 +518,11 @@ class AMDLoader{
 	 * @since 1.0.0
 	 */
 	protected function loadActiveTheme(){
+
+        /**
+         * @since 1.1.2
+         */
+        do_action( "amd_before_load_theme", $this );
 
 		$theme = self::getCurrentTheme();
 		$id = $theme["id"] ?? "";

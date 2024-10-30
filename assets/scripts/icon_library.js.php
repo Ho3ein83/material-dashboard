@@ -23,7 +23,6 @@ const AMDIconPicker = (function () {
         }
 
         this.init_events = () => {
-            console.log("Init picker", $el);
             $el.click(() => _this.open_library());
         }
 

@@ -163,7 +163,20 @@ class AMDUser{
 
         $this->rollback_locale = $this->locale;
 
+        $user = $this;
+
 	}
+
+    /**
+     * Get avtar image URL
+     * @return mixed|null
+     * @since 1.2.0
+     */
+    public function getProfile() {
+
+        return apply_filters( "amd_user_avatar_url", $this->profile, $this->ID );
+
+    }
 
     public function rollLocale( $locale=null ) {
 
@@ -343,7 +356,7 @@ class AMDUser{
 	/**
 	 * Check if this object belongs to current user or not
 	 * @return bool
-	 * @since 1.1.2
+	 * @since 1.1.1
 	 */
 	public function isCurrentUser(){
 

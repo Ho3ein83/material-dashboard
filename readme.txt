@@ -2,7 +2,7 @@
 Contributors: ho3einie,amatris
 Tags: dashboard, material dashboard, user profile, woocommerce, easy digital downloads
 Requires at least: 5.2
-Tested up to: 6.4
+Tested up to: 6.5
 Stable tag: 1.1.0
 Requires PHP: 7.4.0
 License: GPLv3
@@ -63,6 +63,11 @@ At your first installation you can choose to share your data or not and we respe
 You can create your own extensions and themes for your dashboard and publish it with your name if you want. You can get started by reading our [documentation](https://amatris.ir/amd/d).
 
 == Changelog ==
+
+= 1.1.2 =
+* Custom hooks feature added
+* Some security issues fixed
+* Bugs fixed
 
 = 1.1.0 =
 * C-Track core added for better data management

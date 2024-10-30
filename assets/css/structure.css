@@ -1230,6 +1230,7 @@ svg.iconhub > polyline:not(.--exclude) {
 
 .flex-align,
 .flex-center,
+.flex-spaced,
 .flex-ratio-1 {
     display: flex;
     flex-wrap: nowrap;
@@ -1249,6 +1250,10 @@ svg.iconhub > polyline:not(.--exclude) {
 
 .flex-ratio-1 {
     aspect-ratio: 1;
+}
+
+.flex-spaced {
+    justify-content: space-between;
 }
 
 .icon-title,

@@ -5,10 +5,10 @@
  * Description: The best material dashboard for WordPress! If you want to delete this plugin, delete its data from cleanup menu first.
  * Plugin URI: https://amatris.ir/amd
  * Author: Hossein
- * Version: 1.1.0
+ * Version: 1.1.2
  * Requires at least: 5.2
  * Requires PHP: 7.4.0
- * Tested up to: 6.4
+ * Tested up to: 6.5
  * Author URI: https://amatris.ir/amd/author
  * Text Domain: material-dashboard
  * Domain Path: /languages/
@@ -241,6 +241,7 @@ add_action( "amd_init_translation", function(){
 		"saving_orders" => esc_html__( "Saving orders", "material-dashboard" ),
 		"write_a_text" => esc_html__( "Write anything", "material-dashboard" ),
 		"hint" => esc_html__( "Hint", "material-dashboard" ),
+		"exporting" => esc_html__( "Exporting", "material-dashboard" ),
         "single:n_results_found" => _n( "%s result found", "%s result found", 1, "material-dashboard" ),
         "plural:n_results_found" => _n( "%s result found", "%s result found", 2, "material-dashboard" ),
 	) );

@@ -278,7 +278,7 @@ class AMDDashboard{
 			if( !empty( $icon ) )
 				$menu[$_id]["icon"] = amd_icon( $icon );
 
-			if( !in_array( $id, [ "quick_options" ] ) ){
+			if( $id !== "quick_options" ){
 				if( ( !empty( $void ) AND !empty( $_void ) AND $_void == $void ) OR ( empty( $void ) AND $_void == "home" ) )
 					$menu[$_id]["active"] = true;
 			}

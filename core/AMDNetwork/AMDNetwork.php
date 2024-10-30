@@ -51,11 +51,20 @@ class AMDNetwork{
 			$callbacks = [ "amd_ajax_target_$target", "amd_ajax_target_{$target}_public" ];
 
 			foreach( $callbacks as $callback ){
-				if( function_exists( $callback ) )
-					call_user_func( $callback, $r, $unfilteredRequest );
+                if( function_exists( $callback ) ) {
 
+                    if( is_string( $callback ) ) {
+
+                        /** @since 1.1.2 */
+                        do_action( "amd_ajt_$callback", $r, $unfilteredRequest );
+
+                    }
+
+                    call_user_func( $callback, $r, $unfilteredRequest );
+
+                }
 			}
-			wp_send_json_error( [ "msg" => esc_html__( "An error has occurred", "material-dashboard" ), "_msg" => "400 Bad Request" ] );
+			wp_send_json_error( [ "msg" => __( "An error has occurred", "material-dashboard" ), "_msg" => "400 Bad Request" ] );
 		}
 
 		$_get = !empty( $r["_get"] ) ? str_replace( "?", "", $r["_get"] ) : "";
@@ -92,7 +101,7 @@ class AMDNetwork{
 			if( !empty( $r["login"] ) ){
 
 				if( amd_login_attempts_reached() )
-					wp_send_json_error( [ "msg" => esc_html__( "Too many attempts, please try again later", "material-dashboard" ) ] );
+					wp_send_json_error( [ "msg" => __( "Too many attempts, please try again later", "material-dashboard" ) ] );
 
 				do_action( "amd_login_before_login", $r );
 
@@ -112,9 +121,9 @@ class AMDNetwork{
 				}
 				else{
 					if( strlen( $user_login ) < 3 )
-						wp_send_json_error( [ "msg" => esc_html__( "Please enter your username correctly", "material-dashboard" ) ] );
+						wp_send_json_error( [ "msg" => __( "Please enter your username correctly", "material-dashboard" ) ] );
 					else if( strlen( $password ) < 8 )
-						wp_send_json_error( [ "msg" => esc_html__( "Password must contain at least 8 characters", "material-dashboard" ) ] );
+						wp_send_json_error( [ "msg" => __( "Password must contain at least 8 characters", "material-dashboard" ) ] );
 
 					$userData = $amdSilu->getUserAuto( $user_login );
 
@@ -134,9 +143,9 @@ class AMDNetwork{
 					$auth = wp_authenticate( $user->username ?? "", $password );
 				if( !$user OR !$auth OR is_wp_error( $auth ) ){
 					if( $isPhone )
-						wp_send_json_error( [ "msg" => esc_html__( "Your phone number or password is incorrect", "material-dashboard" ) ] );
+						wp_send_json_error( [ "msg" => __( "Your phone number or password is incorrect", "material-dashboard" ) ] );
 					else
-						wp_send_json_error( [ "msg" => esc_html__( "Your username or password is incorrect", "material-dashboard" ) ] );
+						wp_send_json_error( [ "msg" => __( "Your username or password is incorrect", "material-dashboard" ) ] );
 				}
 
 				do_action( "amd_login_after_authenticate", $r );
@@ -157,7 +166,7 @@ class AMDNetwork{
                     $url = amd_make_action_url( "user_2fa", $token, $user->ID );
 
                     if( !$url )
-	                    wp_send_json_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+	                    wp_send_json_error( [ "msg" => __( "Failed", "material-dashboard" ) ] );
 
 	                /**
 	                 * Send 2FA code to user
@@ -165,24 +174,28 @@ class AMDNetwork{
 	                 */
                     do_action( "amd_send_2fa_code", $code, $user->ID );
 
-	                wp_send_json_success( [ "msg" => esc_html__( "Please wait", "material-dashboard" ), "url" => $url ] );
+	                wp_send_json_success( [ "msg" => __( "Please wait", "material-dashboard" ), "url" => $url ] );
                 }
 
 				$login = $amdSilu->login( $user->username, $password, $remember );
 
 				if( is_wp_error( $login ) )
-					wp_send_json_error( [ "msg" => esc_html__( "Your login information is incorrect or an error has occurred. Please try again", "material-dashboard" ) ] );
+					wp_send_json_error( [ "msg" => __( "Your login information is incorrect or an error has occurred. Please try again", "material-dashboard" ) ] );
 
-				if( !empty( $_SESSION["redirect_pending"] ) ){
+				/*if( !empty( $_SESSION["redirect_pending"] ) ){
 					$redirectURL = sanitize_url( $_SESSION["redirect_pending"] );
 					$_SESSION["redirect_pending"] = null;
 					unset( $_SESSION["redirect_pending"] );
 				}
 				else{
 					$redirectURL = amd_get_dashboard_page();
-				}
+				}*/
 
-				wp_send_json_success( [ "msg" => esc_html__( "Logging in", "material-dashboard" ), "url" => $redirectURL ] );
+                $redirectURL = amd_get_login_redirect_url( amd_get_dashboard_url() );
+                $redirectURL = amd_parse_url( $redirectURL );
+                amd_reset_login_redirect_record();
+
+				wp_send_json_success( [ "msg" => __( "Logging in", "material-dashboard" ), "url" => $redirectURL ] );
 
 			}
 
@@ -219,11 +232,11 @@ class AMDNetwork{
 
 				if( $lastname_field AND empty( $lastname ) )
 					wp_send_json_error( [
-						"msg" => esc_html__( "Failed", "material-dashboard" ),
+						"msg" => __( "Failed", "material-dashboard" ),
 						"errors" => [
 							[
 								"id" => "lastname_required",
-								"error" => esc_html__( "Please enter you last name correctly", "material-dashboard" ),
+								"error" => __( "Please enter you last name correctly", "material-dashboard" ),
 								"field" => "lastname"
 							]
 						]
@@ -233,11 +246,11 @@ class AMDNetwork{
 					if( $phone_field_required OR !empty( $phone ) ){
 						if( !amd_validate_phone_number( $phone ) ){
 							wp_send_json_error( [
-								"msg" => esc_html__( "Failed", "material-dashboard" ),
+								"msg" => __( "Failed", "material-dashboard" ),
 								"errors" => [
 									[
 										"id" => "phone_incorrect",
-										"error" => esc_html__( "Please enter your phone number correctly", "material-dashboard" ),
+										"error" => __( "Please enter your phone number correctly", "material-dashboard" ),
 										"field" => "phone_number"
 									]
 								]
@@ -249,11 +262,11 @@ class AMDNetwork{
 				if( !empty( $phone ) ){
 					if( $single_phone AND amd_phone_exists( $phone ) ){
 						wp_send_json_error( [
-							"msg" => esc_html__( "Failed", "material-dashboard" ),
+							"msg" => __( "Failed", "material-dashboard" ),
 							"errors" => [
 								[
 									"id" => "phone_exists",
-									"error" => esc_html__( "This phone number is already in use", "material-dashboard" ),
+									"error" => __( "This phone number is already in use", "material-dashboard" ),
 									"field" => "phone_number"
 								]
 							]
@@ -266,7 +279,7 @@ class AMDNetwork{
 				}
 				else if( !empty( $username ) ){
 					if( !amd_validate( $username, "%username%" ) OR !apply_filters( "validate_username", $username ) ){
-						wp_send_json_error( [ "msg" => esc_html__( "Please enter a valid username", "material-dashboard" ) ] );
+						wp_send_json_error( [ "msg" => __( "Please enter a valid username", "material-dashboard" ) ] );
 					}
 				}
 
@@ -276,7 +289,7 @@ class AMDNetwork{
 				$errors = $result["errors"];
 
 				if( !$success )
-					wp_send_json_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ), "errors" => $errors ] );
+					wp_send_json_error( [ "msg" => __( "Failed", "material-dashboard" ), "errors" => $errors ] );
 
 				$uid = $result["user_id"];
 
@@ -327,7 +340,22 @@ class AMDNetwork{
 
 				do_action( "amd_signup_complete", $uid );
 
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "url" => "", "query" => "auth=intro" ] );
+                if( !session_id() )
+                    session_start();
+
+                $redirectURL = "";
+                if( !empty( $_SESSION["redirect_pending"] ) ){
+                    $redirectURL = sanitize_url( $_SESSION["redirect_pending"] );
+                    $_SESSION["redirect_pending"] = null;
+                    unset( $_SESSION["redirect_pending"] );
+                }
+                else{
+                    $redirectURL = amd_get_dashboard_page();
+                }
+
+                $redirectURL = amd_parse_url( $redirectURL );
+
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ), "url" => $redirectURL, "query" => "auth=intro" ] );
 
 			}
 
@@ -341,43 +369,43 @@ class AMDNetwork{
 				if( !empty( $email ) ){
 					$user = get_user_by( "email", $email );
 					if( !$user OR is_wp_error( $user ) )
-						wp_send_json_error( [ "msg" => esc_html__( "Email not found", "material-dashboard" ) ] );
+						wp_send_json_error( [ "msg" => __( "Email not found", "material-dashboard" ) ] );
 					if( !empty( $vCode ) ){
 						if( !empty( $new_password ) ){
 							if( strlen( $new_password ) < 8 )
-								wp_send_json_error( [ "msg" => esc_html__( "Password must contain at least 8 characters", "material-dashboard" ) ] );
+								wp_send_json_error( [ "msg" => __( "Password must contain at least 8 characters", "material-dashboard" ) ] );
 							$success = amd_change_password( $user->ID, $new_password, apply_filters( "amd_notify_password_change", true ) );
 							if( $success )
-								wp_send_json_success( [ "msg" => esc_html__( "Your password has been changed", "material-dashboard" ) ] );
+								wp_send_json_success( [ "msg" => __( "Your password has been changed", "material-dashboard" ) ] );
 							else
-								wp_send_json_success( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+								wp_send_json_success( [ "msg" => __( "Failed", "material-dashboard" ) ] );
 						}
 						else{
 							$valid = amd_is_verification_code_valid( $user->ID, $vCode );
 							if( !$valid )
-								wp_send_json_error( [ "msg" => esc_html__( "Entered verification code is not correct or has been expired", "material-dashboard" ) ] );
-							wp_send_json_success( [ "msg" => esc_html__( "Please enter your new password", "material-dashboard" ) ] );
+								wp_send_json_error( [ "msg" => __( "Entered verification code is not correct or has been expired", "material-dashboard" ) ] );
+							wp_send_json_success( [ "msg" => __( "Please enter your new password", "material-dashboard" ) ] );
 						}
 					}
 					else{
 						$vCode = amd_regenerate_verification_code( $user->ID );
 						if( !$vCode )
-							wp_send_json_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+							wp_send_json_error( [ "msg" => __( "Failed", "material-dashboard" ) ] );
 
 						global /** @var AMDWarner $amdWarn */
 						$amdWarn;
 
 						$message = apply_filters( "amd_new_verification_code_message", $user->ID, $vCode );
-						$sent = $amdWarn->sendEmail( $user->user_email, esc_html__( "Reset password", "material-dashboard" ), $message );
+						$sent = $amdWarn->sendEmail( $user->user_email, __( "Reset password", "material-dashboard" ), $message );
 
 						if( !$sent )
-							wp_send_json_error( [ "msg" => esc_html__( "An error has occurred while sending email", "material-dashboard" ) ] );
+							wp_send_json_error( [ "msg" => __( "An error has occurred while sending email", "material-dashboard" ) ] );
 
-						wp_send_json_success( [ "msg" => esc_html__( "Verification code has been sent to your email", "material-dashboard" ) ] );
+						wp_send_json_success( [ "msg" => __( "Verification code has been sent to your email", "material-dashboard" ) ] );
 					}
 				}
 
-				wp_send_json_error( [ "msg" => esc_html__( "An error has occurred", "material-dashboard" ) ] );
+				wp_send_json_error( [ "msg" => __( "An error has occurred", "material-dashboard" ) ] );
 
 			}
 
@@ -388,20 +416,20 @@ class AMDNetwork{
 				$user = get_user_by( "email", $email );
 
 				if( !$user OR is_wp_error( $user ) )
-					wp_send_json_error( [ "msg" => esc_html__( "Email not found", "material-dashboard" ) ] );
+					wp_send_json_error( [ "msg" => __( "Email not found", "material-dashboard" ) ] );
 
 				$vCode = amd_regenerate_verification_code( $user->ID );
 				if( !$vCode )
-					wp_send_json_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+					wp_send_json_error( [ "msg" => __( "Failed", "material-dashboard" ) ] );
 
 				global /** @var AMDWarner $amdWarn */
 				$amdWarn;
 
 				$message = apply_filters( "amd_new_verification_code_message", $user->ID, $vCode );
-				$sent = $amdWarn->sendEmail( $user->user_email, esc_html__( "Reset password", "material-dashboard" ), $message );
+				$sent = $amdWarn->sendEmail( $user->user_email, __( "Reset password", "material-dashboard" ), $message );
 
 				if( !$sent )
-					wp_send_json_error( [ "msg" => esc_html__( "An error has occurred while sending email", "material-dashboard" ) ] );
+					wp_send_json_error( [ "msg" => __( "An error has occurred while sending email", "material-dashboard" ) ] );
 				$temp_key = "user_{$user->ID}_rp_code_resend";
 				$temp = amd_get_temp( $temp_key, false );
 				$temp_val = intval( $temp->temp_value ?? 0 );
@@ -410,7 +438,7 @@ class AMDNetwork{
 					$i = null;
 					if( $temp_expire )
 						$i = $temp_expire - time();
-					wp_send_json_success( [ "msg" => esc_html__( "Try again in another minute", "material-dashboard" ), "resend_interval" => $i ] );
+					wp_send_json_success( [ "msg" => __( "Try again in another minute", "material-dashboard" ), "resend_interval" => $i ] );
 				}
 
 				/**
@@ -421,7 +449,7 @@ class AMDNetwork{
 
 				amd_set_temp( $temp_key, $resend_interval, $resend_interval );
 
-				wp_send_json_success( [ "msg" => esc_html__( "Verification code has been sent to your email", "material-dashboard" ), "resend_interval" => $resend_interval ] );
+				wp_send_json_success( [ "msg" => __( "Verification code has been sent to your email", "material-dashboard" ), "resend_interval" => $resend_interval ] );
 
 			}
             
@@ -445,8 +473,9 @@ class AMDNetwork{
 		                            $_SESSION["redirect_pending"] = null;
 		                            unset( $_SESSION["redirect_pending"] );
 	                            }
+                                $redirectURL = amd_parse_url( $redirectURL );
 	                            wp_send_json_success( [
-		                            "msg" => esc_html__( "Success", "material-dashboard" ),
+		                            "msg" => __( "Success", "material-dashboard" ),
 		                            "url" => $redirectURL
 	                            ] );
                             }
@@ -454,7 +483,7 @@ class AMDNetwork{
                     }
                 }
 
-	            wp_send_json_error( ["msg" => esc_html__( "Entered verification code is not correct or has been expired", "material-dashboard" )] );
+	            wp_send_json_error( ["msg" => __( "Entered verification code is not correct or has been expired", "material-dashboard" )] );
                 
             }
 
@@ -472,7 +501,7 @@ class AMDNetwork{
 	                $expire = $_expire > 0 ? $_expire - time() : 0;
 
                     if( $expire > 0 )
-	                    wp_send_json_success( ["msg" => esc_html__( "Failed", "material-dashboard" ), "resend_interval" => $expire] );
+	                    wp_send_json_success( ["msg" => __( "Failed", "material-dashboard" ), "resend_interval" => $expire] );
 
 	                /**
 	                 * 2-factor authentication code length
@@ -491,17 +520,17 @@ class AMDNetwork{
 
 	                amd_set_temp( "2fa_token_{$token}_resend", "true", 120 );
 
-	                wp_send_json_success( ["msg" => esc_html__( "Verification code has been sent to your email and/or phone number", "material-dashboard" ), "resend_interval" => 120] );
+	                wp_send_json_success( ["msg" => __( "Verification code has been sent to your email and/or phone number", "material-dashboard" ), "resend_interval" => 120] );
 
                 }
 
-	            wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+	            wp_send_json_error( ["msg" => __( "Failed", "material-dashboard" )] );
 
             }
 
 		}
 
-		wp_send_json_error( [ "msg" => esc_html__( "An error has occurred", "material-dashboard" ) ] );
+		wp_send_json_error( [ "msg" => __( "An error has occurred", "material-dashboard" ) ] );
 
 	}
 
@@ -524,11 +553,21 @@ class AMDNetwork{
 			$callbacks = [ "amd_ajax_target_$target", "amd_ajax_target_{$target}_private" ];
 
 			foreach( $callbacks as $callback ){
-				if( function_exists( $callback ) )
-					call_user_func( $callback, $r, $unfilteredRequest );
+				if( function_exists( $callback ) ) {
+
+                    if( is_string( $callback ) ) {
+
+                        /** @since 1.1.2 */
+                        do_action( "amd_ajt_$callback", $r, $unfilteredRequest );
+
+                    }
+
+                    call_user_func( $callback, $r, $unfilteredRequest );
+
+                }
 
 			}
-			wp_send_json_error( [ "msg" => esc_html__( "An error has occurred", "material-dashboard" ), "_msg" => "400 Bad Request" ] );
+			wp_send_json_error( [ "msg" => __( "An error has occurred", "material-dashboard" ), "_msg" => "400 Bad Request" ] );
 		}
 
 		do_action( "amd_handle_private_ajax", $r );
@@ -551,7 +590,7 @@ class AMDNetwork{
 
 			wp_destroy_other_sessions();
 
-			wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+			wp_send_json_success( ["msg" => __( "Success", "material-dashboard" )] );
 
 		}
 
@@ -568,15 +607,15 @@ class AMDNetwork{
 				$session = WP_Session_Tokens::get_instance( $current_user->ID );
 
 				if( !$session->verify( $token ) )
-					wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+					wp_send_json_error( ["msg" => __( "Failed", "material-dashboard" )] );
 
 				$session->destroy( $token );
 
-				wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+				wp_send_json_success( ["msg" => __( "Success", "material-dashboard" )] );
 
 			}
 
-			wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+			wp_send_json_error( ["msg" => __( "Failed", "material-dashboard" )] );
 
 		}
 
@@ -603,7 +642,7 @@ class AMDNetwork{
 			$chunks = array_chunk( $_reports, $max_in_page );
 			$reports = $chunks[$page] ?? [];
 
-			$unknown = esc_html__( "Unknown", "material-dashboard" );
+			$unknown = __( "Unknown", "material-dashboard" );
 
 			$hasMore = count( $chunks ) > ( $page + 1 );
 
@@ -674,7 +713,7 @@ class AMDNetwork{
 							<span class="_item_browser_name"><?php echo esc_html( $browser["name"] ?? $unknown ); ?></span>
 							<?php if( $version = ( $browser["version"] ?? "" ) ): ?>
 								<br>
-								<span class="_item_browser_version tiny-text color-low" style="display:none"><?php echo esc_html( sprintf( esc_html__( "%s version", "material-dashboard" ), $version ) ); ?></span>
+								<span class="_item_browser_version tiny-text color-low" style="display:none"><?php echo esc_html( sprintf( __( "%s version", "material-dashboard" ), $version ) ); ?></span>
 							<?php endif; ?>
 						</td>
 						<td class="_row_ip">
@@ -704,10 +743,10 @@ class AMDNetwork{
 				}
 
 				$html = ob_get_clean();
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "html" => $html, "has_more" => $hasMore ] );
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ), "html" => $html, "has_more" => $hasMore ] );
 			}
 
-			wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "results" => $data, "has_more" => $hasMore ] );
+			wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ), "results" => $data, "has_more" => $hasMore ] );
 
 		}
 
@@ -725,11 +764,11 @@ class AMDNetwork{
 			$force_login_2fa = amd_get_site_option( "force_login_2fa", "false" ) == "true";
 
 			if( !$use_login_2fa OR $force_login_2fa )
-				wp_send_json_error( ["msg" => esc_html__( "Failed", "material-dashboard" )] );
+				wp_send_json_error( ["msg" => __( "Failed", "material-dashboard" )] );
 
 			amd_set_user_meta( get_current_user_id(), "use_2fa", $r["switch_2fa"] == "true" ? "true" : "false" );
 
-			wp_send_json_success( ["msg" => esc_html__( "Success", "material-dashboard" )] );
+			wp_send_json_success( ["msg" => __( "Success", "material-dashboard" )] );
 
 		}
 
@@ -750,7 +789,7 @@ class AMDNetwork{
 				 */
                 do_action( "amd_repair_database" );
 
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ) ] );
 			}
 
 			else if( !empty( $r["make_page"] ) ){
@@ -761,7 +800,7 @@ class AMDNetwork{
 
 				$result = amd_make_pages( $page, $confirm, $confirm_replace );
 				$success = $result["success"];
-				$data = $result["data"] ?? [ "msg" => esc_html__( "Success", "material-dashboard" ) ];
+				$data = $result["data"] ?? [ "msg" => __( "Success", "material-dashboard" ) ];
 
 				if( $success )
 					wp_send_json_success( $data );
@@ -813,7 +852,7 @@ class AMDNetwork{
 
 				}
 
-				wp_send_json_success( [ 'msg' => esc_html__( 'Success', "material-dashboard" ) ] );
+				wp_send_json_success( [ 'msg' => __( 'Success', "material-dashboard" ) ] );
 
 			}
 
@@ -824,7 +863,7 @@ class AMDNetwork{
 				else
 					$en = (bool) $en;
 				update_site_option( "users_can_register", $en );
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ) ] );
 			}
 
 			else if( isset( $r["skip_survey"] ) ){
@@ -847,9 +886,9 @@ class AMDNetwork{
 				$data = $result["data"] ?? null;
 
 				if( !$success )
-					wp_send_json_error( !empty( $data ) ? $data : [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+					wp_send_json_error( !empty( $data ) ? $data : [ "msg" => __( "Failed", "material-dashboard" ) ] );
 
-				wp_send_json_success( !empty( $data ) ? $data : [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+				wp_send_json_success( !empty( $data ) ? $data : [ "msg" => __( "Success", "material-dashboard" ) ] );
 
 			}
 
@@ -870,13 +909,13 @@ class AMDNetwork{
 				$file_error = $file["error"] ?? UPLOAD_ERR_OK;
 				if( $file_error != UPLOAD_ERR_OK ){
 					if( $file_error == UPLOAD_ERR_INI_SIZE )
-						wp_send_json_error( [ "msg" => esc_html__( "The uploaded file exceeds the 'upload_max_filesize' directive in 'php.ini'", "material-dashboard" ) ] );
+						wp_send_json_error( [ "msg" => __( "The uploaded file exceeds the 'upload_max_filesize' directive in 'php.ini'", "material-dashboard" ) ] );
 					else
-						wp_send_json_error( [ "msg" => esc_html__( "An error has occurred while uploading", "material-dashboard" ) ] );
+						wp_send_json_error( [ "msg" => __( "An error has occurred while uploading", "material-dashboard" ) ] );
 				}
 
 				if( !in_array( $file_type, [ "application/zip", "application/json" ] ) )
-					wp_send_json_error( [ "msg" => esc_html__( "File format is not allowed", "material-dashboard" ) ] );
+					wp_send_json_error( [ "msg" => __( "File format is not allowed", "material-dashboard" ) ] );
 
 				if( $file_type == "application/json" ){
 
@@ -891,9 +930,9 @@ class AMDNetwork{
 					$data = $result["data"] ?? null;
 
 					if( !$success )
-						wp_send_json_error( !empty( $data ) ? $data : [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+						wp_send_json_error( !empty( $data ) ? $data : [ "msg" => __( "Failed", "material-dashboard" ) ] );
 
-					wp_send_json_success( !empty( $data ) ? $data : [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+					wp_send_json_success( !empty( $data ) ? $data : [ "msg" => __( "Success", "material-dashboard" ) ] );
 				}
 
 				# Get current mask for umask rollback
@@ -974,7 +1013,7 @@ class AMDNetwork{
 				umask( $old_mask );
 
 				# Send success message
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "html" => $html ] );
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ), "html" => $html ] );
 
 			}
 
@@ -983,7 +1022,7 @@ class AMDNetwork{
 				$variants = $r["_export"];
 
 				if( empty( $variants ) )
-					wp_send_json_error( [ "msg" => esc_html__( "You have to select at least one variant for backup data", "material-dashboard" ) ] );
+					wp_send_json_error( [ "msg" => __( "You have to select at least one variant for backup data", "material-dashboard" ) ] );
 
 				global /** @var AMD_DB $amdDB */
 				$amdDB;
@@ -991,7 +1030,7 @@ class AMDNetwork{
 				$data = $amdDB->exportJSON( $variants );
 
 				if( empty( $data ) )
-					wp_send_json_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+					wp_send_json_error( [ "msg" => __( "Failed", "material-dashboard" ) ] );
 
 				global /** @var AMDExplorer $amdExp */
 				$amdExp;
@@ -1018,13 +1057,13 @@ class AMDNetwork{
 
 				if( $size )
 					wp_send_json_success( [
-						"msg" => esc_html__( "Success", "material-dashboard" ),
+						"msg" => __( "Success", "material-dashboard" ),
 						"url" => sanitize_url( $backup_url ),
 						"filename" => $filename,
 						"size" => size_format( $size )
 					] );
 
-				wp_send_json_error( [ "msg" => esc_html__( "Export data is empty or permission to save files is not granted, please check your WordPress uploads directory permission.", "material-dashboard" ) ] );
+				wp_send_json_error( [ "msg" => __( "Export data is empty or permission to save files is not granted, please check your WordPress uploads directory permission.", "material-dashboard" ) ] );
 
 			}
 
@@ -1033,7 +1072,7 @@ class AMDNetwork{
 				$variants = $r["_cleanup"];
 
 				if( empty( $variants ) )
-					wp_send_json_error( [ "msg" => esc_html__( "You have to select at least one variant for cleanup data", "material-dashboard" ) ] );
+					wp_send_json_error( [ "msg" => __( "You have to select at least one variant for cleanup data", "material-dashboard" ) ] );
 
 				$variants = explode( ",", $variants );
 
@@ -1046,7 +1085,7 @@ class AMDNetwork{
 				foreach( $data as $item )
 					$html .= "<p class=\"color-green\">&bull; $item</p>";
 
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "html" => $html ] );
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ), "html" => $html ] );
 
 			}
 
@@ -1054,7 +1093,7 @@ class AMDNetwork{
 
 				amd_set_site_option( "wizard_dismissed", "true" );
 
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ) ] );
 
 			}
 
@@ -1075,7 +1114,7 @@ class AMDNetwork{
 					);
 				}
 
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ), "files" => $files ] );
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ), "files" => $files ] );
 
 			}
 
@@ -1089,9 +1128,9 @@ class AMDNetwork{
 				$success = $amdExp->removeBackup( $file );
 
 				if( $success )
-					wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+					wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ) ] );
 
-				wp_send_json_error( [ "msg" => esc_html__( "Failed", "material-dashboard" ) ] );
+				wp_send_json_error( [ "msg" => __( "Failed", "material-dashboard" ) ] );
 
 			}
 
@@ -1103,7 +1142,7 @@ class AMDNetwork{
 
 				$amdLoader->enableExtension( $id );
 
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ) ] );
 			}
 
 			else if( !empty( $r["disable_extension"] ) ){
@@ -1114,7 +1153,7 @@ class AMDNetwork{
 
 				$amdLoader->disableExtension( $id );
 
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ) ] );
 			}
 
 			else if( !empty( $r["switch_theme"] ) ){
@@ -1125,7 +1164,7 @@ class AMDNetwork{
 
 				$amdLoader->enableTheme( $id );
 
-				wp_send_json_success( [ "msg" => esc_html__( "Success", "material-dashboard" ) ] );
+				wp_send_json_success( [ "msg" => __( "Success", "material-dashboard" ) ] );
 			}
 
 			else if( !empty( $r["get_atc_url"] ) ){
@@ -1137,7 +1176,7 @@ class AMDNetwork{
 				if( $url )
 					wp_send_json_success( [ "msg" => "", "url" => $url ] );
 
-				wp_send_json_success( [ "msg" => esc_html__( "Failed", "material-dashboard" ), "url" => "" ] );
+				wp_send_json_success( [ "msg" => __( "Failed", "material-dashboard" ), "url" => "" ] );
 
 			}
 
@@ -1152,15 +1191,120 @@ class AMDNetwork{
 					$success = amd_add_todo( "admin_note", $note, "pending", AMD_DIRECTORY );
 
 				if( $success )
-					wp_send_json_success( [ "msg" => esc_html__( "Saved", "material-dashboard" ) ] );
+					wp_send_json_success( [ "msg" => __( "Saved", "material-dashboard" ) ] );
 
-				wp_send_json_error( [ "msg" => esc_html__( "Not saved", "material-dashboard" ) ] );
+				wp_send_json_error( [ "msg" => __( "Not saved", "material-dashboard" ) ] );
 
 			}
 
+            else if( !empty( $r["add_custom_hook"] ) ){
+                
+                $data = $r["add_custom_hook"];
+                $type = trim( $data["type"] ?? "" );
+                $name = trim( $data["name"] ?? "" );
+                $value = trim( $data["value"] ?? "" );
+                $callback = trim( $data["callback"] ?? "" );
+                
+                if( !in_array( $type, ["filter", "action"] ) )
+                    wp_send_json_error( ["msg" => __( "Hook type must be one either 'filter' or 'action'", "material-dashboard" )] );
+
+                if( empty( $name ) )
+                    wp_send_json_error( ["msg" => __( "Please fill out hook name", "material-dashboard" )] );
+
+                /*if( empty( $value ) AND empty( $callback ) )
+                    wp_send_json_error( ["msg" => __( "Please fill out hook callback or value", "material-dashboard" )] );*/
+
+                global $amdDB;
+
+                if( $type === "filter" )
+                    $success = $amdDB->addComponent( "custom_hook_filter", json_encode( ["name" => $name, "value" => $value, "callback" => $callback] ) );
+                else
+                    $success = $amdDB->addComponent( "custom_hook_action", json_encode( ["name" => $name, "callback" => $callback] ) );
+
+                if( $success )
+                    wp_send_json_success( ["msg" => __( "Success", "material-dashboard" ), "data" => ["id" => $success]] );
+
+                wp_send_json_error( ["msg" => __( "Failed", "material-dashboard" )] );
+
+            }
+
+            else if( !empty( $r["delete_custom_hook"] ) ){
+
+                $data = $r["delete_custom_hook"];
+                $type = trim( $data["type"] ?? "" );
+                $id = trim( $data["id"] ?? "" );
+
+                if( !in_array( $type, ["filter", "action"] ) )
+                    wp_send_json_error( ["msg" => __( "Hook type must be one either 'filter' or 'action'", "material-dashboard" )] );
+
+                if( empty( $id ) )
+                    wp_send_json_error( ["msg" => __( "Please enter hook ID", "material-dashboard" )] );
+
+                global $amdDB;
+
+                if( $amdDB->deleteComponent( $id ) )
+                    wp_send_json_success( ["msg" => __( "Success", "material-dashboard" )] );
+
+                wp_send_json_error( ["msg" => __( "Failed", "material-dashboard" )] );
+
+            }
+
+            else if( !empty( $r["export_custom_hooks"] ) ){
+
+                $data = $r["export_custom_hooks"];
+                $type = trim( $data["type"] ?? "" );
+
+                if( !in_array( $type, ["filter", "action"] ) )
+                    wp_send_json_error( ["msg" => __( "Hook type must be one either 'filter' or 'action'", "material-dashboard" )] );
+
+                $hooks = amd_get_custom_hooks();
+                $custom = $hooks[$type === "filter" ? "filters" : "actions"];
+                $export = [];
+                foreach( $custom as $item ){
+                    $data = $item["data"] ?? [];
+                    if( !empty( $data ) )
+                        $export[] = $data;
+                }
+
+                $content = amd_encrypt_aes( json_encode( $export ), $type );
+
+                wp_send_json_success( ["msg" => __( "Success" ), "data" => $content] );
+
+            }
+
+            else if( !empty( $r["import_custom_hooks"] ) ){
+
+                $data = $r["import_custom_hooks"];
+                $type = trim( $data["type"] ?? "" );
+                $content = trim( $data["content"] ?? "" );
+
+                if( !in_array( $type, ["filter", "action"] ) )
+                    wp_send_json_error( ["msg" => __( "Hook type must be one either 'filter' or 'action'", "material-dashboard" )] );
+
+                if( $content ) {
+                    $json = amd_decrypt_aes( $content, $type );
+                    $json = @json_decode( $json );
+                    if( $json ){
+                        global $amdDB;
+                        foreach( $json as $item ){
+                            $name = $item->name ?? "";
+                            if( !$name )
+                                continue;
+                            $value = $item->value ?? "";
+                            $callback = $item->callback ?? "";
+                            $amdDB->addComponent( "custom_hook_$type", json_encode( array_merge( ["name" => $name, "callback" => $callback], $type === "filter" ? ["value" => $value] : [] ) ) );
+                        }
+                        wp_send_json_success( ["msg" => __( "Data imported successfully", "material-dashboard" )] );
+                    }
+                }
+
+                wp_send_json_error( ["msg" => __( "Data is invalid", "material-dashboard" )] );
+
+            }
+            
 		}
 
-		wp_send_json_error( [ "msg" => esc_html__( "An error has occurred", "material-dashboard" ), "html" => "" ] );
+		wp_send_json_error( [ "msg" => __( "An error has occurred", "material-dashboard" ), "html" => "" ] );
 
 	}
 

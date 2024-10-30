@@ -162,8 +162,8 @@ $online_users = amd_get_online_users();
                 <div class="--content">
                     <div class="amd-user-cards">
                         <div>
-                            <div class="--image"><img src="<?php echo esc_url( $thisuser->profile ); ?>" alt=""></div>
-                            <div class="--image --big"><img src="<?php echo esc_url( $thisuser->profile ); ?>" alt=""></div>
+                            <div class="--image"><img src="<?php echo esc_url( $thisuser->getProfile() ); ?>" alt=""></div>
+                            <div class="--image --big"><img src="<?php echo esc_url( $thisuser->getProfile() ); ?>" alt=""></div>
                             <p class="--name color-primary"
                                title="<?php echo esc_attr( $thisuser->fullname ); ?>"><?php echo esc_html( $thisuser->fullname ); ?></p>
                             <span class="color-low"><?php echo esc_html( $thisuser->username ); ?></span>

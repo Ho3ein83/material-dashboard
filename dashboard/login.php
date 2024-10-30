@@ -2,7 +2,8 @@
 
 # If user is logged-in, redirect to dashboard
 if( is_user_logged_in() ){
-	wp_safe_redirect( amd_get_dashboard_page() );
+	$redirect = amd_get_login_redirect_url( amd_get_dashboard_page() );
+	wp_safe_redirect( amd_parse_url( $redirect ) );
 	exit();
 }
 
@@ -11,6 +12,9 @@ if( amd_login_attempts_reached() ){
     wp_safe_redirect( amd_make_action_url_without_temp( "too_many_attempts" ) );
     exit();
 }
+
+# Redirect user after logging-in to specified target
+amd_record_login_redirect();
 
 do_action( "amd_begin_dashboard" );
 
@@ -356,7 +360,8 @@ $regions = amd_get_regions();
             val = val.replaceAll("  ", " ");
         $country_code.val(val.trimChar(" "));
     });
-    $country_code.trigger("change");
+    $country_code.trigger("change")
+    ;
 </script>
 <?php do_action( "amd_after_login_page" ); ?>
 </body>

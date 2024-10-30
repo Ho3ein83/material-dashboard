@@ -104,8 +104,7 @@ add_action( "admin_init", function(){
 # Set dashboard cards
 add_action( "amd_add_dashboard_card", function( $data ){
 
-	global /** @var AMDDashboard $amdDashboard */
-	$amdDashboard;
+	global $amdDashboard;
 
 	$amdDashboard->registerCard( $data );
 
@@ -114,8 +113,7 @@ add_action( "amd_add_dashboard_card", function( $data ){
 # Get dashboard cards
 add_filter( "amd_get_dashboard_cards", function( $filter ){
 
-	global /** @var AMDDashboard $amdDashboard */
-	$amdDashboard;
+	global $amdDashboard;
 
 	return $amdDashboard->getCards( $filter, true );
 
@@ -124,8 +122,7 @@ add_filter( "amd_get_dashboard_cards", function( $filter ){
 # Set dashboard sidebar menu item
 add_action( "amd_add_dashboard_sidebar_menu", function( $data ){
 
-	global /** @var AMDDashboard $amdDashboard */
-	$amdDashboard;
+	global $amdDashboard;
 
 	$amdDashboard->addMenuItem( "sidebar_menu", $data );
 
@@ -134,8 +131,7 @@ add_action( "amd_add_dashboard_sidebar_menu", function( $data ){
 # Get dashboard sidebar menu items
 add_filter( "amd_get_dashboard_sidebar_menu", function( $void ){
 
-	global /** @var AMDDashboard $amdDashboard */
-	$amdDashboard;
+	global $amdDashboard;
 
 	return $amdDashboard->getMenu( "sidebar_menu", $void );
 
@@ -589,7 +585,7 @@ add_action( "amd_init_sidebar_items", function(){
     # Quick options in auth pages
 	add_action( "amd_auth_quick_option", function(){
 		?>
-		<a href="<?php echo esc_attr( get_site_url() ); ?>" data-tooltip="<?php printf( esc_html__( "Back to %s", "material-dashboard" ), get_bloginfo( 'name' ) ); ?>">
+		<a href="<?php echo esc_url( apply_filters( "amd_auth_return_url", get_site_url() ) ); ?>" data-tooltip="<?php printf( esc_html__( "Back to %s", "material-dashboard" ), apply_filters( "amd_auth_return_name", get_bloginfo( 'name' ) ) ); ?>">
 			<?php _amd_icon( "home" ); ?>
         </a>
         <?php if( amd_is_multilingual( true ) ): ?>
@@ -676,7 +672,7 @@ add_action( "amd_dashboard_init", function(){
 	} );
 
 	# If registration is enabled ('users_can_register' in site options equals to '1')
-	if( amd_can_users_register() ){
+	if( amd_can_users_register() AND apply_filters( "amd_add_registration_method", true )  ){
 		# Register new sign-in method for new users registration
 		do_action( "amd_register_sign_in_method", "_register", array(
 			"name" => esc_html__( "Create new account", "material-dashboard" ),

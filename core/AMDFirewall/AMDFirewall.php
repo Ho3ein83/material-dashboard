@@ -386,6 +386,8 @@ class AMDFirewall{
 	 * Input string
 	 * @param $salt
 	 * Encryption salt (can be any string)
+     * @param null|string $iv
+     * Custom initialization vector key, pass null to use default IV key
 	 *
 	 * @return false|string
 	 * The encrypted string on success or false on failure.
@@ -394,39 +396,41 @@ class AMDFirewall{
 	 *@since 1.0.0
 	 * @uses openssl_encrypt()
 	 */
-	public function encryptAES( $string, $salt ){
+	public function encryptAES( $string, $salt, $iv=null ){
 
 		$original_string = $string;
 		$cipher_algo = "AES-128-CTR";
 		# $iv_length = openssl_cipher_iv_length( $cipher_algo );
 		$option = 0;
-		$encrypt_iv = self::getNonce();
+		$encrypt_iv = $iv === null ? self::getNonce() : $iv;
 		$encrypt_key = $salt;
 
 		return openssl_encrypt( $original_string, $cipher_algo, $encrypt_key, $option, $encrypt_iv );
 
 	}
 
-	/**
-	 * Decrypt encoded string with AES-128-CTR method
-	 *
-	 * @param $hash
-	 * Encrypted string
-	 * @param $key
-	 * Decryption key (salt in encryption)
-	 *
-	 * @return false|string
-	 * The decrypted string on success or false on failure.
-	 * <br>e.g: "EmDIqeI=" hash with key "123" -> "hello"
-	 * @see  AMDFirewall::encryptAES()
-	 *@since 1.0.0
-	 * @uses openssl_decrypt()
-	 */
-	public function decryptAES( $hash, $key ){
+    /**
+     * Decrypt encoded string with AES-128-CTR method
+     *
+     * @param $hash
+     * Encrypted string
+     * @param $key
+     * Decryption key (salt in encryption)
+     * @param null|string $iv
+     * Custom initialization vector key, pass null to use default IV key
+     *
+     * @return false|string
+     * The decrypted string on success or false on failure.
+     * <br>e.g: "EmDIqeI=" hash with key "123" -> "hello"
+     * @see  AMDFirewall::encryptAES()
+     * @since 1.0.0
+     * @uses openssl_decrypt()
+     */
+	public function decryptAES( $hash, $key, $iv=null ){
 
 		$cipher_algo = "AES-128-CTR";
 		$option = 0;
-		$decrypt_iv = self::getNonce();
+		$decrypt_iv = $iv === null ? self::getNonce() : $iv;
 		$decrypt_key = $key;
 
 		return openssl_decrypt( $hash, $cipher_algo, $decrypt_key, $option, $decrypt_iv );
@@ -458,7 +462,7 @@ class AMDFirewall{
 		 * After that your data decryption works just fine!
 		 */
 
-		if( defined( 'NONCE_SALT' ) AND apply_filters( "amd_use_site_nonce", false ) )
+		if( defined( 'NONCE_SALT' ) and apply_filters( "amd_use_site_nonce", false ) )
 			return str_split( NONCE_SALT, 16 )[0];
 
 		return apply_filters( "amd_firewall_aes_nonce", "1=gVHpo{gIOixP@s" );

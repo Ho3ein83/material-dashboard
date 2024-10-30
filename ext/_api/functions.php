@@ -226,6 +226,10 @@ function amd_ext__api_handler_all( $r ){
 
 			if( $bytes ){
 				amd_set_user_meta( $user->ID, "avatar", $user->secretKey );
+
+                # since 1.1.1
+                do_action( "amd_avatar_updated", $user );
+
 				amd_send_api_success( ["msg" => esc_html__( "Avatar image changed", "material-dashboard" ), "url" => amd_merge_url_query( amd_avatar_url( $user->secretKey ), "cache=" . time() ) ] );
 			}
 
@@ -242,6 +246,9 @@ function amd_ext__api_handler_all( $r ){
 			if( in_array( $avatar, ["_EMPTY_", "placeholder", $user->secretKey] ) ){
 
 				amd_set_user_meta( $user->ID, "avatar", $avatar );
+
+                # since 1.1.1
+                do_action( "amd_avatar_updated", $user );
 
 				amd_send_api_success( ["msg" => esc_html__( "Avatar image changed", "material-dashboard" ), "url" => amd_merge_url_query( amd_avatar_url( $avatar ), "cache=" . time() ) ] );
 
@@ -263,6 +270,10 @@ function amd_ext__api_handler_all( $r ){
 				wp_send_json_error( ["msg" => esc_html__( "This avatar is not available or something went wrong", "material-dashboard" )] );
 
 			amd_set_user_meta( $user->ID, "avatar", "$path_id:$avatar_file" );
+
+            # since 1.1.1
+            do_action( "amd_avatar_updated", $user );
+
 			amd_send_api_success( ["msg" => esc_html__( "Avatar image changed", "material-dashboard" ), "url" => sanitize_url( amd_merge_url_query( amd_avatar_url( "$path_id:$avatar_file" ), "cache=" . time() ) ) ] );
 
 		}

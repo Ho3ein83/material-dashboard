@@ -126,6 +126,18 @@ class AMDFirewallAPI {
 				else if( $allowed_method == "*" )
 					$r = array_merge( $get, $post, $files );
 
+                /**
+                 * @since 1.1.2
+                 */
+                do_action( "amd_before_handlers", $r, $handler );
+
+                if( is_string( $handler ) ) {
+                    /**
+                     * @since 1.1.2
+                     */
+                    do_action( "amd_before_handler_$handler", $r );
+                }
+
 				call_user_func( $handler, $r );
 
 			}

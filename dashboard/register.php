@@ -1,5 +1,13 @@
 <?php
 
+if( !session_id() )
+    session_start();
+
+$redirect = sanitize_text_field( $_GET["redirect"] ?? "" );
+$auth = sanitize_text_field( $_GET["auth"] ?? "" );
+if( $redirect )
+    $_SESSION["redirect_pending"] = $redirect;
+
 if( is_user_logged_in() ){
 	wp_safe_redirect( amd_get_dashboard_page() );
 	exit();
@@ -115,7 +123,12 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
     <h4 class="--sub-title"></h4>
     <p id="register-log" class="amd-form-log _bg_"></p>
     <div class="h-10"></div>
-    <div id="register-fields">
+    <form id="register-fields">
+        <?php if( isset( $_GET["nofill"] ) OR apply_filters( "amd_resgiter_form_nofill", false ) ): ?>
+            <input type="text" name="_username" style="width: 0; height: 0; border: 0; padding: 0" />
+            <input type="email" name="_emil" style="width: 0; height: 0; border: 0; padding: 0" />
+            <input type="password" name="_password" style="width: 0; height: 0; border: 0; padding: 0" />
+        <?php endif; ?>
 
         <?php
             /**
@@ -157,7 +170,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 
         <?php if( $username_field ): ?>
             <label class="ht-input">
-                <input type="text" data-field="username" data-pattern="%username%" data-next="phone|email" placeholder="" required>
+                <input type="text" name="username" value="<?php echo esc_attr( sanitize_text_field( $_GET['username'] ?? '' ) ); ?>" data-field="username" data-pattern="%username%" data-next="phone|email" placeholder="" required>
                 <span><?php esc_html_e( "Username", "material-dashboard" ); ?></span>
 				<?php _amd_icon( "" ); ?>
             </label>
@@ -172,7 +185,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 	    ?>
 
         <label class="ht-input">
-            <input type="text" data-field="email" data-pattern="%email%" data-next="password" placeholder="" required>
+            <input type="text" name="email" value="<?php echo esc_attr( sanitize_text_field( $_GET['email'] ?? '' ) ); ?>" data-field="email" data-pattern="%email%" data-next="password" placeholder="" required>
             <span><?php esc_html_e( "Email", "material-dashboard" ); ?></span>
 			<?php _amd_icon( "email" ); ?>
         </label>
@@ -203,7 +216,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
             </label>
 		<?php else: ?>
             <label class="ht-input">
-                <input type="password" data-field="password" minlength="8" data-next="country_code|phone_number|submit"
+                <input type="password" name="password" data-field="password" minlength="8" data-next="country_code|phone_number|submit"
                        placeholder=""
                        required>
                 <span><?php esc_html_e( "Password", "material-dashboard" ); ?></span>
@@ -211,7 +224,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 				<?php _amd_icon( "hide_password", null, [], [ "class" => "clickable -pt --show-password" ] ); ?>
             </label>
 		<?php endif; ?>
-    </div>
+    </form>
 
 	<?php
         /**

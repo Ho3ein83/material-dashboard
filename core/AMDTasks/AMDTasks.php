@@ -92,7 +92,9 @@ class AMDTasks {
 
             $title = esc_html_x( "Task manager", "Tasks title", "material-dashboard" );
 
-            add_submenu_page( "material-dashboard", $title, $title, "manage_options", "amd-tasks", "amd_core_tasks_submenu_page", 8 );
+            $capability = apply_filters( "amd_menu_items_capability", "manage_options" );
+
+            add_submenu_page( "material-dashboard", $title, $title, $capability, "amd-tasks", "amd_core_tasks_submenu_page", 8 );
 
         } );
 

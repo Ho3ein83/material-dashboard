@@ -219,9 +219,9 @@ function amd_replace_constants( $str ){
 /**
  * Check if required classes and/or functions are exists. See documentation for more details
  *
- * @param $r
+ * @param string|array $r
  * Requirements query, use <code>class(CLASS_NAME)</code> for class availability check,
- * and use <code>function(FUNCTION)NAME)</code> for check if function is exists.
+ * and use <code>function(FUNCTION_NAME)</code> for check if function is exists.
  * <ul>
  * <li>Use "&&" or "AND" for logical 'and' operation</li>
  * <li>Use "||" or "OR" for logical 'or' operation</li>
@@ -1123,7 +1123,7 @@ function amd_change_password( $uid, $new_password, $notice = false ){
 /**
  * Get user automatically
  *
- * @param int|string|WP_User $part
+ * @param int|string|WP_User $user
  * Any information about user like email, user ID, phone number or username or even WP user object
  *
  * @return AMDUser|null
@@ -2565,9 +2565,7 @@ function amd_hex_to_rgb( $color, $format = null ){
 
 	$out = str_replace( "r", $rgbArray["r"], $format );
 	$out = str_replace( "g", $rgbArray["g"], $out );
-	$out = str_replace( "b", $rgbArray["b"], $out );
-
-	return $out;
+    return str_replace( "b", $rgbArray["b"], $out );
 
 }
 
@@ -4302,12 +4300,12 @@ function amd_custom_temp_upload_dir( $dir ){
 /**
  * Strip HTML tags with their contents.
  * <br>e.g:<br>
- * <code>amd_destroy_html_tag( "<div>Hello <h1>world</h1></div>", "h1" )</code>
- * <br>Output: <code><div>Hello </div></code>
+ * <code>amd_destroy_html_tag( "&lt;div&gt;Hello &lt;h1&gt;world&lt;/h1&gt;&lt;/div&gt;", "h1" )</code>
+ * <br>Output: <code>&lt;div&gt;Hello &lt;/div&gt;</code>
  *
  * @param string $html
  * HTML content
- * @param $tag_s
+ * @param string|string[] $tag_s
  * Single tag string or multiple tags array. e.g: "a", ["a", "span", "h1"]
  *
  * @return string
@@ -5374,6 +5372,16 @@ function amd_no_distraction_mode( $enable=true ){
 
 }
 
+/**
+ * Convert seconds to time text, for example 60 seconds will be '1 minute',
+ * 3600 minutes will be '1 hour'
+ * @param int $seconds
+ * The number of seconds
+ *
+ * @return string
+ * Time text string
+ * @since 1.1.0
+ */
 function amd_convert_time_to_text( $seconds ){
 
     global $amdCache;
@@ -5456,3 +5464,94 @@ function amd_ajax_initialize(){
 
 }
 add_action( "amd_ajax_init", "amd_ajax_initialize" );
+
+/**
+ * Parse URL for redirects
+ * @param string $url
+ * Input URL
+ * @return string
+ * @since 1.1.1
+ */
+function amd_parse_url( $url ){
+
+    if( !preg_match( "/https?:\/\//", $url ) )
+        return get_site_url() . "/" . trim( $url, "/" );
+
+    return $url;
+
+}
+
+/**
+ * Record pending URL for login redirection
+ * @return void
+ * @since 1.1.2
+ */
+function amd_record_login_redirect(){
+
+    if( !empty( $_GET["redirect"] ) ){
+        $redirect_to = sanitize_text_field( $_GET["redirect"] );
+        global $amdCache;
+        $amdCache->setCache( "login_redirect", $redirect_to, 300 );
+    }
+
+}
+
+/**
+ * Record login redirection URL
+ * @return void
+ * @since 1.1.2
+ */
+function amd_reset_login_redirect_record(){
+
+    global $amdCache;
+    $amdCache->removeCache( "login_redirect" );
+
+}
+
+/**
+ * Get login pending redirect URL
+ * @param string $default
+ * Default redirect URL
+ * @return string
+ * Redirect URL string
+ * @since 1.1.2
+ */
+function amd_get_login_redirect_url( $default ){
+    global $amdCache;
+    $redirect = $amdCache->getCache( "login_redirect" );
+    if( !$redirect AND !empty( $_GET["redirect"] ) )
+        return sanitize_text_field( $_GET["redirect"] );
+    return strval( $redirect ?: $default );
+}
+
+/**
+ * Get registered custom hooks
+ * @return array[]
+ * Custom hooks array, format: ["filters" => ..., "actions" => ...]
+ * @since 1.1.2
+ */
+function amd_get_custom_hooks(){
+
+    global $amdDB;
+
+    $_filters = $amdDB->getComponents( "type", "custom_hook_filter", true );
+    $_actions = $amdDB->getComponents( "type", "custom_hook_action", true );
+
+    $filters = [];
+    foreach( $_filters as $filter ){
+        if( $filter instanceof AMDComponent )
+            $filters[] = $filter->export();
+    }
+
+    $actions = [];
+    foreach( $_actions as $action ){
+        if( $action instanceof AMDComponent )
+            $actions[] = $action->export();
+    }
+
+    return array(
+        "filters" => $filters,
+        "actions" => $actions,
+    );
+
+}

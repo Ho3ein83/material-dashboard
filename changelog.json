@@ -126,5 +126,15 @@
     "version_name": "1.1.0",
     "version_code": 11,
     "last_change": "2024-01-31"
+  },
+  "1.1.2": {
+    "desc": "Bugs fixed, cores improved",
+    "changes": [
+      "Some security issues fixed",
+      "Bugs fixed"
+    ],
+    "version_name": "1.1.0",
+    "version_code": 11,
+    "last_change": "2024-01-31"
   }
 }

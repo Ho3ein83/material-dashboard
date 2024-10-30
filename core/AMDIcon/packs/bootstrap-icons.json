@@ -11,6 +11,8 @@
   "icon_type": "font_icon",
   "html_template": "<i class=\"bi bi-{ICON} _icon_[CLASS]\"[STYLE]></i>",
   "icons": {
+    "_SINCE:1.1.2": null,
+    "user_permission": "person-slash",
     "_SINCE:1.0.6": null,
     "fingerprint": "fingerprint",
     "_SINCE:1.0.5": null,

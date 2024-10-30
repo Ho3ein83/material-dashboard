@@ -10,6 +10,8 @@
   "icon_type": "svg",
   "html_template": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" class=\"iconhub _icon_[CLASS]\"[SIZE]>{ICON}</svg>",
   "icons": {
+    "_SINCE:1.1.2": null,
+    "user_permission": "<circle r=\"4\" cy=\"7\" cx=\"13\"></circle><path d=\"M10,21H20a1,1,0,0,0,1-1,5,5,0,0,0-5-5H10\"></path><line y2=\"16\" x2=\"6\" y1=\"19\" x1=\"3\"></line><line y2=\"16\" x2=\"3\" y1=\"19\" x1=\"6\"></line>",
     "_SINCE:1.0.6": null,
     "fingerprint": "<path d=\"M16,11a15.93,15.93,0,0,1-3,10\"></path><path d=\"M6.17,17.17C7,16.32,8,12.71,8,11a4,4,0,0,1,4-4,3.89,3.89,0,0,1,2,.54\"></path><path d=\"M9,3.58A8.09,8.09,0,0,1,12,3a8,8,0,0,1,8,8c0,1.12,0,5-2,8\"></path><path d=\"M3.34,14A9.45,9.45,0,0,0,4,11,8,8,0,0,1,6,5.71\"></path><path d=\"M12,11c0,2-1,8-4,10\"></path>",
     "_SINCE:1.0.5": null,

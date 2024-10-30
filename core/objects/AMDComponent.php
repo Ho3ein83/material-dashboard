@@ -7,42 +7,42 @@ class AMDComponent {
 	 * @var int
 	 * @since 1.0.5
 	 */
-	private $id;
+	protected $id;
 
 	/**
 	 * Component key
 	 * @var string
 	 * @since 1.0.5
 	 */
-	private $key;
+	protected $key;
 
 	/**
 	 * Component type
 	 * @var string
 	 * @since 1.0.5
 	 */
-	private $type;
+	protected $type;
 
 	/**
 	 * Component data
 	 * @var mixed
 	 * @since 1.0.5
 	 */
-	private $data;
+	protected $data;
 
 	/**
 	 * Component registration time
 	 * @var int
 	 * @since 1.0.5
 	 */
-	private $time;
+	protected $time;
 
 	/**
 	 * Component meta-data
 	 * @var array
 	 * @since 1.0.5
 	 */
-	private $meta;
+	protected $meta;
 
 	/**
 	 * Component object
@@ -201,5 +201,21 @@ class AMDComponent {
 		$this->meta = $meta;
 
 	}
+
+    /**
+     * Export current object values to array
+     * @return array
+     * @since 1.1.2
+     */
+    public function export() {
+        return array(
+            "id" => $this->get_id(),
+            "key" => $this->get_key(),
+            "data" => $this->get_decoded_data(),
+            "type" => $this->get_type(),
+            "time" => $this->get_time(),
+            "meta" => $this->get_meta()
+        );
+    }
 
 }

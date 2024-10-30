@@ -194,7 +194,7 @@ class AMDSilu{
 		if( $uid == null ){
 			if( !is_user_logged_in() )
 				return $default;
-			$uid = wp_get_current_user()->ID;
+			$uid = get_current_user_id();
 		}
 
 		return self::userMetaExists( $uid, $mn, true, $default, $useCache );
@@ -215,10 +215,13 @@ class AMDSilu{
 		if( empty( $uid ) ){
 			if( !is_user_logged_in() )
 				return "";
-			$uid = wp_get_current_user()->ID;
+			$uid = get_current_user_id();
 		}
 
 		$meta = self::getUserMeta( $uid, "avatar" );
+
+        if( preg_match( "/^https?:\/\//", $meta ) )
+            return $meta;
 
 		return amd_avatar_url( !empty( $meta ) ? $meta : "placeholder" );
 
@@ -247,7 +250,7 @@ class AMDSilu{
 		if( empty( $uid ) ){
 			if( !is_user_logged_in() )
 				return "";
-			$uid = wp_get_current_user()->ID;
+            $uid = get_current_user_id();
 		}
 
 		global $amdCache;
@@ -317,7 +320,7 @@ class AMDSilu{
 		if( empty( $uid ) ){
 			if( !is_user_logged_in() )
 				return false;
-			$uid = wp_get_current_user()->ID;
+			$uid = get_current_user_id();
 		}
 
 		$check = get_user_by( "ID", $uid );
@@ -771,7 +774,7 @@ class AMDSilu{
 		if( empty( $uid ) ){
 			if( !is_user_logged_in() )
 				return esc_html__( "Failed", "material-dashboard" );
-			$uid = wp_get_current_user()->ID;
+			$uid = get_current_user_id();
 		}
 
 		wp_set_password( $password, $uid );

@@ -202,7 +202,7 @@ class AMD_DB {
 			"EXTRA" => " PRIMARY KEY (`id`)) ENGINE = $engine;"
 		) );
 
-		if( $install == true )
+		if( $install )
 			self::install();
 
 	}
@@ -225,7 +225,7 @@ class AMD_DB {
 				 * Default collation for dashboard tables
 				 * @since 1.0.5
 				 */
-				$default_collation = apply_filters( "amt_default_tables_collation", "utf8mb4_unicode_520_ci" );
+				$default_collation = apply_filters( "amd_default_tables_collation", "utf8mb4_unicode_520_ci" );
 
 				if( $collation != $default_collation )
 					self::collateTable( $table, $default_collation );
@@ -1753,7 +1753,7 @@ class AMD_DB {
 
 			$meta = unserialize( $task[0]->meta ?? serialize( [] ) );
 
-			return $meta[$meta_name] ?: $default;
+			return $meta[$meta_name] ?? $default;
 
 		}
 

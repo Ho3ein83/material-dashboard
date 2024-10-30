@@ -16,7 +16,7 @@ if( $isLoggedIn ){
 			"last_name" => $user->lastname,
 			"fullname" => $user->fullname,
 			"phone" => $user->phone,
-			"avatar" => $user->profile,
+			"avatar" => $user->getProfile(),
 		);
 	}
 }

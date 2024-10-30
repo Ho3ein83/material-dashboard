@@ -1,8 +1,13 @@
 <?php
 
+if( !session_id() )
+    session_start();
+
 if( !is_user_logged_in() ){
-	$_SESSION["redirect_pending"] = sanitize_url( amd_replace_url( "%full_uri%" ) );
-	wp_safe_redirect( amd_get_login_page() );
+    $redirect = sanitize_text_field( $_GET["redirect"] ?? "" );
+    $auth = sanitize_text_field( $_GET["auth"] ?? "" );
+	$_SESSION["redirect_pending"] = $redirect ?: sanitize_url( amd_replace_url( "%full_uri%" ) );
+	wp_safe_redirect( amd_merge_url_query( amd_get_login_page(), $auth ? "auth=$auth" : "" ) );
 	exit();
 }
 
@@ -67,8 +72,7 @@ $bodyBG = apply_filters( "amd_dashboard_bg", "" );
 
 $page_content = "";
 $page_title = "";
-global /** @var AMDDashboard $amdDashboard */
-$amdDashboard;
+global $amdDashboard;
 
 $page = $amdDashboard->getDashboardPage( $void );
 $turtle = $page["turtle"] ?? null;

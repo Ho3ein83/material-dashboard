@@ -173,7 +173,7 @@ String.prototype.trimChar = function(character) {
     let first = [...string].findIndex(char => char !== character);
     let last = [...string].reverse().findIndex(char => char !== character);
     return string.substring(first, string.length - last);
-};
+}
 /* End of main.js */
 
 /* amd.js */
@@ -183,9 +183,10 @@ var $amd = {
      * @param {string} title
      * @param {*} text
      * @param {{cancelButton: (string|*), onConfirm: (function(): void), confirmButton: (string|*)}|{icon: string}} conf
+     * @return Hello
      */
     alert: (title, text, conf = {}) => {
-        Hello.fire(Object.assign({
+        return Hello.fire(Object.assign({
             title: title,
             text: text,
             confirmButton: _t("ok"),
@@ -204,9 +205,10 @@ var $amd = {
      * Hello popup simple toast
      * @param {*} text
      * @param {{cancelButton: (string|*), onConfirm: (function(): void), confirmButton: (string|*)}|{icon: string}} conf
+     * @return Hello
      */
     toast: (text, conf = {}) => {
-        Hello.queue(Object.assign({
+        return Hello.queue(Object.assign({
             title: "",
             text: text,
             type: "toast",
@@ -628,6 +630,26 @@ var $amd = {
         a.click();
         a.remove();
     },
+    /**
+     * @param {string} filename
+     * @param {Object} data
+     * @param {string} type
+     */
+    saveAs: (filename, data, type="text/plain") => {
+        const blob = new Blob([data], {type});
+        if(window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveBlob(blob, filename);
+        }
+        else{
+            const elem = window.document.createElement('a');
+            elem.href = window.URL.createObjectURL(blob);
+            elem.download = filename;
+            document.body.appendChild(elem);
+            elem.click();
+            document.body.removeChild(elem);
+        }
+    },
+    escapeHtml: html => new Option(html).innerHTML,
     mergeUrlQuery: (url, query, toRemove = [], onlyQuery = true) => {
         let params = new URLSearchParams(url.split("?")[1] || "");
         let _params = new URLSearchParams(query.indexOf("?") > -1 ? (query.split("?")[1] || "") : query);
